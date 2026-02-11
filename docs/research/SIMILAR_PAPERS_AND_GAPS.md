@@ -534,8 +534,8 @@ graph TB
 ```mermaid
 quadrantChart
     title Research Gap Analysis: Cost vs. Validation Quality
-    x-axis Low Cost --> High Cost
-    y-axis Low Validation --> High Validation
+    x-axis "Low Cost" --> "High Cost"
+    y-axis "Low Validation" --> "High Validation"
     quadrant-1 "🎯 Our Work"
     quadrant-2 "Commercial LLMs"
     quadrant-3 "Traditional Tools"
@@ -984,8 +984,8 @@ graph LR
 ```mermaid
 quadrantChart
     title Research Positioning: Privacy vs. Performance
-    x-axis Low Privacy (Cloud API) --> High Privacy (Local)
-    y-axis Low Performance --> High Performance
+    x-axis "Low Privacy (Cloud API)" --> "High Privacy (Local)"
+    y-axis "Low Performance" --> "High Performance"
     
     quadrant-1 "🎯 Ideal Zone (Our Target)"
     quadrant-2 "Expensive Commercial"
