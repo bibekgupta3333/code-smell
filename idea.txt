@@ -1,0 +1,10 @@
+Project 1: Empirical Evaluation of LLM-Based Code Analysis Using Smelly Code Dataset
+Conduct a rigorous empirical study using the Smelly Code Dataset to evaluate the capability,
+reliability, and limitations of Large Language Models (LLMs) in detecting, classifying, and
+reasoning about code smells, using manually validated ground truth as a benchmark.
+• Prompt LLMs to detect specific code smells from source code
+• Compare predictions against the dataset’s manually validated labels
+• Measure precision, recall, and false positives per smell type
+Source
+MaRV: A Manually Validated Refactoring Dataset
+• https://github.com/HRI-EU/SmellyCodeDataset

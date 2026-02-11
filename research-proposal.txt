@@ -1,0 +1,31 @@
+Milestone 1: Project Proposal & Problem Formulation
+Due Date: Thursday February 12, 2026, 11:59pm.
+Submission Requirements (3–4 pages max)
+Each team must submit a Professional Project Proposal Document containing:
+1. Team Information
+• Selected project from the list
+• Specific project title (if you come up with something)
+• Team members’ names
+2. Problem Statement
+Clearly articulate:
+• What problem you are addressing
+• Why it matters (technical, educational, or practical impact)
+• Who benefits (developers, researchers, students, security analysts, etc.)
+Please focus on a concrete gap or limitation.
+3. Research Question(s) or Goals
+Write primary RQs or goals, examples:
+• How accurately can LLMs detect X compared to baseline tools?
+• How effectively do LLMs distinguish malware from benign applications?
+• Which method achieves the highest performance in …?
+• Can our approach effectively classify…?
+4. Scope & Assumptions
+• What is in scope
+• What is explicitly out of scope
+• Constraints (datasets, platforms,…etc.)
+5. Initial Methodology (High Level)
+• Dataset(s) to be used
+• Tools or techniques planned
+• Type of analysis/work (empirical, comparative, qualitative, quantitative)
+6. Expected Outcomes
+• Tool artifact, dataset, empirical findings, or educational prototype
+• Anticipated risks or challenges

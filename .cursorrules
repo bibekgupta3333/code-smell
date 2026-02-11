@@ -1,0 +1,162 @@
+# Cursor AI Rules for Code Review LLM Project
+
+## Project Overview
+This is a monorepo project for an LLM-based code review system with:
+- Backend: FastAPI + LangGraph + RAG + Local Ollama
+- Frontend: Streamlit
+- Deployment: Docker containers
+- Vector Store: Local (ChromaDB/FAISS)
+
+## Code Style and Standards
+
+### Python (Backend & Services)
+- Use Python 3.11+
+- Follow PEP 8 style guide
+- Maximum line length: 120 characters
+- Use type hints for all function signatures
+- Use docstrings (Google style) for all public functions and classes
+- Prefer async/await for I/O operations
+- Use Pydantic for data validation
+- Follow dependency injection patterns
+
+### File Organization
+```
+backend/
+  ├── apps/
+  │   ├── api/      # FastAPI routes and endpoints
+  │   ├── service/  # Business logic layer
+  ├── core/         # Core configurations, settings
+  ├── services/     # External service integrations (LLM, embeddings, vector store)
+  ├── utils/        # Utility functions and helpers
+  └── tests/        # Test files
+```
+
+### Naming Conventions
+- **Files**: snake_case (e.g., `code_review_service.py`)
+- **Classes**: PascalCase (e.g., `CodeReviewService`)
+- **Functions/Variables**: snake_case (e.g., `analyze_code_smell`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_CHUNK_SIZE`)
+- **Private methods**: prefix with underscore (e.g., `_process_internal`)
+
+### Import Organization
+```python
+# Standard library imports
+import os
+from typing import List, Optional
+
+# Third-party imports
+from fastapi import FastAPI
+from langchain.embeddings import HuggingFaceEmbeddings
+
+# Local application imports
+from core.config import settings
+from services.llm_service import LLMService
+```
+
+### FastAPI Best Practices
+- Use dependency injection for services
+- Implement proper error handling with HTTPException
+- Use Pydantic models for request/response validation
+- Version your API endpoints (e.g., `/api/v1/`)
+- Add OpenAPI documentation with descriptions
+- Use async endpoints where applicable
+
+### LangGraph & RAG Patterns
+- Keep graph nodes focused and testable
+- Use structured state management
+- Implement proper error handling in graph nodes
+- Use streaming responses for long-running operations
+- Cache embeddings when possible
+- Implement retry logic for LLM calls
+
+### Vector Store
+- Use consistent embedding dimensions
+- Implement proper chunking strategies (max 512 tokens)
+- Add metadata to all stored vectors
+- Implement similarity threshold filtering
+- Use batch operations for efficiency
+
+### Environment Variables
+- Never hardcode secrets or API keys
+- Use `.env` files for local development
+- Validate all required env vars at startup
+- Use Pydantic Settings for configuration management
+
+### Error Handling
+- Use custom exception classes
+- Log errors with appropriate severity levels
+- Return user-friendly error messages
+- Include request IDs for tracing
+- Implement circuit breakers for external services
+
+### Testing
+- Write unit tests for all business logic
+- Use pytest for testing
+- Mock external dependencies (LLM, vector store)
+- Aim for >80% code coverage
+- Use fixtures for common test data
+- Test both success and failure scenarios
+
+### Docker & Deployment
+- Use multi-stage builds for smaller images
+- Don't run containers as root
+- Use specific version tags, not `latest`
+- Implement health check endpoints
+- Use environment-specific configs
+- Optimize layer caching
+
+### Git Workflow
+- Use conventional commits (feat:, fix:, docs:, etc.)
+- Keep commits atomic and focused
+- Write descriptive commit messages
+- Create feature branches from `main`
+- Squash commits before merging
+- Update documentation with code changes
+
+### Documentation
+- Keep README.md up to date
+- Document all API endpoints
+- Include code examples
+- Update WBS status after completing tasks
+- Document architectural decisions
+- Include setup and deployment instructions
+
+### Security
+- Validate all user inputs
+- Sanitize data before LLM processing
+- Implement rate limiting
+- Use CORS properly
+- Keep dependencies updated
+- Scan for vulnerabilities regularly
+
+### Performance
+- Use connection pooling for databases
+- Implement caching strategies
+- Optimize vector search queries
+- Use async for I/O-bound operations
+- Profile and optimize hot paths
+- Monitor resource usage
+
+## Code Generation Guidelines
+When generating code:
+1. Always include proper type hints
+2. Add docstrings with parameter descriptions
+3. Implement error handling
+4. Follow the project structure
+5. Use async/await for I/O operations
+6. Include logging statements
+7. Add unit tests
+8. Update related documentation
+
+## Review Checklist
+Before committing code:
+- [ ] Code follows style guidelines
+- [ ] Type hints are present
+- [ ] Docstrings are complete
+- [ ] Tests are written and passing
+- [ ] No hardcoded secrets
+- [ ] Error handling is implemented
+- [ ] Logging is appropriate
+- [ ] Documentation is updated
+- [ ] Code is optimized
+- [ ] Security considerations addressed
