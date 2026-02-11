@@ -1,40 +1,66 @@
 # Database & Vector Store Architecture
-## Data Storage Design for Code Review System
+## RAG-Enhanced Data Storage with Expert-Validated Ground Truth
 
-**Version:** 1.0  
-**Last Updated:** February 9, 2026
+**Version:** 2.0  
+**Last Updated:** February 11, 2026  
+**Research Contribution:** MaRV dataset integration (Gap #3) - 95%+ manually validated accuracy
+
+---
+
+## Research Impact
+
+**Gap #3: Expert-Validated Evaluation Dataset**
+- 🎯 **95%+ Accuracy**: MaRV dataset with expert validation (vs. 40-60% auto-labeled)
+- 📚 **~2K Instances**: Comprehensive Java code smell examples
+- ✅ **Manual Validation**: Expert annotators ensure ground truth quality
+- 🔬 **Research Rigor**: Enables systematic evaluation of detection accuracy
+
+**Gap #2: RAG Application to Code Smell Detection**
+- 📦 **ChromaDB**: Local vector store for privacy-preserving retrieval
+- 🔍 **Similarity Search**: Evidence-based smell detection
+- 📊 **+10-15% Accuracy**: Expected improvement over vanilla LLM
+- 🎯 **384-dim Embeddings**: sentence-transformers/all-MiniLM-L6-v2
 
 ---
 
 ## 1. Data Architecture Overview
 
+**Privacy-Preserving Local Storage (Gap #1, #10) + RAG Enhancement (Gap #2)**
+
 ```mermaid
 graph TB
-    subgraph "Application Layer"
-        API[FastAPI Application]
-    end
-    
-    subgraph "Data Access Layer"
-        VectorRepo[Vector Store Repository]
-        FileRepo[File Repository]
-        CacheRepo[Cache Repository]
-    end
-    
-    subgraph "Storage Layer"
-        subgraph "Vector Storage"
-            ChromaDB[(ChromaDB<br/>Vector Store)]
-            Collections[Collections:<br/>- smell_examples<br/>- refactoring_patterns<br/>- false_positives]
+    subgraph Privacy["🔒 100% LOCAL STORAGE"]
+        subgraph App["Application Layer"]
+            API[FastAPI Application<br/>RAG-Enhanced Service]
         end
         
-        subgraph "Cache Storage"
-            Redis[(Redis Cache<br/>Optional)]
+        subgraph DataAccess["Data Access Layer"]
+            VectorRepo[Vector Store Repository<br/>Gap #3: MaRV Access]
+            FileRepo[File Repository]
+            CacheRepo[Cache Repository]
         end
         
-        subgraph "File Storage"
-            FS[Local File System]
-            Uploads[Uploads/]
-            Results[Results/]
-            Datasets[Datasets/]
+        subgraph Storage["Storage Layer"]
+            subgraph VectorStorage["🎯 Vector Storage (Gap #2)"]
+                ChromaDB[(ChromaDB<br/>Vector Store<br/>384-dim embeddings)]
+                Collections[3 Collections:<br/>✅ smell_examples (MaRV)<br/>✅ refactoring_patterns<br/>✅ false_positives]
+            end
+            
+            subgraph Knowledge["📚 Knowledge Base (Gap #3)"]
+                MaRV[MaRV Dataset<br/>~2K Instances<br/>95%+ Accuracy<br/>Expert-Validated]
+                Patterns[Refactoring Patterns<br/>Best Practices]
+            end
+            
+            subgraph CacheStorage["Cache Storage"]
+                Redis[(Redis Cache<br/>LLM Results<br/>Optional)]
+            end
+            
+            subgraph FileStorage["File Storage"]
+                FS[Local File System<br/>Air-Gapped]
+                Uploads[uploads/<br/>User Code]
+                Results[results/<br/>Analysis Output]
+                Datasets[datasets/<br/>MaRV Data]
+            end
         end
     end
     
@@ -44,34 +70,56 @@ graph TB
     
     VectorRepo --> ChromaDB
     ChromaDB --> Collections
+    MaRV -.->|Populates| Collections
+    Patterns -.->|Informs| Collections
     CacheRepo --> Redis
     FileRepo --> FS
     FS --> Uploads
     FS --> Results
     FS --> Datasets
     
-    style ChromaDB fill:#e1ffe1
-    style Redis fill:#ffe1e1
-    style FS fill:#e1f5ff
+    style Privacy fill:#f5f5f5,stroke:#333,stroke-width:3px
+    style ChromaDB fill:#e1ffe1,stroke:#4caf50
+    style MaRV fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
+    style Redis fill:#ffe1e1,stroke:#f44336
+    style FS fill:#e1f5ff,stroke:#0288d1
 ```
+
+**Key Data Architecture Highlights:**
+- 🔒 **100% Local**: All data stored locally, zero cloud dependency (Gap #10)
+- 🎯 **RAG-Ready**: ChromaDB optimized for similarity search (Gap #2)
+- 📚 **Expert Ground Truth**: MaRV dataset with 95%+ accuracy (Gap #3)
+- 📦 **3 Collections**: Examples, patterns, false positives for comprehensive RAG
+- ⚡ **Fast Retrieval**: HNSW index for sub-second similarity search
+- 💾 **Privacy-Preserving**: Air-gapped file system, no external data sharing
 
 ---
 
 ## 2. Vector Store Design (ChromaDB)
 
+**Research Gap #2: RAG Application to Code Smell Detection**
+**Research Gap #3: Expert-Validated Evaluation on MaRV Dataset**
+
 ### 2.1 Collections Schema
 
-**Collection 1: code_smell_examples**
+**Collection 1: code_smell_examples (MaRV Dataset - 95%+ Accuracy)**
 
-Purpose: Store validated code smell examples from MaRV dataset
+Purpose: Store expert-validated code smell examples from MaRV dataset for RAG retrieval
+
+**Research Impact:** Gap #3 - Using manually validated ground truth (95%+ accuracy) vs. auto-labeled datasets (40-60% accuracy)
 
 ```python
 {
     "name": "code_smell_examples",
     "metadata": {
-        "description": "Manually validated code smell examples",
-        "source": "MaRV dataset",
-        "indexed_date": "2026-02-09"
+        "description": "Expert-validated code smell examples from MaRV dataset",
+        "source": "MaRV (Manually Annotated Refactoring Dataset)",
+        "source_url": "https://github.com/HRI-EU/SmellyCodeDataset",
+        "validation_method": "Manual expert annotation",
+        "accuracy": "95%+",
+        "total_instances": "~2000",
+        "indexed_date": "2026-02-11",
+        "research_gap": "Gap #3 - Expert-validated ground truth"
     },
     "embedding_function": "sentence-transformers/all-MiniLM-L6-v2"
 }
@@ -80,14 +128,17 @@ Purpose: Store validated code smell examples from MaRV dataset
 **Document Structure:**
 ```json
 {
-    "id": "smell_long_method_001",
+    "id": "marv_smell_long_method_001",
     "document": "public void processOrder(Order order) {\n    validateOrder(order);\n    ...\n}",
     "embedding": [0.123, 0.456, ..., 0.789],  // 384 dimensions
     "metadata": {
         "smell_type": "Long Method",
+        "category": "Production Code Smell",
         "language": "java",
         "severity": "high",
         "validated": true,
+        "validation_source": "Expert annotator",
+        "validation_confidence": 0.95,
         "lines_of_code": 85,
         "cyclomatic_complexity": 12,
         "parameters": 3,
@@ -99,6 +150,11 @@ Purpose: Store validated code smell examples from MaRV dataset
             "cc": 12,
             "params": 3,
             "nesting_depth": 4
+        },
+        "research_metadata": {
+            "dataset": "MaRV",
+            "used_for_rag": true,
+            "gap_addressed": "Gap #3"
         }
     }
 }

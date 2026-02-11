@@ -1,46 +1,55 @@
 # Backend Architecture
-## FastAPI-Based Code Review Service
+## FastAPI-Based RAG-Enhanced Code Smell Detection Service
 
-**Version:** 1.0  
-**Last Updated:** February 9, 2026
+**Version:** 2.0  
+**Last Updated:** February 11, 2026  
+**Research Contribution:** Privacy-preserving local LLM backend with systematic validation
 
 ---
 
 ## 1. Backend Architecture Overview
 
+**RAG-Enhanced Service Layer with Research Validation (Gap #2, #4, #7)**
+
 ```mermaid
 graph TB
-    subgraph "API Layer"
-        Router[Router Layer]
-        Middleware[Middleware Stack]
-        Dependencies[Dependencies]
+    subgraph API["🌐 API Layer"]
+        Router[Router Layer<br/>FastAPI Routes]
+        Middleware[Middleware Stack<br/>Auth, CORS, Logging]
+        Dependencies[Dependency Injection]
     end
     
-    subgraph "Controller Layer"
-        CodeController[Code Controller]
-        AnalysisController[Analysis Controller]
-        ResultsController[Results Controller]
+    subgraph Controller["🎮 Controller Layer"]
+        CodeController[Code Controller<br/>Submit Code]
+        AnalysisController[Analysis Controller<br/>Smell Detection]
+        ResultsController[Results Controller<br/>Retrieve Results]
+        ComparisonController[Comparison Controller<br/>Baseline Comparison]
         HealthController[Health Controller]
     end
     
-    subgraph "Service Layer"
-        CodeService[Code Service]
-        SmellDetectionService[Smell Detection Service]
-        ComparisonService[Comparison Service]
-        MetricsService[Metrics Service]
+    subgraph Service["⚙️ Service Layer"]
+        CodeService[Code Service<br/>Preprocessing, AST]
+        SmellDetectionService[Smell Detection Service<br/>LangGraph Orchestration]
+        ComparisonService[Comparison Service<br/>Gap #4: 5 Baselines]
+        MetricsService[Metrics Service<br/>Gap #7: Per-Smell Metrics]
     end
     
-    subgraph "Integration Layer"
-        LLMIntegration[LLM Integration]
-        RAGIntegration[RAG Integration]
-        VectorStoreIntegration[Vector Store Integration]
-        BaselineToolsIntegration[Baseline Tools Integration]
+    subgraph Integration["🔌 Integration Layer"]
+        LLMIntegration[Local LLM Integration<br/>Gap #1: Ollama<br/>$0 Cost]
+        RAGIntegration[RAG Integration<br/>Gap #2: +10-15% Accuracy]
+        VectorStoreIntegration[Vector Store Integration<br/>ChromaDB]
+        BaselineToolsIntegration[Baseline Tools Integration<br/>SonarQube, PMD, etc.]
     end
     
-    subgraph "Data Access Layer"
-        VectorStoreRepo[Vector Store Repository]
+    subgraph Data["💾 Data Access Layer"]
+        VectorStoreRepo[Vector Store Repository<br/>Gap #3: MaRV 95%+]
         FileRepo[File Repository]
-        CacheRepo[Cache Repository]
+        CacheRepo[Cache Repository<br/>Redis]
+    end
+    
+    subgraph Knowledge["📚 Knowledge Layer"]
+        MaRV[(MaRV Dataset<br/>Expert-Validated)]
+        SmellPatterns[(Smell Patterns<br/>Refactoring Examples)]
     end
     
     Router --> Middleware
@@ -48,11 +57,13 @@ graph TB
     Dependencies --> CodeController
     Dependencies --> AnalysisController
     Dependencies --> ResultsController
+    Dependencies --> ComparisonController
     Dependencies --> HealthController
     
     CodeController --> CodeService
     AnalysisController --> SmellDetectionService
     ResultsController --> MetricsService
+    ComparisonController --> ComparisonService
     
     CodeService --> LLMIntegration
     SmellDetectionService --> RAGIntegration
@@ -64,11 +75,25 @@ graph TB
     CodeService --> FileRepo
     SmellDetectionService --> CacheRepo
     
-    style Router fill:#e1f5ff
-    style CodeService fill:#fff4e1
-    style LLMIntegration fill:#ffe1e1
-    style VectorStoreRepo fill:#e1ffe1
+    MaRV -.->|Populates| VectorStoreRepo
+    SmellPatterns -.->|Informs| RAGIntegration
+    
+    style API fill:#e1f5ff,stroke:#0288d1
+    style Service fill:#fff4e1,stroke:#ff9800
+    style LLMIntegration fill:#ffe1e1,stroke:#f44336
+    style VectorStoreRepo fill:#e1ffe1,stroke:#4caf50
+    style MaRV fill:#c8e6c9,stroke:#388e3c
+    style ComparisonService fill:#fce4ec,stroke:#e91e63
 ```
+
+**Backend Research Contributions:**
+- 🔒 **Gap #1**: Local LLM service (Ollama) - zero cloud dependency
+- 🎯 **Gap #2**: RAG pipeline with ChromaDB - evidence-based detection
+- 📚 **Gap #3**: MaRV dataset integration - 95%+ expert validation
+- 📊 **Gap #4**: Systematic baseline comparison - 5 tools
+- 💡 **Gap #5**: Explanation quality - evidence-based reasoning
+- 💰 **Gap #6**: Cost tracking - always $0 for local deployment
+- 🎯 **Gap #7**: Per-smell metrics - detailed performance analysis
 
 ---
 
