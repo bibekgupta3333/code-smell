@@ -3,16 +3,15 @@ Due Date: Thursday February 12, 2026, 11:59pm.
 Submission Requirements (3–4 pages max)
 Each team must submit a Professional Project Proposal Document containing:
 1. Team Information
-Our project corresponds to Project #1: Empirical Evaluation of LLM-Based Code Analysis Using the Smelly Code Dataset, selected from the project list. The current title of our study is "A Quantitative Assessment of Large Language Models for Code Smell Detection and Classification" and our group consists of Matthew Gregorat, Bibek Gupa, and Erick Orozco, all studying Computer Science. Our team will collaboratively design the evaluation framework, conduct empirical analysis, and interpret the results related to LLM performances on manually validated code smell data.
-
+Our project corresponds to Project #1: Empirical Evaluation of LLM-Based Code Analysis Using the Smelly Code Dataset, selected from the project list. The current title of our study is "A Quantitative Assessment of Large Language Models for Code Smell Detection and Classification" and our group consists of Matthew Gregorat, Bibek Gupa, and Erick Orozco, all studying Computer Science. Our team will collaboratively design the evaluation framework, conduct empirical analysis, and interpret the results related to LLM performances on manually validated code smell data. 
 
 
 2. Problem Statement
-Clearly articulate:
-• What problem you are addressing
-• Why it matters (technical, educational, or practical impact)
-• Who benefits (developers, researchers, students, security analysts, etc.)
-Please focus on a concrete gap or limitation.
+Software maintainability is strongly influenced by the presence of code smells - structural or design issues that may not break functionality, but degrade the readability, extensibility, and long-term quality of code. Common static analysis tools rely solely on rule-based heuristics to find such smells, but, these tools often have high false-positive rates and lack contextual reasoning. With Large-Language-Models (LLMs) becoming so mainstream, there is a growing interest in using AI-driven reasoning to analyze source code beyond rigid syntactic rules. Even though there is anecdotal evidence in favor of LLMs to detect code smells, there is limited empirical validation on how accurate LLMs actually are in detecting and classifying code smells when being evaluated against validated ground truth data.
+
+The gap we aim to close presents both a technical and practical concern. Without systematic evaluation, it is not clear how effective LLMs are for code analysis in either professional or academic environments. Developers may rely on these tools for refactoring guidance, researchers may explore look for AI-assisted software engineering methods, and students may use LLMs for code improvement recommendations. However, if LLM predictions are not consistent or reliable across smell types, their integration into software quality pipelines may introduce new risks. With all of this said, this project looks to conduct a rigorous empirical study to evaluate the accuracy, reliability, and limitations of LLM-based code smell detection using a test dataset with validated labels.
+
+
 3. Research Question(s) or Goals
 Write primary RQs or goals, examples:
 • How accurately can LLMs detect X compared to baseline tools?
