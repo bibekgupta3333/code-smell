@@ -3,9 +3,10 @@ Due Date: Thursday February 12, 2026, 11:59pm.
 Submission Requirements (3–4 pages max)
 Each team must submit a Professional Project Proposal Document containing:
 1. Team Information
-• Selected project from the list
-• Specific project title (if you come up with something)
-• Team members’ names
+Our project corresponds to Project #1: Empirical Evaluation of LLM-Based Code Analysis Using the Smelly Code Dataset, selected from the project list. The current title of our study is "A Quantitative Assessment of Large Language Models for Code Smell Detection and Classification" and our group consists of Matthew Gregorat, Bibek Gupa, and Erick Orozco, all studying Computer Science. Our team will collaboratively design the evaluation framework, conduct empirical analysis, and interpret the results related to LLM performances on manually validated code smell data.
+
+
+
 2. Problem Statement
 Clearly articulate:
 • What problem you are addressing
