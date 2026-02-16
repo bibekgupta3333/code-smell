@@ -11,6 +11,7 @@
 - ✅ Ollama installed locally (no Docker required)
 - ✅ Python 3.11+ environment ready
 - ✅ Git repository initialized
+- ℹ️ **Research Project**: No authentication/authorization - designed for local evaluation use
 
 ---
 
@@ -436,8 +437,8 @@
   - [ ] Add detailed endpoint descriptions
   - [ ] Include request/response examples
   - [ ] Document error codes and responses
-  - [ ] Add authentication info (if applicable)
   - [ ] Generate interactive docs at `/docs`
+  - [ ] **Note: No authentication required (research project)**
 
 - [ ] Create API usage examples
   - [ ] Python client example
@@ -537,8 +538,9 @@
   - [ ] `test_code_review_endpoints.py`
   - [ ] `test_vector_store_endpoints.py`
   - [ ] `test_system_endpoints.py`
-  - [ ] Test authentication and authorization
   - [ ] Test error handling and validation
+  - [ ] Test rate limiting (basic protection)
+  - [ ] **Note: No authentication/authorization (research project)**
 
 #### 2.7.4 Code Quality
 - [ ] Set up code quality tools

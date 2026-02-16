@@ -2,8 +2,11 @@
 ## Privacy-Preserving, RAG-Enhanced Code Smell Detection System
 
 **Version:** 2.0  
-**Last Updated:** February 11, 2026  
+**Last Updated:** February 16, 2026  
 **Research Contribution:** First local LLM system for production code smell detection
+
+**Project Type:** Research Project - Designed for local evaluation and academic use  
+**Security Model:** No authentication/authorization - Intended for single-user, localhost deployment
 
 ---
 
@@ -36,9 +39,8 @@ graph TB
         end
         
         subgraph API_Layer["API Gateway Layer"]
-            API[FastAPI Gateway]
-            Auth[Authentication Middleware]
-            RateLimit[Rate Limiter]
+            API[FastAPI Gateway<br/>Research Project: No Auth]
+            RateLimit[Rate Limiter<br/>Basic DDoS Protection]
         end
         
         subgraph Service_Layer["Backend Service Layer"]
@@ -73,8 +75,7 @@ graph TB
     end
     
     UI --> API
-    API --> Auth
-    Auth --> RateLimit
+    API --> RateLimit
     RateLimit --> Router
     Router --> Controller
     Controller --> Service
@@ -139,7 +140,9 @@ graph TB
 
 ### 2.2 API Gateway Layer (FastAPI)
 
-**Purpose:** Centralized entry point for all backend services, handles routing, authentication, and rate limiting
+**Purpose:** Centralized entry point for all backend services, handles routing and rate limiting
+
+**Note:** As a research project, no authentication/authorization is implemented. The system is designed for local use and evaluation purposes.
 
 **Components:**
 
@@ -149,15 +152,10 @@ graph TB
    - OpenAPI/Swagger documentation
    - CORS configuration
 
-2. **Authentication Middleware**
-   - API key validation (optional for MVP)
-   - Request authentication
-   - User context management
-
-3. **Rate Limiter**
-   - Request throttling
-   - Quota management
-   - DDoS protection
+2. **Rate Limiter**
+   - Basic request throttling
+   - Simple DDoS protection
+   - Per-IP rate limiting (optional)
 
 **Endpoints:**
 ```
@@ -570,61 +568,63 @@ graph TB
 
 ```mermaid
 graph TB
-    Internet[Internet]
+    Internet[Internet/Local Access]
     
-    subgraph "Security Perimeter"
-        FW[Firewall]
-        HTTPS[HTTPS/TLS]
+    subgraph "Security Perimeter (Research Project)"
+        FW[Firewall<br/>Optional for local use]
+        HTTPS[HTTPS/TLS<br/>Optional for local use]
         
         subgraph "Application Security"
-            Auth[Authentication]
-            RateLimit[Rate Limiting]
+            RateLimit[Rate Limiting<br/>Basic DDoS Protection]
             InputVal[Input Validation]
             Sanitize[Code Sanitization]
         end
         
         subgraph "Data Security"
-            Encrypt[Data Encryption]
-            AccessCtrl[Access Control]
+            TempData[Temporary Data Storage]
+            Cleanup[Auto Cleanup]
         end
     end
     
     Internet --> FW
     FW --> HTTPS
-    HTTPS --> Auth
-    Auth --> RateLimit
+    HTTPS --> RateLimit
     RateLimit --> InputVal
     InputVal --> Sanitize
-    Sanitize --> Encrypt
-    Encrypt --> AccessCtrl
+    Sanitize --> TempData
+    TempData --> Cleanup
 ```
 
 ### 6.2 Security Measures
 
+**Note:** This is a **research project** for local use and evaluation. Security measures focus on basic protection and safe handling of code submissions, not enterprise-grade authentication/authorization.
+
 **Network Security:**
-- HTTPS/TLS for all external communication
+- Optional HTTPS/TLS for local deployment
 - Internal Docker network isolation
 - Firewall rules for container communication
+- Designed for localhost/single machine use
 
 **Application Security:**
 - Input validation for all API requests
 - Code sanitization before LLM processing
-- Rate limiting per IP/API key
-- CORS configuration
-- XSS protection
-- SQL injection prevention (if using SQL database)
+- Basic rate limiting per IP (prevent abuse)
+- CORS configuration for local frontend
+- XSS protection in output
+- No authentication/authorization (research environment)
 
 **Data Security:**
-- No storage of sensitive code without explicit permission
-- Temporary file cleanup after analysis
-- Optional encryption at rest for stored results
-- Access control for historical data
+- No long-term storage of submitted code (privacy by default)
+- Temporary file cleanup after analysis (max 24 hours)
+- No user accounts or data persistence
+- Optional: Local-only storage for historical analysis
 
 **LLM Security:**
 - Prompt injection prevention
 - Output validation and sanitization
 - Model isolation in container
 - Resource limits to prevent DoS
+- Local execution only (no external API calls)
 
 ---
 
@@ -766,24 +766,28 @@ graph TD
 
 ## 10. Future Architecture Enhancements
 
+**Note:** These enhancements would be relevant if transitioning from research to production deployment.
+
 ### Short-Term (Next 3 Months)
 - [ ] Redis caching implementation
 - [ ] Metrics dashboard (Prometheus + Grafana)
-- [ ] API authentication (JWT)
 - [ ] Enhanced logging (structured logs)
+- [ ] User feedback collection mechanism
 
 ### Medium-Term (3-6 Months)
 - [ ] Microservices architecture (separate LLM service)
 - [ ] Message queue (RabbitMQ/Kafka) for async processing
 - [ ] Multi-model support (ensemble)
 - [ ] WebSocket for real-time updates
+- [ ] Authentication (if deployed publicly)
 
-### Long-Term (6-12 Months)
+### Long-Term (6-12 Months) - Production Deployment
 - [ ] Kubernetes deployment
 - [ ] Distributed vector store
 - [ ] Model fine-tuning pipeline
 - [ ] Multi-tenancy support
 - [ ] Advanced analytics and ML ops
+- [ ] Full authentication/authorization system
 
 ---
 
