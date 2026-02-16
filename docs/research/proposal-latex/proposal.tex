@@ -1,0 +1,345 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdfborder={0 0 0},
+}
+\usepackage{booktabs}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Local LLM-Based Code Smell Detection Using Retrieval-Augmented Generation and Expert-Validated Benchmarks}
+
+\author{
+\IEEEauthorblockN{Bibek Gupta}
+\IEEEauthorblockA{
+\textit{Department of Computer Science} \\
+\textit{Florida Polytechnic University} \\
+Lakeland, Florida, USA \\
+bgupta2957@floridapoly.edu
+}
+\and
+\IEEEauthorblockN{Erick Orozco}
+\IEEEauthorblockA{
+\textit{Department of Computer Science} \\
+\textit{Florida Polytechnic University} \\
+Lakeland, Florida, USA \\
+eorozco0824@floridapoly.edu
+}
+\and
+\IEEEauthorblockN{Matthew Gregorat}
+\IEEEauthorblockA{
+\textit{Department of Computer Science} \\
+\textit{Florida Polytechnic University} \\
+Lakeland, Florida, USA \\
+mgregorat0995@floridapoly.edu
+}
+}
+
+\maketitle
+
+\begin{abstract}
+Code smells indicate structural weaknesses that degrade software maintainability and increase technical debt. Traditional static analysis tools suffer from high false positive rates and limited contextual understanding. Recent studies demonstrate that large language models show promise for code analysis tasks, yet their application to code smell detection remains underexplored, particularly for locally-deployed models enhanced with retrieval mechanisms. This proposal presents a systematic empirical evaluation of local open-source language models for code smell detection across multiple programming languages using the Smelly Code Dataset. The study aims to quantify detection accuracy across Java, Python, and JavaScript codebases, compare performance against established static analysis tools, and assess the viability of privacy-preserving local deployment for enterprise code review automation. Expected outcomes include empirical performance metrics across multiple language ecosystems, a deployable open-source tool, and practical guidelines for integrating local language models into software quality workflows.
+\end{abstract}
+
+\section{Team Information}
+
+\textbf{Selected Project:} Empirical Evaluation of LLM-Based Code Analysis Using Smelly Code Dataset
+
+\textbf{Project Title:} Local LLM-Based Code Smell Detection Using Retrieval-Augmented Generation and Expert-Validated Benchmarks
+
+\textbf{Team Members:}
+\begin{itemize}
+    \item Bibek Gupta -- Research, Evaluation, Documentation
+    \item Erick Orozco -- LLM Integration, RAG Implementation
+    \item Matthew Gregorat -- Backend Architecture, Implementation
+
+
+\end{itemize}
+
+\section{Problem Statement}
+
+Software maintenance consumes approximately 60-80\% of total software lifecycle costs \cite{singh2022survey}, with technical debt accumulation being a primary driver of this expense. Code smells indicators of suboptimal design or implementation choices contribute significantly to technical debt by reducing code readability, increasing cognitive complexity, and hindering future modifications \cite{karakoc2023marv}. While automated detection tools exist, they face persistent challenges that limit their practical utility.
+
+Current static analysis tools employ rule-based or metric-based approaches that generate high false positive rates, typically ranging from 30-50\% \cite{singh2022survey}. These tools lack semantic understanding of code intent, leading to noise that developers often ignore. Furthermore, their explanations are limited to predefined rule descriptions, offering little actionable guidance for refactoring decisions. The rigid detection logic cannot adapt to evolving coding patterns or project-specific contexts.
+
+Recent advances in large language models have demonstrated strong code understanding capabilities \cite{roziere2023codellama}, yet their application to code smell detection remains limited. Existing studies primarily evaluate commercial cloud-based APIs such as GPT-4 \cite{lin2024chatgpt, wang2024leveraging}, which introduce privacy concerns for proprietary codebases and incur per-request costs. Local deployment of open-source models addresses these concerns but lacks empirical validation for smell detection tasks. Additionally, most language model approaches use vanilla prompting without external knowledge retrieval, potentially missing relevant historical examples that could improve detection accuracy.
+
+The absence of standardized, expert-validated benchmarks further complicates evaluation. Many studies rely on automatically-labeled datasets exhibiting 40-60\% annotation accuracy \cite{karakoc2023marv}, making it difficult to draw reliable conclusions about true model performance. This gap prevents meaningful comparison between different approaches and tools.
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/comparison_matrix.png}}
+\caption{Comparison of three approaches to code smell detection showing the proposed Local LLM + RAG approach balances accuracy, privacy, and cost.}
+\label{fig:comparison}
+\end{figure}
+
+\subsection{Technical Gap}
+
+To our knowledge, limited prior work has evaluated locally-deployed open-source language models enhanced with retrieval mechanisms for code smell detection using expert-validated ground truth while also comparing performance against multiple established static analysis tools. This limitation makes it difficult for organizations to assess whether local language models are viable alternatives to commercial APIs or traditional code review tools.
+
+\subsection{Impact and Beneficiaries}
+
+Addressing this gap provides several benefits. Software development teams gain access to privacy-preserving code analysis without transmitting proprietary code to external services. Organizations can reduce operational costs by eliminating per-request API fees while maintaining competitive detection accuracy. Researchers obtain empirical data quantifying local language model effectiveness for software engineering tasks. The open-source deliverable enables practitioners to deploy and customize the system for their specific needs, while students gain hands-on experience with modern AI applications in software quality assurance.
+
+\section{Research Questions and Goals}
+
+This study addresses four primary research questions:
+
+\textbf{RQ1:} How accurately do locally-deployed open-source language models detect code smells when evaluated against expert-validated ground truth compared to established static analysis tools?
+
+This question quantifies detection performance using precision, recall, and F1-score metrics. Evaluation employs the Smelly Code Dataset \cite{karakoc2023marv}, which provides code specimens with intentional anti-patterns across Java, Python, JavaScript, and C++. Baseline comparisons include SonarQube, PMD, Checkstyle, SpotBugs, and IntelliJ IDEA's built-in inspection engine.
+
+\textbf{RQ2:} Does retrieval-augmented generation improve detection accuracy compared to vanilla prompting approaches?
+
+This question examines whether retrieving relevant code examples from a knowledge base before analysis enhances model performance. The hypothesis posits that providing contextual examples of previously identified smells improves both precision (reducing false positives) and recall (identifying more true positives). Quantitative comparison measures accuracy improvement percentage and false positive reduction rate between RAG-enhanced and vanilla configurations.
+
+\textbf{RQ3:} Which specific code smell types exhibit the highest and lowest detection accuracy, and what factors influence these performance variations?
+
+This question provides granular analysis beyond aggregate metrics to understand model strengths and limitations. Per-smell-type performance breakdown identifies which smell types are detected more accurately than others (e.g., Long Method, God Class) versus where they struggle. Error analysis examines characteristics of misclassified instances to inform future improvements.
+
+\textbf{RQ4:} What are the computational resource requirements and latency characteristics of local language model deployment for practical code review integration?
+
+This question addresses operational feasibility by measuring inference time per code snippet, memory consumption, and CPU/GPU utilization. These metrics inform deployment decisions and identify optimization opportunities for production use.
+
+\subsection{Goals}
+
+The primary goals are:
+
+\begin{enumerate}
+    \item \textbf{Empirical Contribution:} Generate rigorous empirical evidence quantifying local language model effectiveness for code smell detection tasks using expert-validated benchmarks.
+
+    \item \textbf{Tool Contribution:} Develop an open-source, containerized system combining FastAPI backend, local language model runtime (Ollama), and retrieval-augmented generation pipeline suitable for self-hosted deployment.
+
+    \item \textbf{Practical Contribution:} Demonstrate viable alternative to commercial language model APIs for privacy-sensitive code analysis applications while documenting tradeoffs between accuracy, cost, and latency.
+\end{enumerate}
+
+\section{Scope and Assumptions}
+
+\subsection{In Scope}
+
+\begin{itemize}
+    \item Detection of production code smells across Java, Python, and JavaScript source code (Long Method, God Class, Feature Envy, Data Clumps, Duplicate Code, etc.)
+    \item Evaluation using Smelly Code Dataset \cite{karakoc2023marv} covering multiple programming languages with intentional anti-pattern specimens
+    \item Local language model deployment using Ollama framework with Llama 3, CodeLlama, and Mistral models
+    \item Retrieval-augmented generation implementation using ChromaDB vector store with sentence-transformer embeddings
+    \item Systematic comparison with five baseline static analysis tools
+    \item Computational resource profiling (latency, memory, throughput)
+    \item Open-source implementation with containerized deployment
+\end{itemize}
+
+\subsection{Out of Scope}
+
+\begin{itemize}
+    \item Automated refactoring or code transformation
+    \item Unit test code smell detection (focus on production code)
+    \item Languages beyond Java, Python, and JavaScript (e.g., C++, Ruby, Go)
+    \item Training custom models from scratch
+    \item Commercial API evaluation (GPT-4, Claude)
+    \item Real-time IDE integration (batch analysis only)
+\end{itemize}
+
+\subsection{Assumptions and Constraints}
+
+\begin{itemize}
+    \item \textbf{Hardware:} Development and testing conducted on consumer-grade hardware with 16GB RAM minimum
+    \item \textbf{Dataset:} Smelly Code Dataset provides sufficient coverage of smell types and multiple programming languages for meaningful evaluation
+    \item \textbf{Local Models:} Open-source models available through Ollama framework exhibit code understanding capabilities suitable for smell detection
+    \item \textbf{Baseline Tools:} Selected static analysis tools represent current industry practice for automated smell detection
+\end{itemize}
+
+\section{Methodology}
+
+\subsection{Dataset}
+
+The study employs the Smelly Code Dataset \cite{karakoc2023marv}, a publicly available repository containing intentionally designed code specimens exhibiting various anti-patterns across multiple programming languages including Java, Python, JavaScript, and C++. This dataset was selected for its comprehensive coverage of code smell categories and multi-language support, enabling evaluation of language model generalization capabilities. The code smells span five major categories: Bloaters (Large Classes, Long Methods, Primitive Obsession), Couplers (Feature Envy, Inappropriate Intimacy), Change Preventers (Divergent Change, Shotgun Surgery), Dispensables (Duplicate Code, Lazy Class, Data Class), and Object-Oriented Abusers (Refused Bequest, Alternative Classes with Different Interfaces). The evaluation encompasses Java, Python, and JavaScript implementations to assess language model effectiveness across these widely-adopted programming languages in modern development ecosystems.
+
+\subsection{System Architecture}
+
+Figure \ref{fig:architecture} illustrates the proposed system architecture with its key components, and Figure \ref{fig:workflow} shows the complete end-to-end workflow from code submission to detection results. The implementation consists of three primary components:
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/system_architecture.png}}
+\caption{System architecture showing the component view with FastAPI backend, local LLM runtime (Ollama), RAG pipeline with ChromaDB, and baseline static analysis tools.}
+\label{fig:architecture}
+\end{figure}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/end_to_end_workflow.png}}
+\caption{End-to-end workflow showing the complete flow from code submission to detection results, including both vanilla and RAG-enhanced paths.}
+\label{fig:workflow}
+\end{figure}
+
+\textbf{FastAPI Backend} provides RESTful endpoints for code submission, analysis orchestration, and result retrieval. The backend coordinates between language model inference, knowledge base retrieval, and baseline tool execution.
+
+\textbf{Local LLM Runtime} uses Ollama framework to execute open-source models (Llama 3, CodeLlama, Mistral) entirely on local hardware without external API calls. Model selection enables evaluation of different architectures and parameter scales.
+
+\textbf{RAG Pipeline} implements retrieval-augmented generation by:
+\begin{enumerate}
+    \item Embedding submitted code using sentence-transformers (384-dimensional vectors)
+    \item Querying ChromaDB vector store for semantically similar code examples from the dataset
+    \item Injecting retrieved examples into language model prompt context
+    \item Generating smell detection predictions with explanations
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/rag_pipeline_detail.png}}
+\caption{Detailed RAG pipeline architecture showing knowledge base construction (offline), runtime retrieval (online), and augmented inference phases.}
+\label{fig:rag_detail}
+\end{figure}
+
+\subsection{Baseline Comparison}
+
+Five established static analysis tools provide performance baselines:
+
+\begin{itemize}
+    \item \textbf{SonarQube:} Industry-standard platform with extensive smell detection rules
+    \item \textbf{PMD:} Source code analyzer identifying common programming flaws
+    \item \textbf{Checkstyle:} Code style checker with smell detection capabilities
+    \item \textbf{SpotBugs:} Bytecode analyzer detecting potential bugs and smells
+    \item \textbf{IntelliJ IDEA:} Built-in inspection engine with code quality checks
+\end{itemize}
+
+Each tool analyzes identical code samples from the dataset. Outputs are normalized to common format for comparison.
+
+\subsection{Evaluation Protocol}
+
+The evaluation follows a systematic protocol as illustrated in Figure \ref{fig:evaluation}:
+
+\begin{figure}[htbp]
+\centerline{\includegraphics[width=0.48\textwidth]{figures/evaluation_flowchart.png}}
+\caption{Seven-step evaluation methodology flowchart showing the systematic protocol for assessing local LLM performance.}
+\label{fig:evaluation}
+\end{figure}
+
+\textbf{Step 1 - Baseline Execution:} Run all five static analysis tools on the dataset, recording predictions, confidence scores, and execution time.
+
+\textbf{Step 2 - Vanilla LLM Evaluation:} Execute local language models without retrieval augmentation using carefully crafted prompts describing smell definitions. Measure precision, recall, and F1-score per smell type.
+
+\textbf{Step 3 - RAG-Enhanced Evaluation:} Repeat language model evaluation with retrieval augmentation enabled. Compare performance improvements over vanilla configuration.
+
+\textbf{Step 4 - Cross-Language Analysis:} Analyze performance variations across Java, Python, and JavaScript to identify language-specific strengths and weaknesses in smell detection capabilities.
+
+\textbf{Step 5 - Statistical Analysis:} Apply paired statistical tests (Wilcoxon signed-rank) to determine significance of performance differences. Calculate effect sizes to assess practical importance.
+
+\textbf{Step 6 - Error Analysis:} Manually examine false positives and false negatives to identify systematic failure patterns and model limitations across different programming languages.
+
+\textbf{Step 7 - Resource Profiling:} Measure inference latency, memory consumption, and throughput for each configuration to assess production deployment feasibility.
+
+\subsection{Metrics}
+
+Primary performance metrics include:
+
+\begin{itemize}
+    \item \textbf{Precision:} Proportion of predicted smells that are true positives
+    \item \textbf{Recall:} Proportion of actual smells correctly identified
+    \item \textbf{F1-Score:} Harmonic mean of precision and recall
+    \item \textbf{Per-Smell-Type Metrics:} Above metrics calculated separately for each smell category
+\end{itemize}
+
+Secondary metrics include:
+
+\begin{itemize}
+    \item \textbf{Latency:} Time from code submission to result generation
+    \item \textbf{Memory Usage:} Peak RAM consumption during inference
+    \item \textbf{Throughput:} Code samples processed per hour
+    \item \textbf{Explanation Quality:} Qualitative assessment of generated explanations
+\end{itemize}
+
+\subsection{Implementation Timeline}
+
+\textbf{Weeks 1-2:} Environment setup, Ollama installation, baseline tool configuration
+
+\textbf{Weeks 3-4:} FastAPI backend development, dataset integration and preprocessing
+
+\textbf{Weeks 5-6:} RAG pipeline implementation using ChromaDB
+
+\textbf{Weeks 7-8:} Evaluation execution, data collection
+
+\textbf{Weeks 9-10:} Statistical analysis, result interpretation
+
+\textbf{Weeks 11-12:} Documentation
+
+\section{Expected Outcomes}
+
+\subsection{Primary Deliverables}
+
+\textbf{1. Empirical Performance Data}
+
+Quantitative results comparing local language models against five baseline tools across multiple code smell types. Based on related studies \cite{lin2024chatgpt, wang2024leveraging, zou2023empirical}, anticipated performance ranges are:
+
+\begin{itemize}
+    \item Vanilla local LLM: 70-75\% F1-score
+    \item RAG-enhanced LLM: 80-85\% F1-score (10-15\% improvement)
+    \item SonarQube baseline: 65-70\% F1-score
+    \item PMD baseline: 60-65\% F1-score
+    \item Checkstyle baseline: 55-60\% F1-score
+    \item SpotBugs baseline: 70-75\% F1-score
+    \item IntelliJ IDEA baseline: 65-70\% F1-score
+\end{itemize}
+
+The hypothesis predicts RAG enhancement will reduce false positives by 20-30\% while maintaining or improving recall through contextual example retrieval.
+
+\textbf{2. Open-Source Tool}
+
+A prototype experimental framework for evaluating local LLM performance.:
+
+\begin{itemize}
+    \item FastAPI backend with comprehensive API documentation
+    \item Ollama integration with model management utilities
+    \item ChromaDB vector store with pre-populated code smell example embeddings
+    \item Web-based user interface for code submission and result visualization
+    \item Complete deployment documentation
+\end{itemize}
+
+Release on GitHub under Apache 2.0 license enables community adoption and extension.
+
+\textbf{3. Practical Guidelines}
+
+Documentation synthesizing findings into actionable recommendations:
+
+\begin{itemize}
+    \item When to use local LLMs versus traditional tools
+    \item Optimal model selection strategies (parameter count vs. accuracy tradeoff)
+    \item RAG configuration best practices
+    \item Resource provisioning guidelines for different workload scales
+    \item Integration patterns for CI/CD pipelines
+\end{itemize}
+
+\subsection{Anticipated Challenges and Mitigation}
+
+\textbf{Challenge 1 - Model Consistency:} Language models may produce non-deterministic outputs across runs.
+
+\textit{Mitigation:} Set model temperature to 0 for reproducible sampling. Run multiple inference passes and aggregate results through majority voting.
+
+\textbf{Challenge 2 - Computational Resources:} Large models may exceed available hardware capabilities.
+
+\textit{Mitigation:} Evaluate multiple parameter scales (7B, 13B) to identify accuracy-efficiency tradeoffs. Use quantized model variants if needed.
+
+\textbf{Challenge 3 - Baseline Tool Configuration:} Static analysis tools require proper configuration to match dataset ground truth definitions.
+
+\textit{Mitigation:} Pilot study on subset of data to calibrate tool settings before full evaluation. Document all configuration choices for reproducibility.
+
+\textbf{Challenge 4 - Dataset Coverage:} Some smell types may have limited representation in certain programming languages.
+
+\textit{Mitigation:} Report per-smell sample counts alongside performance metrics. Acknowledge limitations in generalization for underrepresented categories.
+
+\subsection{Expected Impact}
+
+This research provides a systematic empirical evaluation of locally-deployed open-source language models for code smell detection enhanced with retrieval mechanisms. Results inform practitioners about the viability of privacy-preserving local deployment as an alternative to commercial APIs, with concrete performance-cost tradeoff data. The open-source implementation lowers barriers to adoption, enabling organizations to self-host code analysis systems without vendor lock-in or recurring API costs. For researchers, the study establishes baseline performance metrics on expert-validated data, facilitating future comparative studies. Students benefit from a complete, working example demonstrating modern AI integration in software engineering workflows.
+
+\section{Conclusion}
+
+This proposal outlines a systematic empirical study evaluating local open-source language models for code smell detection, enhanced with retrieval-augmented generation and validated against expert-annotated ground truth. By addressing gaps in current literature regarding local model deployment, retrieval mechanisms, and rigorous benchmarking, this research contributes both empirical knowledge and practical tools to advance AI-assisted software quality assurance. The anticipated outcomes performance metrics, open-source implementation, and deployment guidelines directly benefit practitioners, researchers, and educators working at the intersection of artificial intelligence and software engineering.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
