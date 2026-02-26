@@ -69,7 +69,7 @@ aiofiles==24.1.0                  # Async file I/O
 # ============================================================================
 # VISUALIZATION (Optional - for web UI)
 # ============================================================================
-flask==3.0.3                      # Lightweight web framework (optional)
+flask==3.1.3                      # Lightweight web framework (optional)
 streamlit==1.38.0                 # Data apps (optional)
 plotly==5.24.1                    # Interactive plots
 matplotlib==3.9.2                 # Static plots
