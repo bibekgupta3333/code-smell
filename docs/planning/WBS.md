@@ -3,7 +3,7 @@
 ## Privacy-Preserving, RAG-Enhanced Local LLM Solution
 
 **Project Duration**: 12 weeks  
-**Last Updated**: February 16, 2026  
+**Last Updated**: February 26, 2026  
 **Research Status**: 16 papers analyzed, 12 research gaps identified  
 **Novelty**: First privacy-preserving, RAG-enhanced local LLM system for production code smell detection
 
@@ -11,1144 +11,1399 @@
 - ✅ Ollama installed locally (no Docker required)
 - ✅ Python 3.11+ environment ready
 - ✅ Git repository initialized
-- ℹ️ **Research Project**: No authentication/authorization - designed for local evaluation use
+- ℹ️ **Research Project**: Simple structure for experiments and paper publication
+- 🎯 **Dual Track**: Research (paper) + Implementation (working system)
 
 ---
 
-## Phase 1: Project Planning & Setup (Weeks 1-2)
+## Agent Architecture
 
-### 1.1 Documentation & Planning
+Following a multi-agent pattern similar to recent research frameworks, our system employs specialized agents for different analysis tasks:
+
+### 🎯 Core Agents
+
+**1. Analysis Coordinator (Manager)**
+- **Role**: Orchestrates the entire code smell detection workflow
+- **Responsibilities**: 
+  - Receives code submissions from users/experiments
+  - Splits large codebases into analyzable chunks
+  - Assigns analysis tasks to detector agents
+  - Aggregates results from multiple detectors
+  - Manages database tracking of analysis runs
+- **Module**: `src/analysis_coordinator.py`
+- **System Prompt**: "You are a senior software quality assurance manager specializing in code smell detection and technical debt analysis."
+
+**2. Code Smell Detector (Member)**
+- **Role**: Analyzes code snippets for specific smell types
+- **Responsibilities**:
+  - Receives code chunks and smell type to detect
+  - Calls LLM with appropriate prompts
+  - Parses LLM responses into structured findings
+  - Assigns severity levels (LOW, HIGH, CRITICAL)
+  - Generates explanations for detected smells
+- **Module**: `src/code_smell_detector.py`
+- **System Prompt**: "You are an expert software engineer specializing in detecting production code smells (Long Method, God Class, Feature Envy, Data Clumps, etc.) in {language} code."
+
+**3. RAG Retriever (Custodian)**
+- **Role**: Finds relevant examples from knowledge base
+- **Responsibilities**:
+  - Generates embeddings for input code
+  - Performs similarity search in ChromaDB
+  - Filters and ranks retrieved examples
+  - Provides top-k most relevant examples to detector
+  - Tracks retrieval metrics (relevance scores, latency)
+- **Module**: `src/rag_retriever.py`
+- **System Prompt**: "You are a knowledge base curator specializing in identifying relevant code smell examples for analysis."
+
+**4. Quality Validator (CodeReviewer)**
+- **Role**: Validates and reviews detection results
+- **Responsibilities**:
+  - Reviews detected smells for false positives
+  - Cross-validates with static analysis tools (optional)
+  - Assesses confidence scores
+  - Provides quality ratings (1=requires revision, 2=needs improvement, 3=accepted)
+  - Generates refactoring suggestions
+- **Module**: `src/quality_validator.py`
+- **System Prompt**: "You are a senior code reviewer evaluating the accuracy of code smell detections and providing actionable refactoring guidance."
+
+### 🔄 Agent Workflow
+
+```
+User/Experiment
+    ↓
+Analysis Coordinator
+    ↓
+    ├─→ RAG Retriever ──→ (retrieve examples from ChromaDB)
+    │                       ↓
+    ├─→ Code Smell Detector ←─ (augmented with RAG context)
+    │                       ↓
+    └─→ Quality Validator ──→ (validate & review detections)
+                            ↓
+                     Final Results
+```
+
+### 📊 Agent Tracking (SQLite Database)
+
+Similar to the reference architecture, we track all agent interactions:
+- **agents** table: Agent metadata (name, role, system_prompt)
+- **agent_requests** table: All LLM requests from agents
+- **agent_responses** table: All LLM responses to agents
+- **agent_actions** table: Actions performed by agents
+- **analysis_runs** table: Links agents to specific analysis tasks
+
+This enables:
+- ✅ Reproducible experiments
+- ✅ Token usage tracking
+- ✅ Performance analysis per agent
+- ✅ Visualization of agent interactions
+
+---
+
+## Research Objectives
+
+### Primary Research Questions
+
+This work breakdown structure is designed to systematically address four primary research questions:
+
+**RQ1: How accurately do locally-deployed open-source language models detect code smells when evaluated against expert-validated ground truth compared to established static analysis tools?**
+
+- **Addressed in**: Phase 3.3 (Initial Experiments), Phase 4.1 (Quantitative Evaluation)
+- **Method**: Evaluate local LLMs (via Ollama) on MaRV dataset (95%+ accurate ground truth)
+- **Comparison**: SonarQube, PMD, Checkstyle, SpotBugs, IntelliJ IDEA
+- **Metrics**: Precision, Recall, F1-score per smell type and overall
+- **Target**: 70-85% F1-score (competitive with cloud LLMs but privacy-preserving)
+
+**RQ2: Does retrieval-augmented generation improve detection accuracy compared to vanilla prompting approaches?**
+
+- **Addressed in**: Phase 3.3 (Baseline vs RAG Experiments), Phase 4.2 (Ablation Studies)
+- **Method**: Compare vanilla LLM prompting vs. RAG-enhanced with ChromaDB retrieval
+- **Hypothesis**: RAG provides +10-15% accuracy improvement, 20-30% false positive reduction
+- **Ablation**: Test different top-k values (1, 3, 5, 10), embedding models, retrieval strategies
+- **Evidence**: Per-smell accuracy improvement, example relevance analysis
+
+**RQ3: Which specific code smell types exhibit the highest and lowest detection accuracy, and what factors influence these performance variations?**
+
+- **Addressed in**: Phase 4.1 (Per-smell-type metrics), Phase 4.3 (Qualitative Analysis)
+- **Method**: Break down performance by smell type (Long Method, God Class, Feature Envy, etc.)
+- **Analysis**: Error categorization, pattern identification in failures
+- **Factors**: Code complexity, language-specific features, smell ambiguity
+- **Output**: Per-smell performance table, failure pattern taxonomy
+
+**RQ4: What are the computational resource requirements and latency characteristics of local language model deployment for practical code review integration?**
+
+- **Addressed in**: Phase 3.3 (Performance metrics), Phase 4.1 (Resource profiling)
+- **Metrics**: 
+  - Inference latency per code snippet
+  - Memory consumption (RAM, GPU if used)
+  - Token usage per analysis
+  - Throughput (analyses per minute)
+- **Comparison**: Local LLM vs. cloud API latency/cost tradeoffs
+- **Practical Guidelines**: Hardware recommendations, optimization strategies
+
+### Research Goals
+
+**1. Empirical Contribution**
+- Generate rigorous empirical evidence quantifying local LLM effectiveness for code smell detection
+- Use expert-validated benchmarks (MaRV dataset with 95%+ accuracy)
+- Systematic comparison against 5 established static analysis tools
+- Per-smell-type performance breakdown across Java, Python, JavaScript
+
+**2. Methodological Contribution**
+- Demonstrate RAG enhancement for code smell detection (first study to combine local LLM + RAG for this task)
+- Multi-agent architecture for collaborative code analysis
+- Privacy-preserving approach (no code sent to external services)
+
+**3. Practical Contribution**
+- Viable alternative to commercial LLM APIs (GPT-4, Claude) for privacy-sensitive code analysis
+- Open-source implementation enabling community adoption
+- Documented tradeoffs: accuracy vs. cost vs. latency vs. privacy
+- Deployment guidelines for CI/CD integration
+
+### How WBS Phases Map to Research Objectives
+
+| Phase | Primary RQ Addressed | Deliverable |
+|-------|---------------------|-------------|
+| Phase 1 (Weeks 1-2) | Literature foundation | Research gaps, baseline understanding |
+| Phase 2 (Weeks 3-6) | Implementation infrastructure | Working multi-agent system, RAG pipeline |
+| Phase 3 (Weeks 6-8) | RQ1, RQ2 setup | Datasets indexed, initial experiment results |
+| Phase 4 (Weeks 8-10) | **RQ1, RQ2, RQ3, RQ4** | Complete evaluation, ablation studies, analysis |
+| Phase 5 (Weeks 8-11) | All RQs | Research paper documenting findings |
+| Phase 6-7 (Weeks 11-12) | RQ4 (deployment) | Optional demo tool, visualization |
+
+### Expected Outcomes
+
+Based on related work and preliminary analysis:
+
+**Performance Targets (RQ1, RQ2):**
+- Vanilla local LLM: 70-75% F1-score
+- RAG-enhanced local LLM: **80-85% F1-score** (target)
+- Baseline tools: 55-70% F1-score
+- Commercial cloud LLMs: 85-90% F1-score (reference from literature)
+
+**RAG Impact (RQ2):** (Architecture Section 3)
+- Accuracy improvement: +10-15 percentage points
+- False positive reduction: 20-30%
+- Retrieval latency overhead: <200ms per query (50-100ms typical)
+- Hallucination reduction: ~30-40% vs. vanilla prompting
+
+**Per-Smell Performance (RQ3):**
+- Best: Long Method, God Class (structural, metrics-based) - 85-90% F1
+- Moderate: Feature Envy, Data Clumps (contextual) - 75-80% F1
+- Challenging: Shotgun Surgery, Divergent Change (multi-file) - 60-70% F1
+
+**Resource Requirements (RQ4):** (Architecture Section 1.1)
+- Memory: **4-8GB RAM** (model-dependent, Llama 3 8B baseline)
+- Latency: **2-5 seconds** per code snippet (function/method level)
+- Throughput: **100-200 analyses/hour** (single CPU/GPU instance)
+- GPU: Optional but recommended for faster inference
+- Storage: ~1-2GB for ChromaDB vector store
+- Cost: **$0** (vs. $0.01-0.10 per request for cloud APIs)
+
+---
+
+## Benchmarking Strategy
+
+To ensure rigorous, reproducible evaluation of our local LLM approach, we establish comprehensive benchmarking protocols covering accuracy, performance, and resource utilization.
+
+### 1. Datasets & Ground Truth
+
+**Primary Benchmark: MaRV Dataset**
+- **Source**: Karakoc et al. (2023) - Expert-validated code smell dataset
+- **Accuracy**: 95%+ ground truth accuracy (validated by software engineering experts)
+- **Languages**: Java, Python, JavaScript, C++
+- **Smell Types**: 12+ production code smells
+  - Bloaters: Long Method, God Class, Large Class, Long Parameter List
+  - Couplers: Feature Envy, Inappropriate Intimacy, Message Chains
+  - Change Preventers: Divergent Change, Shotgun Surgery
+  - Dispensables: Duplicate Code, Lazy Class, Data Class, Dead Code
+  - OO Abusers: Switch Statements, Refused Bequest
+- **Dataset Size**: Target 500-1000 code samples per language
+- **Annotation**: Binary labels (smell present/absent) + severity levels
+
+**Secondary Benchmarks**
+- **Qualitas Corpus**: Large-scale Java systems for real-world validation
+- **PySmell**: Python-specific code smell instances
+- **Custom Dataset**: 100+ manually verified examples per smell type for ablation studies
+
+**Data Splits**
+- **Training Set (RAG Knowledge Base)**: 60% - Index for retrieval
+- **Validation Set**: 20% - Hyperparameter tuning (top-k, retrieval threshold)
+- **Test Set**: 20% - Final evaluation (never seen during development)
+
+### 2. Baseline Tool Configuration
+
+To ensure fair comparison, all baseline tools are configured with:
+
+**Tool Versions (Fixed)**
+- SonarQube: v10.x Community Edition
+- PMD: v7.x with built-in rulesets
+- Checkstyle: v10.x with Google/Sun coding conventions
+- SpotBugs: v4.x with standard detectors
+- IntelliJ IDEA: 2024.x inspection engine
+
+**Configuration Standardization**
+- Default rule sets for each tool (no custom tuning)
+- Maximum analysis depth/timeout per file: 60 seconds
+- False positive threshold: Default sensitivity
+- Output format: Normalized to JSON for comparison
+- Execution environment: Same hardware as LLM evaluation
+
+**Baseline Execution Protocol**
+1. Clean analysis environment (clear caches)
+2. Analyze identical code samples from test set
+3. Record: detection results, confidence scores, analysis time
+4. Normalize outputs to common schema: `{file, line, smell_type, severity, confidence, explanation}`
+
+### 3. Evaluation Metrics
+
+**Primary Metrics (RQ1, RQ2)**
+
+**Accuracy Metrics** (Architecture Section 10.1, 11.2)
+- **Precision**: TP / (TP + FP) - How many detected smells are correct?
+- **Recall**: TP / (TP + FN) - How many true smells did we find?
+- **F1-Score**: 2 × (Precision × Recall) / (Precision + Recall) - Harmonic mean
+- **Accuracy**: (TP + TN) / Total - Overall correctness
+- **False Positive Rate**: FP / (FP + TN) - Rate of incorrect detections
+- **Confidence Distribution**: Histogram of confidence scores across predictions
+
+**Per-Smell-Type Breakdown (RQ3)** (Architecture Section 10.1)
+- Calculate Precision, Recall, F1 for each of 12+ smell types
+- Track per-smell accuracy separately (as per llm_metrics in Architecture)
+- Identify best/worst performing smell categories
+- Error analysis: False positives, false negatives, confusion matrix
+- Compare per-smell performance: Local LLM vs. each baseline tool
+
+**RAG Effectiveness (RQ2)** (Architecture Section 3: RAG Pipeline)
+- **ΔF1**: F1-score improvement (RAG vs. Vanilla) - Target: +10-15 percentage points
+- **FP Reduction Rate**: (FP_vanilla - FP_rag) / FP_vanilla × 100% - Target: 20-30% reduction
+- **Retrieval Quality**: 
+  - Precision@k for retrieved examples (k=5 primary, per Architecture)
+  - NDCG@k (Normalized Discounted Cumulative Gain)
+  - Relevance scores distribution
+  - MMR (Maximal Marginal Relevance) diversity metric
+- **Ablation Metrics**: Performance vs. top-k values (k ∈ {1, 3, 5, 10}), default k=5
+
+**Performance Metrics (RQ4)**
+
+**Latency Benchmarks** (Aligned with LLM Architecture Section 1.1)
+- **End-to-End Latency**: Total time from code submission to results
+  - Target: **2-5 seconds** per code snippet (function/method level)
+  - Breakdown: Embedding time + Retrieval time + LLM inference time + Parsing
+- **Component Latency**:
+  - Embedding generation: < 100ms per snippet
+  - Vector search (ChromaDB): < 50ms per query
+  - LLM inference: 1-3 seconds per snippet
+  - Response parsing & validation: < 50ms
+  - Total overhead (non-LLM): < 200ms
+
+**Throughput Benchmarks** (Architecture Section 1.1)
+- **Analyses per Hour**: Target **100-200 analyses/hour** (single GPU/CPU)
+- **Analyses per Minute**: ~2-3 snippets/minute (accounting for 2-5s latency)
+- **Batch Processing**: Throughput for 100 files with parallel processing
+- **Concurrent Requests**: Performance degradation with parallel analyses (1, 2, 4, 8 workers)
+
+**Resource Utilization** (Architecture Section 1.1)
+- **CPU Usage**: Average % during analysis (expected 40-80%)
+- **Memory Footprint**:
+  - Base memory (model loaded): **4-8GB RAM** (model-dependent)
+  - Peak memory (during inference): 8-12GB
+  - ChromaDB index size: Record disk usage (expected ~500MB-2GB)
+- **GPU Utilization**: If applicable (CUDA-enabled LLM), track GPU memory and compute %
+- **Token Usage**:
+  - Average tokens per prompt (input): 500-2000 tokens
+  - Average tokens per response (output): 200-800 tokens
+  - Total tokens per analysis run
+  - Cost comparison: $0 (local) vs. $0.01-0.10 (cloud API)
+
+**LLM-Specific Quality Metrics** (Architecture Section 10.1)
+
+These metrics track LLM behavior and quality beyond traditional ML metrics:
+
+- **Hallucination Rate** (Architecture Section 7.3, 10.1):
+  - Percentage of detections referencing code elements not present in input
+  - Line number mismatches (referenced line doesn't contain claimed smell)
+  - Non-existent method/class references
+  - Target: < 5% hallucination rate
+  - Detection method: Automated validation against AST + manual review
+
+- **Response Validation Metrics**:
+  - **JSON Parse Success Rate**: % of LLM responses that parse correctly
+  - **Schema Validation Rate**: % of parsed responses matching expected schema
+  - **Retry Rate**: How often we need to retry due to malformed responses
+  - Target: > 95% first-attempt success, < 3% retry rate
+
+- **Cache Performance** (Architecture Section 9.1, 10.1):
+  - **Cache Hit Rate**: % of identical code snippets served from cache
+  - **Cache Miss Rate**: % requiring new LLM inference
+  - **Cache Size**: Memory footprint of response cache
+  - **Time Saved**: Latency reduction from cache hits (expected ~90% faster)
+  - Target: 20-40% hit rate on typical workloads
+
+- **Confidence Calibration**:
+  - **Confidence vs. Accuracy Correlation**: How well confidence scores predict correctness
+  - **Over-confidence Rate**: High confidence (>0.8) but incorrect predictions
+  - **Under-confidence Rate**: Low confidence (<0.5) but correct predictions
+  - **Confidence Distribution**: Histogram across all predictions
+  - Target: Strong positive correlation (r > 0.6)
+
+- **Model Selection Metrics** (Architecture Section 2):
+  - **Model Usage Distribution**: % of analyses using each model (Llama 3 8B/13B, CodeLlama, etc.)
+  - **Model Performance**: Accuracy breakdown by model type
+  - **Model Selection Accuracy**: Was the right model selected for the task?
+
+- **Error Analysis**:
+  - **Error Types**: Categorize errors (timeout, parse failure, validation failure, hallucination)
+  - **Error Recovery**: Success rate of retry and fallback strategies
+  - **Error Rate by Smell Type**: Which smells cause most failures?
+
+### 4. Experimental Conditions
+
+**Hardware Specifications**
+- **CPU**: Document processor model, cores, clock speed
+- **RAM**: Minimum 16GB (record actual available)
+- **GPU**: Optional (document model if used)
+- **Storage**: SSD recommended for ChromaDB
+
+**Software Environment**
+- **OS**: macOS (primary), Linux (secondary validation)
+- **Python**: 3.11+
+- **Ollama**: Latest stable version
+- **LLM Models Tested**:
+  - CodeLlama 7B/13B
+  - DeepSeek-Coder 6.7B/33B
+  - Llama 3 8B
+  - (Document exact model versions)
+
+**Controlled Variables**
+- Temperature: 0.1 (low for deterministic outputs)
+- Top-p: 0.9
+- Max tokens: 2048
+- Random seed: Fixed for reproducibility
+- Same datasets across all experiments
+- Same evaluation scripts for all tools
+
+### 5. Statistical Validation
+
+**Significance Testing**
+- **McNemar's Test**: Compare paired binary classifications (LLM vs. baselines)
+- **Paired t-test**: Compare F1-scores across multiple runs
+- **Confidence Intervals**: 95% CI for all reported metrics
+- **Effect Size**: Cohen's d for practical significance
+
+**Reproducibility Requirements** (Architecture Section 11.3)
+- **Multiple Runs**: 3+ independent runs with different random seeds
+- **Standard Deviation**: Report mean ± std for all metrics
+- **Outlier Analysis**: Identify and document anomalous results
+- **Version Control**: Lock all dependency versions (langchain, chromadb, langgraph, sentence-transformers)
+- **Docker Image**: Create reproducible Docker container with all dependencies
+- **Model Versions**: Document exact Ollama model versions (llama3:8b, codellama:7b, etc.)
+- **Dataset Versioning**: Pin MaRV dataset version/commit hash
+
+**Cross-Validation (for RAG hyperparameters)**
+- 5-fold cross-validation for top-k selection
+- Grid search: top-k ∈ {1, 3, 5, 10} (default k=5 per Architecture), threshold ∈ {0.5, 0.6, 0.7, 0.8}
+- Embedding model comparison: all-MiniLM-L6-v2 (default) vs. alternatives
+- MMR diversity parameter (λ ∈ {0.5, 0.7, 0.9})
+
+### 6. Benchmark Execution Plan
+
+**Phase 3.3 (Initial Experiments) - Week 7**
+- Baseline tool execution on test set
+- Vanilla LLM evaluation (no RAG)
+- RAG-enhanced LLM evaluation
+- Initial performance profiling
+
+**Phase 4.1 (Quantitative Evaluation) - Week 8-9**
+- Full test set evaluation (all tools + LLM variants)
+- Per-smell-type metrics calculation
+- Resource utilization benchmarking
+- Statistical significance testing
+
+**Phase 4.2 (Ablation Studies) - Week 9**
+- RAG hyperparameter sweep (top-k, embedding models)
+- Prompt engineering variations
+- Model size comparison (7B vs. 13B vs. 33B)
+
+**Phase 4.3 (Qualitative Analysis) - Week 10**
+- Error analysis: Classify false positives/negatives
+- Case studies: Best/worst detection examples
+- Comparative analysis: Why LLM succeeds/fails vs. baselines
+
+### 7. Results Documentation
+
+**Benchmark Report Structure** (for paper Section 4: Results)
+
+**Table 1: Overall Performance Comparison**
+| Tool | Precision | Recall | F1-Score | Latency (s) | Cost |
+|------|-----------|--------|----------|-------------|------|
+| SonarQube | X.XX ± X.XX | X.XX ± X.XX | X.XX ± X.XX | X.X | Free |
+| PMD | ... | ... | ... | ... | Free |
+| Local LLM (Vanilla) | ... | ... | ... | ... | $0 |
+| **Local LLM (RAG)** | **X.XX ± X.XX** | **X.XX ± X.XX** | **X.XX ± X.XX** | **X.X** | **$0** |
+| GPT-4 (reference) | ... | ... | ... | X.X | $0.XX |
+
+**Table 2: Per-Smell-Type Performance**
+| Smell Type | Vanilla F1 | RAG F1 | ΔF1 | Best Baseline |
+|------------|------------|--------|-----|---------------|
+| Long Method | X.XX | X.XX | +X.XX | X.XX (Tool) |
+| God Class | ... | ... | ... | ... |
+| Feature Envy | ... | ... | ... | ... |
+
+**Table 3: Resource Requirements**
+| Metric | Vanilla | RAG | Overhead |
+|--------|---------|-----|----------|
+| Latency (s/snippet) | X.X ± X.X | X.X ± X.X | +X% |
+| Memory (GB) | X.X | X.X | +X MB |
+| Throughput (analyses/min) | XX | XX | -X% |
+
+**Table 4: LLM Quality Metrics** (Architecture Section 10.1)
+| Metric | Target | Actual | Status |
+|--------|--------|--------|--------|
+| Hallucination Rate (%) | < 5% | X.XX | ✅/❌ |
+| Cache Hit Rate (%) | 20-40% | X.XX | ✅/❌ |
+| JSON Parse Success (%) | > 95% | X.XX | ✅/❌ |
+| Validation Failure (%) | < 3% | X.XX | ✅/❌ |
+| Confidence Correlation (r) | > 0.6 | X.XX | ✅/❌ |
+
+**Figures**
+- Figure 1: F1-Score comparison (bar chart)
+- Figure 2: Precision-Recall curves
+- Figure 3: Per-smell heatmap
+- Figure 4: Latency vs. Accuracy tradeoff
+- Figure 5: RAG top-k ablation study
+- **Figure 6**: Confidence calibration plot (Architecture Section 3)
+- **Figure 7**: Hallucination rate over time (Architecture Section 7.3)
+- **Figure 8**: Cache performance analysis (Architecture Section 9.1)
+
+**Raw Data Preservation**
+- All predictions saved to `results/predictions/{tool}_{date}.json`
+- Confusion matrices: `results/confusion_matrices/`
+- Timing logs: `results/performance/{tool}_timing.csv`
+- Resource profiles: `results/resources/{tool}_profile.json`
+- **Architecture-Specific Logs** (per Section 10.1):
+  - `results/metrics/hallucination_rate.csv` - Hallucination detection logs
+  - `results/metrics/cache_performance.csv` - Cache hit rate, miss rate
+  - `results/metrics/validation_failures.csv` - LLM response validation failures
+  - `results/metrics/confidence_scores.csv` - Confidence score distributions
+  - `results/metrics/rag_retrieval_quality.csv` - Precision@k, NDCG@k per query
+
+### 8. Benchmark Validity Threats
+
+**Internal Validity**
+- **Mitigation**: Fixed random seeds, multiple runs, controlled environment
+- **Threat**: Model stochasticity → Report confidence intervals
+
+**External Validity**
+- **Mitigation**: Multiple datasets (MaRV + Qualitas + PySmell)
+- **Threat**: Dataset bias → Document dataset characteristics
+
+**Construct Validity**
+- **Mitigation**: Use established metrics (P/R/F1), expert-validated ground truth
+- **Threat**: Ground truth errors → Use 95%+ accurate MaRV dataset
+
+**Conclusion Validity**
+- **Mitigation**: Statistical significance testing, effect size reporting
+- **Threat**: Cherry-picking results → Report all experiments, including failures
+
+---
+
+## Phase 1: Project Setup & Literature Review (Weeks 1-2)
+
+### 1.1 Research Foundation
 - [x] Research proposal document (8 sections complete)
-- [x] Work breakdown structure (Research-aligned)
-- [x] System architecture design (Updated with research gaps)
-- [x] Database schema design (MaRV dataset integrated)
-- [x] LLM architecture design (Version 2.0, 12 gaps addressed)
 - [x] Similar papers research (16 papers analyzed)
 - [x] Research gap analysis (12 gaps identified)
 - [x] Competitive positioning analysis (vs. NOIR, test smell papers)
 - [x] Dataset comparison study (10 datasets evaluated)
+- [x] LaTeX paper template setup (proposal.tex, references.bib)
 
-### 1.2 Development Environment Setup
-- [ ] Monorepo structure setup (backend/, frontend/, shared/)
-- [ ] Docker configuration (Backend, Frontend, ChromaDB only - Ollama runs locally)
+### 1.2 Environment & Project Structure
+- [ ] Create simple project structure
+  - [ ] `src/` - Core Python modules
+  - [ ] `exp/` - Experiments directory
+  - [ ] `data/` - Datasets
+  - [ ] `results/` - Experiment results (see Benchmarking Strategy Section 7)
+    - [ ] `results/predictions/` - Tool predictions
+    - [ ] `results/confusion_matrices/` - Confusion matrices
+    - [ ] `results/performance/` - Timing & latency logs
+    - [ ] `results/resources/` - Resource profiling data
+    - [ ] `results/figures/` - Generated plots for paper
+    - [ ] `results/tables/` - Generated tables (LaTeX, CSV)
+  - [ ] `scripts/` - Utility scripts for benchmarking & experiments
+  - [ ] `visualization/` - Web-based visualization (optional)
+  - [ ] `paper/` - LaTeX source files
+  - [ ] `config.py` - Configuration file
+  - [ ] `requirements.txt` - Python dependencies
 - [x] Editor config (.editorconfig)
 - [x] Cursor rules configuration
 - [x] Git repository setup
-- [ ] CI/CD pipeline design (GitHub Actions)
+- [ ] Setup Python environment (conda/venv)
+  - [ ] Python 3.11+
+  - [ ] Core libraries: openai, chromadb, sentence-transformers, tiktoken
 
 ---
 
-## Phase 2: Backend Development (Weeks 3-6)
+## Phase 2: Core System Development (Weeks 3-6)
 
-### 2.1 Core Infrastructure Setup (Week 3: Feb 17-21, 2026)
+### 2.1 Configuration Module (Week 3: Feb 26 - Mar 1, 2026)
 
-#### 2.1.1 FastAPI Project Structure
-- [ ] Create backend directory structure
-  - [ ] `backend/apps/api/` - API routes and endpoints
-  - [ ] `backend/apps/service/` - Business logic layer
-  - [ ] `backend/core/` - Core configurations, settings
-  - [ ] `backend/services/` - External service integrations
-  - [ ] `backend/utils/` - Utility functions and helpers
-  - [ ] `backend/tests/` - Test files
-  - [ ] `backend/models/` - Pydantic models
-  - [ ] `backend/schemas/` - Request/Response schemas
+- [ ] Create `config.py` at project root
+  - [ ] Ollama configuration (base URL: http://localhost:11434)
+  - [ ] Model selection (codellama:7b or deep seek-coder:6.7b)
+  - [ ] ChromaDB persistent directory path
+  - [ ] Embedding model name (sentence-transformers)
+  - [ ] Experiment result paths
+  - [ ] Dataset paths (MaRV, others)
+  - [ ] Logging configuration
 
-- [ ] Initialize FastAPI application
-  - [ ] Create `backend/main.py` with FastAPI app instance
-  - [ ] Set up ASGI server configuration (uvicorn)
-  - [ ] Configure CORS middleware
-  - [ ] Add request ID middleware for tracing
-  - [ ] Set up exception handlers
+- [ ] Create `requirements.txt` (Architecture Section 11.3 dependencies)
+  - [ ] ollama (Python client)
+  - [ ] chromadb
+  - [ ] sentence-transformers
+  - [ ] tiktoken
+  - [ ] **langchain** - LLM orchestration framework
+  - [ ] **langgraph** - Workflow state machine (Architecture Section 6)
+  - [ ] pygments (code syntax)
+  - [ ] pandas, numpy
+  - [ ] scikit-learn (for metrics)
+  - [ ] matplotlib, seaborn (plotting)
+  - [ ] flask (optional - for visualization)
+  - [ ] pydantic (validation)
+  - [ ] structlog (structured logging)
+  - [ ] pytest (testing)
 
-#### 2.1.2 Core Configuration Module
-- [ ] Create `backend/core/config.py`
-  - [ ] Define Settings class using Pydantic BaseSettings
-  - [ ] Add environment variable validation
-  - [ ] Configure logging settings
-  - [ ] Set up API versioning constants
-  - [ ] Define rate limiting parameters
-  - [ ] Add CORS allowed origins configuration
+- [ ] Create `Dockerfile` for reproducibility (Architecture Section 11.3)
+  - [ ] Base image: Python 3.11-slim
+  - [ ] Install Ollama
+  - [ ] Copy requirements and install dependencies
+  - [ ] Copy source code
+  - [ ] Expose ports (if API needed)
+  - [ ] Document exact versions in image metadata
+  - [ ] Build and test Docker image locally
 
-- [ ] Create `.env.example` file with all required variables
-  - [ ] OLLAMA_BASE_URL (http://localhost:11434)
-  - [ ] OLLAMA_MODEL (codellama:7b or deepseek-coder:6.7b)
-  - [ ] CHROMA_PERSIST_DIRECTORY
-  - [ ] EMBEDDING_MODEL_NAME
-  - [ ] LOG_LEVEL
-  - [ ] API_VERSION
-  - [ ] MAX_CHUNK_SIZE
+### 2.2 LLM Integration Module (Week 3-4: Feb 26 - Mar 7, 2026)
 
-#### 2.1.3 Logging and Monitoring Setup
-- [ ] Create `backend/core/logging.py`
-  - [ ] Configure structured logging (JSON format)
-  - [ ] Set up log rotation
-  - [ ] Add request/response logging middleware
-  - [ ] Configure different log levels per environment
-  - [ ] Add correlation ID to all logs
+- [ ] Create `src/llm_client.py`
+  - [ ] OllamaClient class for API communication
+  - [ ] Test connection to local Ollama (verify running)
+  - [ ] `generate()` method - single prompt completion
+  - [ ] `generate_stream()` method - streaming responses
+  - [ ] Handle timeouts and retries
+  - [ ] Token counting with tiktoken
+  - [ ] Response caching (in-memory or file-based)
 
-- [ ] Create `backend/utils/metrics.py`
-  - [ ] Define custom metrics (request duration, LLM latency)
-  - [ ] Add endpoint for health checks `/health`
-  - [ ] Add endpoint for readiness checks `/ready`
+- [ ] Create `src/prompt_templates.py`
+  - [ ] System prompt: Define code smell expert role
+  - [ ] **Production code analysis prompts (Gap #12)**
+  - [ ] **Support for human-written & AI-generated code (Gap #11)**
+  - [ ] Few-shot examples for code smells:
+    - [ ] Long Method
+    - [ ] God Class
+    - [ ] Feature Envy
+    - [ ] Data Clumps
+    - [ ] Shotgun Surgery
+  - [ ] Structured JSON output format
+  - [ ] RAG context injection templates
 
-#### 2.1.4 Error Handling & Middleware
-- [ ] Create `backend/core/exceptions.py`
-  - [ ] Define custom exception classes (LLMException, RAGException, etc.)
-  - [ ] Create global exception handler
-  - [ ] Add HTTP exception handler with proper error responses
-  - [ ] Implement validation error handler
+- [ ] Create `src/response_parser.py`
+  - [ ] Parse LLM JSON responses
+  - [ ] Extract code smell findings
+  - [ ] Validate severity levels (LOW, HIGH, CRITICAL)
+  - [ ] Handle malformed responses
+  - [ ] Retry logic for parsing failures
 
-- [ ] Create `backend/core/middleware.py`
-  - [ ] Request timing middleware
-  - [ ] Rate limiting middleware
-  - [ ] Security headers middleware
-  - [ ] Request size limit middleware
+### 2.3 RAG Implementation (Week 4-5: Mar 8-21, 2026)
 
-#### 2.1.5 API Versioning & Base Models
-- [ ] Create `backend/schemas/base.py`
-  - [ ] BaseResponse model with metadata
-  - [ ] PaginationParams
-  - [ ] ErrorResponse model
-  - [ ] SuccessResponse model
-
-- [ ] Set up API router structure
-  - [ ] Create `backend/apps/api/v1/__init__.py`
-  - [ ] Define version prefix `/api/v1`
-
-### 2.2 LLM Integration (Week 3-4: Feb 22-28, 2026)
-
-#### 2.2.1 Ollama Service Wrapper (Ollama already installed locally ✅)
-- [ ] Create `backend/services/llm/ollama_client.py`
-  - [ ] Initialize Ollama client with base URL (http://localhost:11434)
-  - [ ] Implement connection test method
-  - [ ] Add model availability check
-  - [ ] Create method to list available models
-  - [ ] Implement model pull if not available
-
-- [ ] Test Ollama connectivity
-  - [ ] Verify Ollama service is running locally
-  - [ ] Test with sample prompt
-  - [ ] Benchmark response times for different models
-  - [ ] Select optimal model (codellama:7b vs deepseek-coder:6.7b)
-
-#### 2.2.2 LLM Service Implementation
-- [ ] Create `backend/services/llm/llm_service.py`
-  - [ ] Implement `LLMService` class with dependency injection
-  - [ ] Add `generate()` method for single prompts
-  - [ ] Add `generate_stream()` method for streaming responses
-  - [ ] Implement temperature and max_tokens configuration
-  - [ ] Add caching for identical prompts (in-memory cache)
-
-- [ ] Create `backend/services/llm/models.py`
-  - [ ] Define LLMRequest model (prompt, temperature, max_tokens)
-  - [ ] Define LLMResponse model (text, tokens_used, latency)
-  - [ ] Define StreamChunk model for streaming
-
-#### 2.2.3 Prompt Engineering for Code Smells
-- [ ] Create `backend/services/llm/prompts/` directory
-  - [ ] `base_prompt.py` - Base system prompt template
-  - [ ] `detection_prompt.py` - Code smell detection prompts
-  - [ ] `classification_prompt.py` - Smell classification prompts
-  - [ ] `explanation_prompt.py` - Explanation generation prompts
-  - [ ] `refactoring_prompt.py` - Refactoring suggestion prompts
-
-- [ ] Implement prompt templates
-  - [ ] System prompt: Define role as code smell expert
-  - [ ] **Specify analysis of production code (not test code) - Gap #12**
-  - [ ] **Support for both human-written and AI-generated code - Gap #11**
-  - [ ] Few-shot examples for each smell type (Long Method, God Class, etc.)
-  - [ ] Include context about programming language (Java/Python)
-  - [ ] Add instructions for structured output (JSON format)
-
-- [ ] Create prompt manager
-  - [ ] `backend/services/llm/prompt_manager.py`
-  - [ ] Method to load and compile prompts with variables
-  - [ ] Support for RAG context injection
-  - [ ] Template validation
-
-#### 2.2.4 LLM Response Parsing
-- [ ] Create `backend/services/llm/parsers.py`
-  - [ ] Parse JSON responses from LLM
-  - [ ] Extract code smell findings (type, location, severity)
-  - [ ] Handle malformed responses gracefully
-  - [ ] Implement retry logic for parsing failures
-  - [ ] Validate response against expected schema
-
-- [ ] Create response validation
-  - [ ] Define expected response schema with Pydantic
-  - [ ] CodeSmellFinding model (smell_type, line_number, severity, confidence)
-  - [ ] Validate severity levels (LOW, MEDIUM, HIGH, CRITICAL)
-  - [ ] **Validate smell types against production code smell taxonomy (Gap #12)**
-  - [ ] Ensure Long Method, God Class, Feature Envy, etc. (not test smells)
-
-#### 2.2.5 Streaming Response Handler
-- [ ] Implement SSE (Server-Sent Events) support
-  - [ ] Create `backend/utils/streaming.py`
-  - [ ] StreamingResponse wrapper for FastAPI
-  - [ ] Chunk buffering and formatting
-  - [ ] Error handling in streams
-
-- [ ] Test streaming endpoints
-  - [ ] Create test endpoint `/api/v1/test/stream`
-  - [ ] Verify chunk delivery
-  - [ ] Test client-side consumption
-
-#### 2.2.6 Error Handling & Retries
-- [ ] Implement retry logic
-  - [ ] Create `backend/utils/retry.py`
-  - [ ] Exponential backoff for Ollama failures
-  - [ ] Max retry attempts configuration
-  - [ ] Circuit breaker pattern for repeated failures
-
-- [ ] Handle specific error cases
-  - [ ] Ollama service unavailable
-  - [ ] Model not found
-  - [ ] Context length exceeded
-  - [ ] Timeout errors
-  - [ ] Rate limiting (if applicable)
-
-### 2.3 RAG Implementation (Week 4-5: Mar 1-14, 2026)
-
-#### 2.3.1 Embedding Model Selection & Setup
-- [ ] Research and select free embedding model
-  - [ ] Option 1: sentence-transformers/all-MiniLM-L6-v2 (384 dim)
-  - [ ] Option 2: BAAI/bge-small-en-v1.5 (384 dim)
-  - [ ] Option 3: sentence-transformers/all-mpnet-base-v2 (768 dim)
-  - [ ] Benchmark models for speed and accuracy
-  - [ ] Select model based on performance
-
-- [ ] Create `backend/services/embeddings/embedding_service.py`
+- [ ] Create `src/embedding_service.py`
   - [ ] Initialize HuggingFace embedding model
-  - [ ] Implement `embed_text()` method
-  - [ ] Implement `embed_batch()` method for bulk processing
-  - [ ] Add caching for embeddings
-  - [ ] Handle long text truncation
+    - [ ] Option: sentence-transformers/all-MiniLM-L6-v2 (lightweight)
+    - [ ] Option: BAAI/bge-small-en-v1.5 (better quality)
+  - [ ] `embed_text()` method
+  - [ ] `embed_batch()` method for bulk processing
+  - [ ] Cache embeddings to disk
 
-#### 2.3.2 ChromaDB Vector Store Setup
-- [ ] Install and configure ChromaDB
-  - [ ] Create `backend/services/vector_store/chroma_client.py`
-  - [ ] Initialize ChromaDB with persistent directory
+- [ ] Create `src/vector_store.py`
+  - [ ] Initialize ChromaDB client with persistent storage
   - [ ] Create collection for code smell examples
-  - [ ] Configure distance metric (cosine similarity)
-  - [ ] Set up collection metadata
+  - [ ] `add_documents()` - index code examples
+  - [ ] `search()` - similarity search (top-k retrieval)
+  - [ ] `get_stats()` - collection statistics
+  - [ ] Clear/reset collection
 
-- [ ] Implement vector store operations
-  - [ ] `add_documents()` - Add code smell examples to vector store
-  - [ ] `search()` - Similarity search for relevant examples
-  - [ ] `delete_collection()` - Clear vector store
-  - [ ] `get_collection_stats()` - Get count and metadata
+- [ ] Create `src/rag_pipeline.py`
+  - [ ] `retrieve()` - get relevant examples from vector store
+  - [ ] `augment_prompt()` - inject context into LLM prompt
+  - [ ] `generate_with_rag()` - RAG-enhanced generation
+  - [ ] Configure retrieval parameters (top_k, threshold)
+  - [ ] Context compression (fit within token budget)
 
-#### 2.3.3 Document Chunking Strategy
-- [ ] Create `backend/services/rag/chunking.py`
-  - [ ] Implement code-aware chunking (respect function/class boundaries)
-  - [ ] Set maximum chunk size (512 tokens)
-  - [ ] Add overlap between chunks (50 tokens)
-  - [ ] Preserve code structure and context
-  - [ ] Add metadata to chunks (file path, language, smell type)
+- [ ] Create `src/code_chunker.py`
+  - [ ] AST-based code chunking (respect function boundaries)
+  - [ ] Support Python (ast module) and Java (tree-sitter/javalang)
+  - [ ] Max chunk size: 512 tokens
+  - [ ] Overlap: 50 tokens
+  - [ ] Preserve code structure
 
-- [ ] Implement AST-based chunking
-  - [ ] Use `ast` module for Python code
-  - [ ] Use `javalang` or tree-sitter for Java code
-  - [ ] Extract functions/methods as natural chunks
-  - [ ] Keep related code together
+### 2.4 Workflow Engine & Agent Modules (Week 5: Mar 22-28, 2026)
 
-#### 2.3.4 RAG Pipeline Implementation
-- [ ] Create `backend/services/rag/rag_pipeline.py`
-  - [ ] Implement `RAGPipeline` class
-  - [ ] `retrieve()` method - Get top-k relevant examples
-  - [ ] `augment_prompt()` method - Inject context into prompt
-  - [ ] `generate()` method - Call LLM with augmented prompt
-  - [ ] Configure retrieval parameters (top_k, similarity_threshold)
+**Multi-Agent System Implementation**
 
-- [ ] Implement retrieval strategies
-  - [ ] Basic similarity search
-  - [ ] MMR (Maximal Marginal Relevance) for diversity
-  - [ ] Hybrid search (if needed)
-  - [ ] Re-ranking based on relevance
+- [ ] Create `src/analysis_coordinator.py` (Manager Agent)
+  - [ ] Initialize Analysis Coordinator with system prompt
+  - [ ] `coordinate_analysis()` - Main orchestration method
+  - [ ] `split_code_into_chunks()` - Chunk large files
+  - [ ] `assign_detection_tasks()` - Distribute to detector agents
+  - [ ] `aggregate_results()` - Combine findings from all detectors
+  - [ ] `track_in_database()` - Log all agent actions
+  - [ ] Integration with database manager
 
-#### 2.3.5 RAG Context Management
-- [ ] Create `backend/services/rag/context_manager.py`
-  - [ ] Format retrieved examples for prompt
-  - [ ] Limit context to fit within token budget
-  - [ ] Prioritize most relevant examples
-  - [ ] Add metadata to context (source, confidence score)
+- [ ] Create `src/code_smell_detector.py` (Member Agent)
+  - [ ] Initialize detector with specialization (e.g., "Long Method expert")
+  - [ ] `detect_smells()` - Main detection method
+  - [ ] `classify_and_assign_severity()` - LOW/HIGH/CRITICAL
+  - [ ] `generate_explanation()` - Why it's a code smell
+  - [ ] `suggest_refactoring()` - How to fix it
+  - [ ] Support for multiple programming languages
+  - [ ] Log all LLM interactions to database
 
-- [ ] Implement context compression
-  - [ ] Remove redundant examples
-  - [ ] Summarize long examples if needed
-  - [ ] Ensure critical information is retained
+- [ ] Create `src/rag_retriever.py` (Custodian Agent)
+  - [ ] Initialize RAG retriever with vector store
+  - [ ] `find_relevant_examples()` - Similarity search
+  - [ ] `rank_by_relevance()` - Score and sort examples
+  - [ ] `augment_context()` - Format examples for LLM prompt
+  - [ ] Cache retrieval results for efficiency
+  - [ ] Track retrieval metrics (precision@k)
 
-### 2.4 LangGraph Workflow (Week 5-6: Mar 15-28, 2026)
+- [ ] Create `src/quality_validator.py` (CodeReviewer Agent)
+  - [ ] Initialize validator with review criteria
+  - [ ] `validate_detection()` - Review a single finding
+  - [ ] `assign_confidence_score()` - 1-3 scale
+  - [ ] `cross_check_with_static_tools()` - Optional baseline comparison
+  - [ ] `suggest_improvements()` - Enhance detection quality
+  - [ ] Filter false positives
 
-#### 2.4.1 LangGraph Setup & Design
-- [ ] Install LangGraph dependencies
-  - [ ] `pip install langgraph langchain-core`
-  - [ ] Create `backend/services/graph/` directory
+- [ ] Create `src/code_analysis_workflow.py`
+  - [ ] **Orchestration using agents** (not just sequential steps)
+  - [ ] Step 1: Coordinator receives code submission
+  - [ ] Step 2: Coordinator splits code into chunks
+  - [ ] Step 3: For each chunk:
+    - [ ] RAG Retriever finds relevant examples
+    - [ ] Detector analyzes code with RAG context
+    - [ ] Validator reviews detection results
+  - [ ] Step 4: Coordinator aggregates all results
+  - [ ] Step 5: Generate final report
+  - [ ] Error handling at each step
+  - [ ] Intermediate result logging
 
-- [ ] Design 14-step code analysis graph
-  - [ ] Sketch graph flow diagram
-  - [ ] Define state schema for graph
-  - [ ] Identify decision nodes and conditional edges
-  - [ ] Plan error recovery paths
+- [ ] Create `src/common.py` (Utility functions)
+  - [ ] `get_agent_name()` - Generate unique agent names from prompts
+  - [ ] `merge_results()` - Combine findings from multiple agents
+  - [ ] `to_safe_name()` - Sanitize names for file/folder storage
+  - [ ] Common helper functions
 
-#### 2.4.2 Graph State Management
-- [ ] Create `backend/services/graph/state.py`
-  - [ ] Define `CodeAnalysisState` TypedDict
-    - [ ] `code: str` - Input code to analyze
-    - [ ] `language: str` - Programming language
-    - [ ] `embeddings: List[float]` - Code embeddings
-    - [ ] `retrieved_examples: List[Dict]` - RAG results
-    - [ ] `detected_smells: List[CodeSmellFinding]` - Findings
-    - [ ] `classifications: List[Classification]` - Categorizations
-    - [ ] `explanations: List[str]` - Detailed explanations
-    - [ ] `refactoring_suggestions: List[str]` - Improvement suggestions
-    - [ ] `confidence_scores: Dict[str, float]` - Per-smell confidence
-    - [ ] `errors: List[str]` - Any errors encountered
-
-#### 2.4.3 Implement Graph Nodes
-
-**Preprocessing Nodes:**
-- [ ] Create `backend/services/graph/nodes/input_validation.py`
-  - [ ] Validate code input (not empty, valid syntax)
+- [ ] Create `src/code_parser.py`
+  - [ ] Validate code syntax
   - [ ] Detect programming language
-  - [ ] Sanitize input (remove sensitive data patterns)
-
-- [ ] Create `backend/services/graph/nodes/code_parsing.py`
-  - [ ] Parse code into AST
-  - [ ] Extract code metrics (LOC, complexity, etc.)
+  - [ ] Parse AST (Python/Java)
+  - [ ] Extract code metrics (LOC, complexity)
   - [ ] Identify code structures (classes, methods)
 
-**Embedding & Retrieval Nodes:**
-- [ ] Create `backend/services/graph/nodes/embedding_node.py`
-  - [ ] Generate embeddings for input code
-  - [ ] Handle embedding errors
+- [ ] Create `src/logger.py`
+  - [ ] Structured logging (JSON format)
+  - [ ] Log all agent activities
+  - [ ] Log all LLM requests/responses
+  - [ ] Log workflow steps
+  - [ ] Experiment tracking support
 
-- [ ] Create `backend/services/graph/nodes/retrieval_node.py`
-  - [ ] Query vector store for similar examples
-  - [ ] Filter by similarity threshold
-  - [ ] Rank and select top-k results
+### 2.5 Database for Agent & Experiment Tracking (Week 5-6: Mar 22-28, 2026)
 
-**Analysis Nodes:**
-- [ ] Create `backend/services/graph/nodes/smell_detection.py`
-  - [ ] Call LLM with RAG-augmented prompt
-  - [ ] Parse detection results
-  - [ ] Extract smell candidates
+**Database Schema for Multi-Agent System**
 
-- [ ] Create `backend/services/graph/nodes/classification.py`
-  - [ ] Classify detected smells by category
-  - [ ] Assign severity levels
-  - [ ] Calculate confidence scores
+- [ ] Create `src/database_manager.py`
+  - [ ] SQLite database for experiment tracking
+  - [ ] **Agent-specific tables:**
+    - [ ] `agents` - Agent metadata (agent_id, name, role, system_prompt, created_at)
+    - [ ] `agent_requests` - All LLM requests from agents (request_id, agent_id, user_prompt, timestamp)
+    - [ ] `agent_responses` - All LLM responses (response_id, request_id, response_text, tokens_used, latency)
+    - [ ] `agent_actions` - Actions performed by agents (action_id, agent_id, action_type, action_content, timestamp)
+    - [ ] `processes` - Workflow steps (process_id, process_type, agent_id, task_id, timestamp)
+  - [ ] **Experiment tracking tables:**
+    - [ ] `experiments` - Experiment metadata (exp_id, name, config, created_at)
+    - [ ] `analysis_runs` - Each code analysis run (run_id, exp_id, code_snippet, language, created_at)
+    - [ ] `code_smell_findings` - Detected smells (finding_id, run_id, smell_type, severity, confidence, agent_id)
+    - [ ] `ground_truth` - Labeled data for evaluation (gt_id, code_snippet, smell_labels, source)
+  - [ ] **CRUD operations:**
+    - [ ] `add_agent()` - Register new agent
+    - [ ] `add_request()` - Log LLM request
+    - [ ] `add_response()` - Log LLM response
+    - [ ] `add_action()` - Log agent action
+    - [ ] `add_process()` - Log workflow step
+    - [ ] `add_analysis_run()` - Log analysis execution
+    - [ ] `add_finding()` - Log code smell detection
+    - [ ] `get_agent_stats()` - Get agent performance metrics
+    - [ ] `export_results()` - Export to CSV/JSON for analysis
+  - [ ] Database cleanup utilities
+  - [ ] Migration support for schema updates
 
-- [ ] Create `backend/services/graph/nodes/validation.py`
-  - [ ] Cross-validate findings with static analysis rules
-  - [ ] Filter false positives
-  - [ ] Verify smell locations
+### 2.6 Benchmarking Infrastructure (Week 6: Mar 22-28, 2026)
 
-**Explanation & Suggestion Nodes:**
-- [ ] Create `backend/services/graph/nodes/explanation.py`
-  - [ ] Generate detailed explanations for each smell
-  - [ ] Include code examples
-  - [ ] Reference best practices
+**Setup tools and scripts for systematic benchmarking - See Benchmarking Strategy**
 
-- [ ] Create `backend/services/graph/nodes/refactoring.py`
-  - [ ] Generate refactoring suggestions
-  - [ ] Provide code snippets for improvements
-  - [ ] Prioritize by impact
+- [ ] Create `scripts/setup_baseline_tools.sh`
+  - [ ] Install SonarQube, PMD, Checkstyle, SpotBugs
+  - [ ] Configure IntelliJ IDEA inspection engine
+  - [ ] Version documentation (lock versions per Benchmarking Section 2)
+  - [ ] Test installations with sample code
 
-#### 2.4.4 Build LangGraph Workflow
-- [ ] Create `backend/services/graph/code_review_graph.py`
-  - [ ] Initialize StateGraph with CodeAnalysisState
-  - [ ] Add all nodes to graph
-  - [ ] Define edges between nodes
-  - [ ] Add conditional edges for error handling
-  - [ ] Compile graph
+- [ ] Create `scripts/run_baseline_tools.py`
+  - [ ] Execute all 5 baseline tools on a code sample
+  - [ ] Parse tool-specific output formats
+  - [ ] Normalize to common JSON schema:
+    ```json
+    {
+      "tool": "SonarQube",
+      "file": "Example.java",
+      "line": 42,
+      "smell_type": "Long Method",
+      "severity": "HIGH",
+      "confidence": 0.85,
+      "explanation": "..."
+    }
+    ```
+  - [ ] Save to `results/predictions/baseline/{tool}.json`
+  - [ ] Handle tool errors gracefully
 
-- [ ] Implement graph execution
-  - [ ] Create `execute()` method
-  - [ ] Add streaming support for intermediate results
-  - [ ] Implement checkpointing for long-running analyses
-  - [ ] Add timeout handling
+- [ ] Create `src/benchmark_utils.py`
+  - [ ] `calculate_metrics()` - Precision, Recall, F1, Accuracy
+  - [ ] `confusion_matrix()` - Generate confusion matrix
+  - [ ] `statistical_tests()` - McNemar's, t-test, confidence intervals
+  - [ ] `per_smell_breakdown()` - Metrics for each smell type
+  - [ ] `latency_profiler()` - Track component latency (embedding, retrieval, inference)
+  - [ ] `resource_monitor()` - CPU, memory, GPU tracking during analysis
+  - [ ] **Architecture-specific metrics (Section 10.1)**:
+    - [ ] `calculate_hallucination_rate()` - Detect and measure hallucinations
+    - [ ] `cache_hit_rate()` - Track cache performance
+    - [ ] `validation_failure_rate()` - JSON parse/validation failures
+    - [ ] `confidence_calibration()` - Confidence vs. accuracy correlation
+    - [ ] `rag_retrieval_quality()` - Precision@k, NDCG@k calculation
 
-#### 2.4.5 Graph Testing & Optimization
-- [ ] Test graph execution
-  - [ ] Unit test individual nodes
-  - [ ] Integration test full graph flow
-  - [ ] Test error recovery paths
-  - [ ] Benchmark execution time
+- [ ] Create `src/result_exporter.py`
+  - [ ] Export to LaTeX tables (for paper)
+  - [ ] Export to CSV (for spreadsheet analysis)
+  - [ ] Generate matplotlib/seaborn plots
+  - [ ] Save figures to `paper/figures/`
 
-- [ ] Optimize graph performance
-  - [ ] Parallelize independent nodes
-  - [ ] Cache intermediate results
-  - [ ] Optimize token usage in prompts
+- [ ] Create `results/` directory structure
+  - [ ] `results/predictions/` - Tool predictions
+  - [ ] `results/confusion_matrices/` - Confusion matrix data
+  - [ ] `results/performance/` - Timing logs
+  - [ ] `results/resources/` - Resource profiles
+  - [ ] `results/figures/` - Generated plots
+  - [ ] `results/tables/` - Generated tables
 
-### 2.5 API Development (Week 6: Mar 22-28, 2026)
+---
 
-#### 2.5.1 Code Analysis Endpoints
-- [ ] Create `backend/apps/api/v1/code_review.py`
-  - [ ] POST `/api/v1/analyze` - Analyze code for smells
-    - [ ] Request: CodeAnalysisRequest (code, language, options)
-    - [ ] Response: CodeAnalysisResponse (findings, metrics, suggestions)
-    - [ ] Validation: code length, language support
-    - [ ] Call LangGraph workflow
-    - [ ] Return structured results
+## Phase 3: Dataset & Experiments (Weeks 6-8)
 
-  - [ ] POST `/api/v1/analyze/stream` - Streaming analysis
-    - [ ] Same as above but with SSE streaming
-    - [ ] Stream intermediate results (node completions)
-    - [ ] Final result at end of stream
+### 3.1 Dataset Acquisition & Preprocessing (Week 6: Mar 29 - Apr 4, 2026)
 
-  - [ ] GET `/api/v1/analysis/{analysis_id}` - Get analysis by ID
-    - [ ] Retrieve stored analysis results
-    - [ ] Return full analysis with metadata
+**Focus: Production Code Smells Only (Gap #12)**
 
-#### 2.5.2 Code Smell Management Endpoints
-- [ ] Create `backend/apps/api/v1/smells.py`
-  - [ ] GET `/api/v1/smells/types` - List all supported smell types
-  - [ ] GET `/api/v1/smells/examples` - Get example smelly code
-  - [ ] GET `/api/v1/smells/{smell_type}` - Get info about specific smell
-
-#### 2.5.3 Vector Store Management Endpoints
-- [ ] Create `backend/apps/api/v1/vector_store.py`
-  - [ ] POST `/api/v1/vector-store/index` - Index new code examples
-  - [ ] GET `/api/v1/vector-store/stats` - Get vector store statistics
-  - [ ] DELETE `/api/v1/vector-store/clear` - Clear vector store
-  - [ ] GET `/api/v1/vector-store/search` - Search for similar code
-
-#### 2.5.4 System Endpoints
-- [ ] Create `backend/apps/api/v1/system.py`
-  - [ ] GET `/api/v1/health` - Health check
-  - [ ] GET `/api/v1/ready` - Readiness check (verify Ollama, ChromaDB)
-  - [ ] GET `/api/v1/metrics` - System metrics (optional)
-  - [ ] GET `/api/v1/models` - List available Ollama models
-
-#### 2.5.5 Request/Response Models
-- [ ] Create `backend/schemas/code_review.py`
-  - [ ] CodeAnalysisRequest (code, language, options)
-  - [ ] CodeAnalysisResponse (id, findings, metrics, created_at)
-  - [ ] CodeSmellFinding (type, severity, location, explanation, suggestion)
-  - [ ] CodeMetrics (loc, complexity, maintainability_index)
-
-- [ ] Create `backend/schemas/smells.py`
-  - [ ] SmellType (name, description, category, examples)
-  - [ ] SmellExample (code, language, smell_types)
-
-#### 2.5.6 API Documentation
-- [ ] Configure OpenAPI documentation
-  - [ ] Add detailed endpoint descriptions
-  - [ ] Include request/response examples
-  - [ ] Document error codes and responses
-  - [ ] Generate interactive docs at `/docs`
-  - [ ] **Note: No authentication required (research project)**
-
-- [ ] Create API usage examples
-  - [ ] Python client example
-  - [ ] cURL examples
-  - [ ] JavaScript/fetch examples
-
-### 2.6 Data Management & Dataset Integration (Week 6-7: Mar 29 - Apr 4, 2026)
-
-#### 2.6.1 Dataset Acquisition
-
-**Note (Gap #12):** Focus on **production code smells** (Long Method, God Class, Feature Envy, Data Clumps, etc.) - **NOT test smells**. This distinguishes our research from existing test smell detection studies.
+- [ ] Create `data/datasets/` directory structure
+  - [ ] `data/datasets/marv/` - MaRV dataset
+  - [ ] `data/datasets/qualitas_corpus/` - Java projects
+  - [ ] `data/datasets/smelly_code/` - Labeled smell examples
+  - [ ] `data/ground_truth/` - Manually verified examples
 
 - [ ] Download MaRV dataset
-  - [ ] Research MaRV dataset location/source
-  - [ ] Download and verify dataset
-  - [ ] Store in `backend/data/marv/` directory
-  - [ ] Document dataset structure
-  - [ ] **Verify focus on production code smells (Gap #12)**
+  - [ ] Research dataset source
+  - [ ] Download and extract
+  - [ ] **Verify production code smell labels (not test smells)**
+  - [ ] Document dataset structure in `data/datasets/marv/README.md`
 
-- [ ] Download Smelly Code Dataset
-  - [ ] Locate and download dataset
-  - [ ] Store in `backend/data/smelly_code/` directory
-  - [ ] **Filter for production code examples only (Gap #12)**
+- [ ] Download additional datasets
+  - [ ] Qualitas Corpus (Java code smells)
+  - [ ] Code Smell Detection datasets from literature
+  - [ ] **Filter for production code only**
 
-#### 2.6.2 Dataset Preprocessing Pipeline
-- [ ] Create `backend/data/preprocessing/` directory
-  - [ ] `data_loader.py` - Load raw datasets
-  - [ ] `data_cleaner.py` - Clean and normalize code
-  - [ ] `data_transformer.py` - Transform to consistent format
-  - [ ] `data_validator.py` - Validate data quality
+- [ ] Create `src/data_loader.py`
+  - [ ] Load datasets from various formats (JSON, CSV, XML)
+  - [ ] Parse code files
+  - [ ] Extract smell annotations
+  - [ ] Unified data model for all datasets
 
-- [ ] Implement preprocessing steps
-  - [ ] Parse dataset files (JSON/CSV)
-  - [ ] Extract code snippets and labels
-  - [ ] Normalize code formatting
-  - [ ] Filter invalid/corrupted samples
-  - [ ] Split into train/validation/test sets
+- [ ] Create `src/data_preprocessor.py`
+  - [ ] Clean code samples (remove comments, normalize formatting)
+  - [ ] Extract features (metrics)
+  - [ ] Label validation (ensure production code smells)
+  - [ ] **Train/validation/test split: 60/20/20** (per Benchmarking Section 1)
+    - [ ] Training set (60%): For RAG knowledge base indexing
+    - [ ] Validation set (20%): For hyperparameter tuning
+    - [ ] Test set (20%): For final evaluation (never seen during development)
+  - [ ] Save preprocessed data with split labels
 
-#### 2.6.3 Vector Store Indexing
-- [ ] Create `backend/data/indexing/vector_indexer.py`
-  - [ ] Load preprocessed dataset
-  - [ ] Generate embeddings for all code samples
-  - [ ] Batch insert into ChromaDB
-  - [ ] Add metadata (smell type, severity, source)
-  - [ ] Create index for fast retrieval
+### 3.2 Vector Store Indexing (Week 6: Apr 1-4, 2026)
 
-- [ ] Implement incremental indexing
-  - [ ] Support adding new examples without full reindex
-  - [ ] Handle duplicate detection
-  - [ ] Update existing entries
+- [ ] Create `scripts/index_datasets.py`
+  - [ ] Load preprocessed datasets
+  - [ ] Generate embeddings for all code examples
+  - [ ] Batch processing for efficiency
+  - [ ] Index into ChromaDB
+  - [ ] Track indexing progress
+  - [ ] Save indexing statistics
 
-#### 2.6.4 Ground Truth Management
-- [ ] Create `backend/data/ground_truth/` directory
-  - [ ] Store expert-annotated samples
-  - [ ] Create validation dataset with 95%+ accuracy labels
-  - [ ] Format: JSON with code, labels, expert comments
+- [ ] Test retrieval quality
+  - [ ] Sample queries for each smell type
+  - [ ] Evaluate top-k accuracy
+  - [ ] Adjust embedding model if needed
 
-- [ ] Implement ground truth loader
-  - [ ] Load ground truth data for evaluation
-  - [ ] Validate annotations
-  - [ ] Create test harness
+### 3.3 Initial Experiments (Week 7-8: Apr 5-18, 2026)
 
-#### 2.6.5 Data Access Layer
-- [ ] Create `backend/services/data/data_service.py`
-  - [ ] Methods to query datasets
-  - [ ] Get random samples for testing
-  - [ ] Get samples by smell type
-  - [ ] Get ground truth for validation
+**Benchmark Execution: See "Benchmarking Strategy" section for detailed protocols**
 
-### 2.7 Testing & Quality Assurance (Ongoing throughout Phase 2)
+- [ ] Setup baseline tools (per Benchmarking Strategy Section 2)
+  - [ ] Install SonarQube v10.x, PMD v7.x, Checkstyle v10.x, SpotBugs v4.x
+  - [ ] Configure IntelliJ IDEA 2024.x inspection engine
+  - [ ] Create `scripts/run_baseline_tools.py` - Execute all 5 baseline tools
+  - [ ] Normalize outputs to common JSON schema
+  - [ ] Save baseline predictions to `results/predictions/baseline/`
 
-#### 2.7.1 Unit Tests
-- [ ] Create test structure
-  - [ ] `backend/tests/unit/` directory
-  - [ ] `conftest.py` with pytest fixtures
-  - [ ] Mock fixtures for Ollama, ChromaDB
+- [ ] Create `exp/baseline/` directory
+  - [ ] Experiment on baseline LLM (no RAG)
+  - [ ] Compare different LLM models (CodeLlama 7B/13B, DeepSeek-Coder 6.7B/33B)
+  - [ ] Test prompt variations
+  - [ ] Fixed experimental conditions: temp=0.1, top_p=0.9, seed=42
 
-- [ ] Write unit tests for:
-  - [ ] `tests/unit/test_llm_service.py`
-  - [ ] `tests/unit/test_embedding_service.py`
-  - [ ] `tests/unit/test_rag_pipeline.py`
-  - [ ] `tests/unit/test_chunking.py`
-  - [ ] `tests/unit/test_prompts.py`
-  - [ ] `tests/unit/test_parsers.py`
+- [ ] Create `exp/rag_experiments/` directory
+  - [ ] Experiment with RAG-enhanced detection
+  - [ ] Vary top-k retrieval (k = 1, 3, 5, 10) - See Benchmarking Section 5
+  - [ ] Test different embedding models (all-MiniLM-L6-v2, bge-small-en-v1.5)
+  - [ ] Compare retrieval strategies
 
-#### 2.7.2 Integration Tests
-- [ ] Create `backend/tests/integration/` directory
-- [ ] Write integration tests for:
-  - [ ] `test_ollama_integration.py` - Test with real Ollama
-  - [ ] `test_chromadb_integration.py` - Test vector store ops
-  - [ ] `test_rag_end_to_end.py` - Full RAG pipeline
-  - [ ] `test_langgraph_execution.py` - Graph workflow
+- [ ] Create `scripts/run_experiment.py`
+  - [ ] Main experiment runner
+  - [ ] Configuration via command-line args or config file
+  - [ ] Batch processing of test set (20% holdout from Benchmarking Section 1)
+  - [ ] Save results to database and `results/predictions/{experiment}/`
+  - [ ] Progress tracking with ETA
+  - [ ] **Resource profiling**: Track CPU, memory, latency per analysis
 
-#### 2.7.3 API Tests
-- [ ] Create `backend/tests/api/` directory
-- [ ] Write API tests for:
-  - [ ] `test_code_review_endpoints.py`
-  - [ ] `test_vector_store_endpoints.py`
-  - [ ] `test_system_endpoints.py`
-  - [ ] Test error handling and validation
-  - [ ] Test rate limiting (basic protection)
-  - [ ] **Note: No authentication/authorization (research project)**
-
-#### 2.7.4 Code Quality
-- [ ] Set up code quality tools
-  - [ ] Configure `black` for formatting
-  - [ ] Configure `isort` for import sorting
-  - [ ] Configure `flake8` for linting
-  - [ ] Configure `mypy` for type checking
-  - [ ] Add `pre-commit` hooks
-
-- [ ] Achieve quality targets
-  - [ ] 80%+ code coverage
-  - [ ] All type hints present
-  - [ ] All docstrings complete
-  - [ ] Zero critical issues
+- [ ] Performance metrics calculation (See Benchmarking Section 3)
+  - [ ] Precision, Recall, F1-score per smell type (12+ smells)
+  - [ ] Overall accuracy
+  - [ ] **Comparison with existing tools (Gap #7)**
+  - [ ] **Performance benchmarks (Benchmarking Section 3)**:
+    - [ ] Latency measurements (embedding + retrieval + inference)
+    - [ ] Throughput (analyses per hour, target 100-200/hr)
+    - [ ] Memory footprint (base + peak, target 4-8GB)
+    - [ ] Token usage per analysis
+  - [ ] **LLM-Specific Quality Metrics (Architecture Section 10.1)**:
+    - [ ] Hallucination rate tracking (target < 5%)
+    - [ ] Cache hit rate (target 20-40%)
+    - [ ] JSON parse success rate (target > 95%)
+    - [ ] Validation failure rate (target < 3%)
+    - [ ] Confidence score distribution
+    - [ ] Model selection distribution
+  - [ ] Generate initial results tables (Benchmarking Section 7, Table 1 draft)
 
 ---
 
-## Phase 3: Frontend Development (Weeks 7-8)
+## Phase 4: Evaluation & Analysis (Weeks 8-10)
 
-### 3.1 Streamlit Application Setup (Week 7: Apr 5-11, 2026)
-- [ ] Create frontend directory structure
-- [ ] Initialize Streamlit project
-- [ ] Configure Streamlit settings (theme, layout)
-- [ ] Set up API client for backend communication
-- [ ] Create main app entry point (`app.py`)
+### 4.1 Quantitative Evaluation (Week 8-9: Apr 12-25, 2026)
 
-### 3.2 Core UI Components
-- [ ] Main dashboard page
-  - [ ] App header with logo and title
-  - [ ] Navigation sidebar
-  - [ ] Quick stats display
-- [ ] Code input component
-  - [ ] Text area for code input
-  - [ ] File upload widget
-  - [ ] Language selector dropdown
-  - [ ] Analysis options (streaming, detail level)
-- [ ] Results display component
-  - [ ] Code smell findings list
-  - [ ] Severity indicators
-  - [ ] Code highlighting with smell locations
-  - [ ] Expandable detail views
-- [ ] Code smell visualization
-  - [ ] Charts for smell distribution
-  - [ ] Severity breakdown
-  - [ ] Metrics visualization
-- [ ] Historical review viewer
-  - [ ] List of past analyses
-  - [ ] Search and filter functionality
-  - [ ] Detailed view of previous results
-- [ ] Settings & configuration page
-  - [ ] Ollama model selection
-  - [ ] RAG configuration
-  - [ ] Analysis preferences
+**Full Benchmark Execution: See "Benchmarking Strategy" Section 6**
 
-### 3.3 UI/UX Enhancement (Week 8: Apr 12-18, 2026)
-- [x] Figma design system
-- [ ] Implement color scheme
-- [ ] Responsive layout design
-- [ ] Loading states & animations
-- [ ] Error message UI
-- [ ] Success notifications
-- [ ] Empty states
-- [ ] Help tooltips and documentation
+- [ ] Create `src/evaluation.py`
+  - [ ] Load ground truth data (MaRV dataset test set - 20% split)
+  - [ ] Load prediction results from all tools/experiments
+  - [ ] Calculate metrics (Benchmarking Section 3):
+    - [ ] Precision, Recall, F1 (per smell type & overall)
+    - [ ] True Positive Rate, False Positive Rate
+    - [ ] Confusion matrix (12+ smell types × 6+ tools)
+    - [ ] ROC curves (if applicable)
+  - [ ] **Statistical significance tests (Benchmarking Section 5)**:
+    - [ ] McNemar's test (LLM vs. each baseline)
+    - [ ] Paired t-test for F1-scores
+    - [ ] 95% confidence intervals
+    - [ ] Cohen's d effect size
+  - [ ] **Compare with baselines from literature (Gap #7)**
 
-### 3.4 Frontend-Backend Integration
-- [ ] API client setup
-  - [ ] Create HTTP client with requests/httpx
-  - [ ] Base URL configuration
-  - [ ] Request/response handling
-- [ ] Error handling & retry logic
-  - [ ] Network error handling
-  - [ ] Timeout handling
-  - [ ] User-friendly error messages
-- [ ] Real-time updates integration
-  - [ ] SSE client for streaming analysis
-  - [ ] Progress indicators
-  - [ ] Live result updates
-- [ ] State management
-  - [ ] Session state for analysis history
-  - [ ] Cache configuration settings
-  - [ ] Persist user preferences
+- [ ] Create `scripts/analyze_results.py`
+  - [ ] Aggregate results across 3+ independent runs (different seeds)
+  - [ ] Calculate mean ± standard deviation for all metrics
+  - [ ] **Generate benchmark report tables (Benchmarking Section 7)**:
+    - [ ] Table 1: Overall Performance Comparison (6+ tools)
+    - [ ] Table 2: Per-Smell-Type Performance (12+ rows)
+    - [ ] Table 3: Resource Requirements (latency, memory, throughput)
+  - [ ] Plot performance graphs:
+    - [ ] Figure 1: F1-Score comparison (bar chart)
+    - [ ] Figure 2: Precision-Recall curves
+    - [ ] Figure 3: Per-smell heatmap
+    - [ ] Figure 4: Latency vs. Accuracy tradeoff
+  - [ ] Identify best configurations (model, top-k, embedding)
+  - [ ] Export to LaTeX tables for paper
 
----
+- [ ] Error analysis
+  - [ ] Categorize false positives and false negatives
+  - [ ] Identify patterns in failures (code complexity, smell ambiguity)
+  - [ ] **Analyze AI-generated vs human-written code (Gap #11)**
+  - [ ] Create failure taxonomy
+  - [ ] Select case study examples for qualitative analysis
 
-## Phase 4: Evaluation & Research (Weeks 9-10)
+- [ ] Resource profiling (RQ4 - Benchmarking Section 3)
+  - [ ] Analyze performance logs from `results/performance/`
+  - [ ] Calculate average latency components (embedding, retrieval, inference)
+  - [ ] Peak memory usage analysis
+  - [ ] Throughput under load testing
+  - [ ] Cost comparison (local $0 vs. cloud API ~$0.05/request)
 
-### 4.1 Empirical Evaluation Framework (Week 9: Apr 19-25, 2026)
-- [ ] Create evaluation framework
-  - [ ] Design evaluation pipeline
-  - [ ] Define metrics (Precision, Recall, F1-Score)
-  - [ ] Create automated testing harness
-- [ ] Test data preparation (MaRV dataset)
-  - [ ] Load ground truth data
-  - [ ] Create test cases for each smell type
-  - [ ] **Include both human-written and AI-generated code samples (Gap #11)**
-  - [ ] Prepare baseline comparisons
-- [ ] Automated evaluation pipeline
-  - [ ] Run system against test dataset
-  - [ ] Collect predictions and ground truth
-  - [ ] Calculate metrics automatically
-- [ ] Metrics calculation
-  - [ ] Overall Precision/Recall
-  - [ ] Per-smell-type metrics
-  - [ ] **Separate metrics for human-written vs AI-generated code (Gap #11)**
-  - [ ] Confidence score calibration
-  - [ ] False positive/negative analysis
+### 4.2 Ablation Studies (Week 9: Apr 19-25, 2026)
 
-### 4.2 Comparative Analysis (Week 9-10: Apr 26 - May 5, 2026)
+**Systematic Ablation: See Benchmarking Strategy Section 5 (Cross-Validation)**
 
-**Baseline Tool Setup**
-- [ ] SonarQube setup and configuration
-- [ ] PMD setup and configuration
-- [ ] Checkstyle setup and configuration
-- [ ] SpotBugs setup and configuration
-- [ ] IntelliJ IDEA inspection setup
+- [ ] Ablation: RAG vs No RAG (RQ2)
+  - [ ] Measure ΔF1, false positive reduction rate
+  - [ ] Calculate retrieval quality (Precision@k, NDCG@k)
+  - [ ] Generate Figure 5: RAG top-k ablation study
 
-**Comparative Studies**
-- [ ] Run all 5 baseline tools on test dataset
-- [ ] Compare LLM results vs each baseline
-- [ ] Statistical significance tests (Chi-square, McNemar)
-- [ ] Qualitative analysis (Gap #5)
-  - [ ] Analyze explanation quality
-  - [ ] Evaluate reasoning clarity
-  - [ ] Compare suggestion usefulness
-- [ ] Cost-accuracy tradeoff study (Gap #6)
-  - [ ] Measure compute cost (time, resources)
-  - [ ] Compare accuracy vs cost across tools
-  - [ ] Analyze local vs cloud tradeoffs
+- [ ] Ablation: Top-k retrieval values (k ∈ {1, 3, 5, 10})
+  - [ ] 5-fold cross-validation on validation set
+  - [ ] Identify optimal k value
+  - [ ] Plot F1 vs. k curve
 
-### 4.3 Results Documentation & Analysis
-- [ ] Collect all evaluation data
-- [ ] Generate visualizations
-  - [ ] Confusion matrices
-  - [ ] Precision-Recall curves
-  - [ ] Comparison bar charts
-  - [ ] Cost-accuracy scatter plots
-- [ ] Write findings documentation
-  - [ ] Summarize key results
-  - [ ] Highlight improvements over baselines
-  - [ ] Document novel contributions
-- [ ] Limitations analysis
-  - [ ] Identify failure cases
-  - [ ] Document known issues
-  - [ ] Suggest future improvements
+- [ ] Ablation: Different embedding models
+  - [ ] all-MiniLM-L6-v2 (384-dim, lightweight)
+  - [ ] bge-small-en-v1.5 (384-dim, better quality)
+  - [ ] Compare retrieval accuracy and latency
+
+- [ ] Ablation: Different LLM models
+  - [ ] CodeLlama 7B vs. 13B (accuracy vs. latency tradeoff)
+  - [ ] DeepSeek-Coder 6.7B vs. 33B
+  - [ ] Llama 3 8B
+  - [ ] Compare per-smell performance
+
+- [ ] Ablation: Few-shot examples count (0, 1, 3, 5)
+- [ ] Ablation: Temperature settings (0.0, 0.1, 0.3)
+- [ ] **Ablation: Privacy-preserving (local) vs cloud LLMs (Gap #1)**
+  - [ ] Reference GPT-4 performance from literature
+  - [ ] Compare local F1 vs. cloud F1, latency, cost, privacy
+
+- [ ] Document findings in `exp/ablation_studies/README.md`
+  - [ ] Include all ablation result tables
+  - [ ] Best configuration recommendations
+  - [ ] Tradeoff analysis (accuracy vs. resources)
+
+### 4.3 Qualitative Analysis (Week 9-10: Apr 19 - May 2, 2026)
+
+- [ ] Case studies for each smell type
+  - [ ] Select representative examples
+  - [ ] Analyze LLM reasoning
+  - [ ] Evaluate explanation quality
+  - [ ] Assess refactoring suggestions
+
+- [ ] User feedback (if time permits)
+  - [ ] Demo to developers
+  - [ ] Gather feedback on usefulness
+  - [ ] Document insights
 
 ---
 
-## Phase 5: Testing & Deployment (Week 11)
+## Phase 5: Paper Writing (Weeks 8-11, Parallel with Evaluation)
 
-### 5.1 Comprehensive Testing (Week 11: May 10-16, 2026)
+### 5.1 Paper Structure & Writing (Weeks 8-10: Apr 12 - May 2, 2026)
 
-#### Backend Testing
-- [ ] Unit tests for all modules (80%+ coverage)
-- [ ] Integration tests (LLM + RAG + Graph)
-- [ ] End-to-end API tests
-- [ ] Performance testing
-  - [ ] Load testing with locust/k6
-  - [ ] Response time benchmarks
-  - [ ] Memory usage profiling
-- [ ] Security testing
-  - [ ] Input validation tests
-  - [ ] Injection attack prevention
-  - [ ] Rate limiting verification
+- [ ] Setup LaTeX environment in `paper/`
+  - [ ] Copy from `docs/research/proposal-latex/`
+  - [ ] Paper template (IEEE/ACM/EMNLP format - choose based on target venue)
+  - [ ] `paper/main.tex` - Main paper file
+  - [ ] `paper/references.bib` - Bibliography
+  - [ ] `paper/figures/` - Figures and plots
+  - [ ] `paper/tables/` - Result tables
 
-#### Frontend Testing
-- [ ] UI component testing
-- [ ] User flow testing
-- [ ] Cross-browser testing (if applicable)
-- [ ] Accessibility testing
-- [ ] Performance testing (page load times)
+- [ ] Abstract (1 page)
+  - [ ] Problem statement
+  - [ ] **Novelty: Privacy-preserving, RAG-enhanced, local LLM (Gaps #1, #4, #5)**
+  - [ ] **Production code focus (Gap #12)**
+  - [ ] Key results
+  - [ ] Contributions
 
-### 5.2 Docker & Deployment Setup (Week 11: May 15-18, 2026)
+- [ ] Introduction (2 pages)
+  - [ ] Motivation: Code smell detection challenges
+  - [ ] **Research gaps from literature (12 gaps)**
+  - [ ] Proposed solution overview
+  - [ ] **Contributions: Privacy, RAG, local LLM, production code**
+  - [ ] Paper organization
 
-**Note: Ollama runs locally on host machine - NOT in Docker**
+- [ ] Related Work (2-3 pages)
+  - [ ] Traditional code smell detection
+  - [ ] ML-based approaches
+  - [ ] **LLM-based approaches (recent, Gaps #2, #3)**
+  - [ ] **RAG in code analysis (Gap #4, #5)**
+  - [ ] **Privacy in code analysis (Gap #1)**
+  - [ ] **Test smell vs production smell (Gap #12)**
+  - [ ] Comparison table with existing work
 
-#### Dockerfiles
-- [ ] Backend Dockerfile
-  - [ ] Multi-stage build for optimization
-  - [ ] Python 3.11+ base image
-  - [ ] Install dependencies
-  - [ ] Non-root user configuration
-  - [ ] Health check endpoint
-- [ ] Frontend Dockerfile
-  - [ ] Streamlit-optimized image
-  - [ ] Port 8501 exposure
-  - [ ] Environment configuration
-- [ ] ChromaDB Dockerfile (Vector Store)
-  - [ ] Persistent volume configuration
-  - [ ] Port 8000 exposure
+- [ ] Methodology (3-4 pages)
+  - [ ] System architecture diagram
+  - [ ] LLM selection (Ollama, local models)
+  - [ ] RAG pipeline (embeddings, ChromaDB, retrieval)
+  - [ ] Prompt engineering strategy
+  - [ ] Workflow design
+  - [ ] **Privacy considerations**
 
-#### Docker Compose Configuration
-- [ ] Create `docker-compose.yml`
-  - [ ] Backend service
-  - [ ] Frontend service
-  - [ ] ChromaDB service
-  - [ ] **Note: Ollama service NOT included (runs on host)**
-- [ ] Configure networking
-  - [ ] Internal network for services
-  - [ ] Backend connects to Ollama via host.docker.internal
-- [ ] Configure volumes
-  - [ ] ChromaDB persistent storage
-  - [ ] Backend logs volume
-  - [ ] Dataset volume
-- [ ] Environment configuration
-  - [ ] `.env` file setup
-  - [ ] `OLLAMA_BASE_URL=http://host.docker.internal:11434`
-  - [ ] Service environment variables
-- [ ] Health checks for all services
-- [ ] Resource limits (CPU, memory)
+- [ ] Experimental Setup (2 pages)
+  - [ ] Datasets description (MaRV, others)
+  - [ ] Evaluation metrics
+  - [ ] Baselines
+  - [ ] Implementation details
+  - [ ] Hardware/software environment
 
-#### Deployment Scripts
-- [ ] Create `scripts/deploy.sh`
-  - [ ] Build all images
-  - [ ] Run Docker Compose
-  - [ ] Verify all services healthy
-- [ ] Create `scripts/stop.sh`
-- [ ] Create `scripts/restart.sh`
-- [ ] Create `scripts/logs.sh`
+- [ ] Results & Discussion (3-4 pages)
+  - [ ] **Import benchmark tables from Benchmarking Strategy Section 7**:
+    - [ ] Table 1: Overall Performance Comparison (all tools + LLM variants)
+    - [ ] Table 2: Per-Smell-Type Performance (12+ smells)
+    - [ ] Table 3: Resource Requirements (latency, memory, throughput)
+  - [ ] **Import benchmark figures**:
+    - [ ] Figure 1: F1-Score comparison (bar chart)
+    - [ ] Figure 2: Precision-Recall curves
+    - [ ] Figure 3: Per-smell heatmap
+    - [ ] Figure 4: Latency vs. Accuracy tradeoff
+    - [ ] Figure 5: RAG top-k ablation study
+  - [ ] **Answer RQ1**: Detection accuracy vs. baselines
+    - [ ] Report F1-scores with 95% CI
+    - [ ] McNemar's test results (statistical significance)
+    - [ ] Best/worst performing smell types
+  - [ ] **Answer RQ2**: RAG effectiveness (Gap #4, #5)
+    - [ ] ΔF1 improvement, false positive reduction rate
+    - [ ] Retrieval quality metrics (Precision@k)
+    - [ ] Optimal top-k value from ablation
+  - [ ] **Answer RQ3**: Per-smell analysis
+    - [ ] Why Long Method/God Class perform well (85-90% F1)
+    - [ ] Why Shotgun Surgery/Divergent Change are challenging (60-70% F1)
+    - [ ] Failure pattern taxonomy
+  - [ ] **Answer RQ4**: Resource requirements
+    - [ ] Latency breakdown (embedding + retrieval + inference)
+    - [ ] Memory footprint, throughput
+    - [ ] Local vs cloud LLM trade-offs (Gap #1): cost, privacy, latency
+  - [ ] Error analysis insights
+  - [ ] Discussion of findings and implications
+
+- [ ] Threats to Validity (1 page)
+  - [ ] Internal validity
+  - [ ] External validity
+  - [ ] Construct validity
+  - [ ] Mitigation strategies
+
+- [ ] Conclusion & Future Work (1 page)
+  - [ ] Summary of contributions
+  - [ ] Key findings
+  - [ ] Limitations
+  - [ ] Future research directions
+
+### 5.2 Figures & Tables (Week 10: Apr 26 - May 2, 2026)
+
+**Generate from Benchmarking Results - See Benchmarking Strategy Section 7**
+
+- [ ] Create figures (from `scripts/analyze_results.py` outputs)
+  - [ ] **Figure 1**: F1-Score comparison bar chart (6+ tools)
+  - [ ] **Figure 2**: Precision-Recall curves (all approaches)
+  - [ ] **Figure 3**: Per-smell performance heatmap (12+ smells × 6+ tools)
+  - [ ] **Figure 4**: Latency vs. Accuracy tradeoff scatter plot
+  - [ ] **Figure 5**: RAG top-k ablation study (F1 vs. k)
+  - [ ] System architecture diagram (methodology section)
+  - [ ] RAG pipeline flowchart (methodology section)
+  - [ ] Example code smell detection (annotated walkthrough)
+
+- [ ] Create tables (from `results/` benchmark outputs)
+  - [ ] **Table 1**: Overall Performance Comparison
+    - [ ] Columns: Tool | Precision | Recall | F1-Score | Latency | Cost
+    - [ ] Rows: 5 baselines + 2-3 LLM variants + GPT-4 reference
+    - [ ] Include mean ± std from 3+ runs
+  - [ ] **Table 2**: Per-Smell-Type Performance
+    - [ ] Columns: Smell Type | Vanilla F1 | RAG F1 | ΔF1 | Best Baseline
+    - [ ] 12+ smell types with category groupings
+  - [ ] **Table 3**: Resource Requirements
+    - [ ] Columns: Metric | Vanilla | RAG | Overhead
+    - [ ] Rows: Latency, memory, throughput, token usage
+  - [ ] Dataset statistics (MaRV breakdown by language/smell)
+  - [ ] Ablation study results (embedding models, LLM models, top-k)
+  - [ ] Comparison with related work (our approach vs. literature)
+  - [ ] Code smell taxonomy (12+ smells with definitions)
+
+### 5.3 Paper Refinement (Week 11: May 3-9, 2026)
+
+- [ ] First complete draft
+- [ ] Internal review (self-review, check gaps)
+- [ ] **Verify all 12 research gaps are addressed**
+- [ ] Revisions based on feedback
+- [ ] Proofreading and formatting
+- [ ] Check references (all 16+ papers cited)
+- [ ] **Reproducibility Package** (Architecture Section 11.3)
+  - [ ] Code availability statement (GitHub repository link)
+  - [ ] **Docker image** with all dependencies (Ollama, ChromaDB, etc.)
+    - [ ] Dockerfile with exact versions
+    - [ ] Docker Compose for easy deployment
+    - [ ] Pre-built image pushed to DockerHub (optional)
+  - [ ] **Installation guide** (`docs/deployment/DEPLOYMENT_GUIDE.md`)
+    - [ ] System requirements (4-8GB RAM, CPU/GPU specs)
+    - [ ] Step-by-step installation instructions
+    - [ ] Troubleshooting common issues
+  - [ ] **Experiment reproduction instructions**
+    - [ ] Scripts to download MaRV dataset
+    - [ ] Commands to reproduce all experiments
+    - [ ] Expected output formats
+  - [ ] **Model versions documentation**
+    - [ ] Exact Ollama model versions (llama3:8b, codellama:7b)
+    - [ ] Embedding model version (all-MiniLM-L6-v2)
+    - [ ] Dependency versions (requirements.txt with pinned versions)
+  - [ ] Dataset description and access instructions
+  - [ ] Additional experimental results (full confusion matrices, per-sample predictions)
+  - [ ] **Replication command**: Single command to run all experiments
+    - [ ] Example: `./scripts/replicate_study.sh`
 
 ---
 
-## Phase 6: Documentation & Finalization (Week 12)
+## Phase 6: Optional System Deployment (Week 11-12, If Time Permits)
 
-### 6.1 Documentation (Week 12: May 19-25, 2026)
-- [ ] Update README.md
+### 6.1 Simple API Wrapper (Week 11: May 3-9, 2026)
+
+**Note**: This is for practical demonstration, not required for paper.
+
+- [ ] Create `src/api_server.py` (optional FastAPI app)
+  - [ ] Simple Flask or FastAPI wrapper
+  - [ ] Endpoint: `/analyze` - analyze code
+  - [ ] Endpoint: `/health` - health check
+  - [ ] No authentication (research demo only)
+
+- [ ] Create `src/cli.py` (command-line interface)
+  - [ ] Accept code file or stdin
+  - [ ] Display detected smells
+  - [ ] Save results to file
+
+### 6.2 Visualization (Week 11-12: May 3-16, 2026)
+
+- [ ] Create `visualization/` directory (simple Flask app)
+  - [ ] Web interface to display analysis results
+  - [ ] **Multi-agent interaction visualization** (similar to magis)
+  - [ ] Show detected smells with explanations
+  - [ ] Visualize confidence scores
+  - [ ] Compare different experiments
+  - [ ] Timeline view of agent activities
+
+- [ ] Create `visualization/process.py` (Flask server)
+  - [ ] Connect to SQLite database
+  - [ ] Query agent activities, requests, responses
+  - [ ] Serve agent interaction timeline
+  - [ ] Export analysis results
+
+- [ ] Create `visualization/db_config.py`
+  - [ ] Database connection settings
+  - [ ] Query helpers for agent data
+
+- [ ] Create `visualization/templates/`
+  - [ ] `index.html` - Main dashboard
+  - [ ] `analysis.html` - Analysis results view
+  - [ ] `experiments.html` - Experiment comparison
+  - [ ] `agents.html` - **Agent interaction timeline**
+  - [ ] `role_icon.html` - **Agent role icons** (Manager, Detector, Retriever, Validator)
+
+- [ ] Create `visualization/static/`
+  - [ ] `index.css` - Main styles
+  - [ ] `task.css` - Task/analysis view styles
+  - [ ] `task.js` - Interactive timeline
+  - [ ] `agents.js` - **Agent interaction visualization**
+
+---
+
+## Phase 7: Final Deliverables (Week 12: May 10-16, 2026)
+
+### 7.1 Documentation
+
+- [ ] Update `README.md`
   - [ ] Project overview
-  - [ ] Features and capabilities
+  - [ ] Research goals & novelty
   - [ ] Installation instructions
-  - [ ] **Note: Ollama must be installed and running locally**
-  - [ ] Quick start guide
   - [ ] Usage examples
+  - [ ] Dataset information
+  - [ ] Experiment reproduction steps
+  - [ ] Citation information (arXiv link)
+
+- [ ] Create `EXPERIMENTS.md`
+  - [ ] How to run experiments
   - [ ] Configuration options
-  - [ ] Troubleshooting section
-- [x] Deployment guide (already complete)
-- [ ] API documentation
-  - [ ] Full endpoint reference
-  - [ ] Request/response schemas
-  - [ ] Code examples in multiple languages
-  - [ ] Postman collection
-- [ ] User manual
-  - [ ] Step-by-step usage guide
-  - [ ] Screenshots
-  - [ ] Best practices
-  - [ ] FAQ section
-- [ ] Contributing guidelines
-  - [ ] Code style guide
-  - [ ] Pull request process
-  - [ ] Testing requirements
-- [ ] Code comments review
-  - [ ] Ensure all functions documented
-  - [ ] Update stale comments
-  - [ ] Add architectural decision records
+  - [ ] Expected results
+  - [ ] Troubleshooting
 
-### 6.2 Final Deliverables (Week 12: May 22-26, 2026)
-- [ ] Final presentation
-  - [ ] Slide deck preparation
-  - [ ] Demo script
-  - [ ] Research contributions summary
-- [ ] Demo video
-  - [ ] Record system walkthrough
-  - [ ] Highlight key features
-  - [ ] Show comparison with baselines
-- [ ] Research paper/report
-  - [ ] Write methodology section
-  - [ ] Present evaluation results
-  - [ ] Discuss findings and contributions
-  - [ ] Format for conference submission
-- [ ] Code cleanup & optimization
-  - [ ] Remove debug code
-  - [ ] Optimize performance bottlenecks
-  - [ ] Refactor duplicate code
-- [ ] Final testing
-  - [ ] Full system regression test
-  - [ ] Deploy to clean environment
-  - [ ] Verify all features work
-- [ ] Project submission
-  - [ ] Package all deliverables
-  - [ ] Submit to appropriate venue
-  - [ ] Archive repository
+- [ ] Create `ARCHITECTURE.md`
+  - [ ] System design overview
+  - [ ] Module descriptions
+  - [ ] Data flow diagrams
+
+### 7.2 Code Quality
+
+- [ ] Code cleanup and refactoring
+- [ ] Add docstrings to all modules
+- [ ] Type hints (Python typing)
+- [ ] Unit tests for core modules (if time)
+- [ ] Code formatting (black, isort)
+
+### 7.3 Research Artifacts
+
+- [ ] Create GitHub release
+- [ ] Share datasets (if allowed)
+- [ ] Publish experiment results
+- [ ] Create Zenodo archive (DOI)
 
 ---
 
-## Risk Management
+## Summary: Research-Oriented Approach
 
-### Technical Risks
-- [ ] **Risk: Ollama model performance issues**
-  - **Impact**: High
-  - **Probability**: Medium
-  - **Mitigation**: Test multiple models (codellama:7b, deepseek-coder:6.7b), benchmark performance, have fallback options
-  - **Note**: ✅ Ollama already installed locally
+### Key Principles
 
-- [ ] **Risk: Vector store scalability**
-  - **Impact**: Medium
-  - **Probability**: Low
-  - **Mitigation**: Start with small dataset, optimize chunking strategy, use batch operations
+✅ **Simple Python modules** - Core scripts like the example codebase  
+✅ **Research-first** - Focus on paper publication and experiments  
+✅ **Dual-track** - Research (paper) + Implementation (working system)  
+✅ **Local-first** - Ollama running locally, privacy-preserving  
+✅ **Production code** - Not test smells (Gap #12)  
 
-- [ ] **Risk: Dataset quality issues**
-  - **Impact**: High
-  - **Probability**: Medium
-  - **Mitigation**: Manual validation, data cleaning pipeline, use MaRV dataset with 95%+ accuracy
+### Project Structure (Simple)
 
-- [ ] **Risk: LLM hallucinations**
-  - **Impact**: High
-  - **Probability**: High
-  - **Mitigation**: Implement validation layer, use RAG effectively, cross-validate with static analysis
-
-- [ ] **Risk: Integration complexity**
-  - **Impact**: Medium
-  - **Probability**: Medium
-  - **Mitigation**: Incremental integration, extensive testing at each step, clear interfaces
-
-- [ ] **Risk: Docker resource constraints**
-  - **Impact**: Medium
-  - **Probability**: Low
-  - **Mitigation**: Optimize images, set resource limits, use multi-stage builds
-  - **Note**: Ollama NOT in Docker (reduces container overhead)
-
----
-
-## Dependencies
-
-**Research-Driven Development Pipeline**
-
-```mermaid
-graph TD
-    A[Phase 1: Planning & Setup<br/>✅ 73.3% Complete] --> B[Backend Core]
-    A --> C[Frontend Setup]
-    
-    subgraph Research["🔬 Research Foundation (COMPLETE)"]
-        R1[16 Papers Analyzed<br/>Gap #9]
-        R2[12 Gaps Identified<br/>All Gaps]
-        R3[MaRV Dataset Selected<br/>Gap #3: 95%+ Accuracy]
-        R4[5 Baselines Identified<br/>Gap #4]
-        R5[Privacy Architecture<br/>Gap #1, #10]
-    end
-    
-    R1 --> B
-    R2 --> B
-    R3 --> D[Data Management]
-    R4 --> J[Evaluation]
-    R5 --> B
-    
-    B[Backend Core<br/>Gap #1: Local LLMs] --> D[LLM Integration<br/>Ollama: $0 Cost]
-    B --> E[RAG Implementation<br/>Gap #2: +10-15% Accuracy]
-    D --> F[LangGraph Workflow<br/>14-Step Pipeline]
-    E --> F
-    F --> G[API Development]
-    G --> H[Frontend-Backend Integration]
-    C --> H
-    B --> I[Data Management<br/>Gap #3: MaRV]
-    I --> J[Evaluation<br/>Gap #4, #6, #7]
-    H --> K[Testing]
-    J --> K
-    K --> L[Deployment<br/>Gap #8: Open Source]
-    L --> M[Documentation<br/>Gap #8: Reproducibility]
-    
-    style Research fill:#c8e6c9,stroke:#388e3c,stroke-width:2px
-    style A fill:#4caf50,stroke:#2e7d32,stroke-width:2px
-    style B fill:#fff4e1,stroke:#ff9800
-    style E fill:#ffe1e1,stroke:#f44336
-    style I fill:#e1ffe1,stroke:#4caf50
-    style J fill:#fce4ec,stroke:#e91e63
+```
+code-smell/
+├── config.py                 # Configuration
+├── requirements.txt          # Dependencies
+├── README.md                 # Main documentation
+├── EXPERIMENTS.md            # How to run experiments
+├── ARCHITECTURE.md           # System design
+│
+├── src/                      # Core Python modules
+│   ├── llm_client.py                  # Ollama client wrapper
+│   ├── prompt_templates.py            # LLM prompts for detection
+│   ├── response_parser.py             # Parse LLM responses
+│   ├── embedding_service.py           # Text embeddings
+│   ├── vector_store.py                # ChromaDB interface
+│   ├── rag_pipeline.py                # RAG implementation
+│   ├── code_chunker.py                # AST-based chunking
+│   ├── code_parser.py                 # Code parsing & metrics
+│   ├── logger.py                      # Structured logging
+│   ├── common.py                      # Utility functions
+│   │
+│   ├── # === Multi-Agent System ===
+│   ├── analysis_coordinator.py        # Manager agent
+│   ├── code_smell_detector.py         # Member agent (detector)
+│   ├── rag_retriever.py               # Custodian agent (retriever)
+│   ├── quality_validator.py           # CodeReviewer agent
+│   ├── code_analysis_workflow.py      # Orchestrates agents
+│   │
+│   ├── database_manager.py            # SQLite tracking (agents + experiments)
+│   ├── data_loader.py                 # Dataset loaders
+│   ├── data_preprocessor.py           # Data preprocessing
+│   ├── evaluation.py                  # Metrics & evaluation
+│   ├── api_server.py                  # Optional FastAPI
+│   └── cli.py                         # Command-line interface
+│
+├── exp/                      # Experiments
+│   ├── baseline/                      # No RAG experiments
+│   ├── rag_experiments/               # RAG-enhanced experiments
+│   └── ablation_studies/              # Ablation tests
+│
+├── data/                     # Datasets
+│   ├── datasets/
+│   │   ├── marv/
+│   │   ├── qualitas_corpus/
+│   │   └── smelly_code/
+│   └── ground_truth/
+│
+├── results/                  # Experiment results
+│   ├── metrics/
+│   ├── figures/
+│   └── tables/
+│
+├── scripts/                  # Helper scripts
+│   ├── index_datasets.py
+│   ├── run_experiment.py
+│   └── analyze_results.py
+│
+├── visualization/            # Optional web UI (multi-agent timeline)
+│   ├── process.py                     # Flask server
+│   ├── db_config.py                   # Database connection
+│   ├── static/
+│   │   ├── index.css
+│   │   ├── task.css
+│   │   ├── task.js                    # Interactive timeline
+│   │   └── agents.js                  # Agent visualization
+│   └── templates/
+│       ├── index.html                 # Main dashboard
+│       ├── analysis.html              # Analysis results
+│       ├── experiments.html           # Experiment comparison
+│       ├── agents.html                # Agent interaction timeline
+│       └── role_icon.html             # Agent role icons
+│
+├── paper/                    # LaTeX paper
+│   ├── main.tex
+│   ├── references.bib
+│   ├── figures/
+│   └── tables/
+│
+└── docs/                     # Documentation (existing)
+    ├── architecture/
+    ├── planning/
+    └── research/
 ```
 
----
+### Timeline Summary
 
-## Research Contribution Map
+- **Weeks 1-2**: Setup & literature ✅
+- **Weeks 3-6**: Core system development (simple Python modules)
+- **Weeks 6-8**: Datasets & initial experiments
+- **Weeks 8-10**: Evaluation & analysis
+- **Weeks 8-11**: Paper writing (parallel)
+- **Weeks 11-12**: Optional deployment & finalization
 
-**12 Gaps Addressed Through Systematic Architecture Design**
+### Research Goals Addressed
 
-```mermaid
-mindmap
-  root((Code Smell<br/>Detection<br/>Research))
-    [Privacy & Local]
-      Gap 1: Local LLM Evaluation
-      Gap 10: Privacy Analysis
-      Ollama deployment
-      $0 cost/analysis
-    
-    [RAG & Accuracy]
-      Gap 2: RAG Application
-      Gap 3: Expert Validation
-      ChromaDB + MaRV
-      +10-15% accuracy
-      95%+ ground truth
-    
-    [Evaluation]
-      Gap 4: Systematic Comparison
-      Gap 6: Cost-Accuracy Study
-      Gap 7: Per-Smell Metrics
-      5 baseline tools
-      Empirical analysis
-      Detailed metrics
-    
-    [Quality]
-      Gap 5: Explanations
-      Gap 8: Open Source
-      Gap 9: Dataset Study
-      Evidence-based
-      Docker package
-      10 datasets compared
-    
-    [Novel Capabilities]
-      Gap 11: AI Code Support
-      Gap 12: Production Focus
-      Human + LLM code
-      Not test smells
+| Gap | Description | How Addressed |
+|-----|-------------|---------------|
+| #1 | Privacy | Local LLM (Ollama), no cloud |
+| #2-#3 | Limited LLM studies | RAG-enhanced LLM approach |
+| #4-#5 | No RAG | ChromaDB + sentence-transformers |
+| #6 | Limited validation | MaRV dataset (95%+ accurate) |
+| #7 | No baselines | Compare 5 tools |
+| #11 | AI-generated code | Support both human & AI code |
+| #12 | Test smells focus | **Production code smells** |
+
+### Multi-Agent System Summary
+
+Our system employs **4 specialized agents** following a collaborative architecture:
+
+| Agent | Role | Module | Key Responsibilities |
+|-------|------|--------|---------------------|
+| **Analysis Coordinator** | Manager | `analysis_coordinator.py` | Orchestrate workflow, split code, aggregate results |
+| **Code Smell Detector** | Member | `code_smell_detector.py` | Detect smells, classify severity, generate explanations |
+| **RAG Retriever** | Custodian | `rag_retriever.py` | Find relevant examples, rank by similarity, augment context |
+| **Quality Validator** | CodeReviewer | `quality_validator.py` | Validate detections, filter false positives, suggest refactoring |
+
+**Agent Interaction Flow:**
+```
+Analysis Coordinator (Manager)
+    ↓ (assigns tasks)
+    ├─→ RAG Retriever (finds examples) ────┐
+    │                                       ↓
+    ├─→ Code Smell Detector (analyzes) ←───┘ (augmented with context)
+    │                                       ↓
+    └─→ Quality Validator (reviews) ────→ Final Results
 ```
 
----
-
-## Progress Summary
-
-**Overall Completion**: 11/15 tasks completed in Phase 1 (73.3%)
-
-### Completed ✅
-- [x] Research proposal document (8 sections)
-- [x] Work breakdown structure 
-- [x] System architecture design
-- [x] Database schema design
-- [x] LLM architecture design (Version 2.0)
-- [x] Similar papers research (16 papers)
-- [x] Research gap analysis (12 gaps)
-- [x] Competitive positioning analysis
-- [x] Dataset comparison study
-- [x] Editor config (.editorconfig)
-- [x] Cursor rules configuration
-- [x] Git repository setup
-- [x] Figma design system
-- [x] Deployment guide
-
-### In Progress 🔄
-- [ ] Phase 2: Backend Development (Ready to start)
-
-### Not Started ⏳
-- [ ] Monorepo structure setup
-- [ ] Docker configuration (Backend, Frontend, ChromaDB - Ollama runs locally)
-- [ ] CI/CD pipeline design
-- [ ] All Phase 2-6 tasks
-
-### Environment Status
-✅ **Ready**:
-- Ollama installed locally (verified)
-- Python 3.11+ environment
-- Git repository initialized
-- Documentation complete
-
-⏳ **Pending**:
-- Monorepo structure
-- Docker Compose setup
-- Backend project initialization
-
-### Research Highlights
-- ✅ **16 papers** analyzed (Gap #9: Comprehensive comparison)
-- ✅ **12 research gaps** identified and documented
-- ✅ **5 baseline tools** identified for systematic comparison (Gap #4)
-- ✅ **MaRV dataset** selected (95%+ accuracy, Gap #3)
-- ✅ **Privacy-preserving architecture** designed (Gap #1, #10)
-- ✅ **RAG enhancement** planned (+10-15% accuracy, Gap #2)
-- ✅ **Production vs. test code** positioning (Gap #12)
-- ✅ **AI-generated code support** designed (Gap #11)
-
-### Next Steps (Priority Order)
-1. **Immediate (This Week)**:
-   - [ ] Create monorepo structure (backend/, frontend/, shared/)
-   - [ ] Initialize FastAPI backend project
-   - [ ] Set up Docker Compose (Backend, Frontend, ChromaDB only)
-   - [ ] Configure environment variables (.env)
-   - [ ] Test Ollama connectivity from backend
-
-2. **Week 3 (Feb 17-21)**:
-   - [ ] Complete Phase 2.1: Core Infrastructure Setup
-   - [ ] Start Phase 2.2: LLM Integration
-
-3. **Week 4 (Feb 22-28)**:
-   - [ ] Complete LLM Integration
-   - [ ] Start RAG Implementation
-
-### Key Dates
-- **Feb 15, 2026**: Monorepo setup deadline
-- **Feb 20, 2026**: FastAPI structure complete
-- **Feb 25, 2026**: Ollama integration complete
-- **Mar 10, 2026**: RAG pipeline complete
-- **Mar 20, 2026**: LangGraph workflow complete
-- **Apr 4, 2026**: Backend complete
-- **Apr 18, 2026**: Frontend complete
-- **May 5, 2026**: Evaluation complete
-- **May 26, 2026**: Final submission
+**Database Tracking:**
+- All agent interactions logged to SQLite
+- Enables reproducible experiments
+- Tracks: requests, responses, actions, processes
+- Supports visualization of agent timeline
 
 ---
 
-## Dependencies & Prerequisites
+**Note**: Optional FastAPI deployment is separated from core research. Focus is on working system + publishable paper, not enterprise-grade API.
 
-### Phase Dependencies
-- ✅ Phase 1 (Planning & Setup) → Phase 2 (Backend Development)
-- Phase 2 (Backend) → Phase 3 (Frontend Development)
-- Phase 2 (Backend) → Phase 4 (Evaluation & Research)
-- Phase 3 (Frontend) + Phase 4 (Evaluation) → Phase 5 (Testing & Deployment)
-- Phase 5 (Testing & Deployment) → Phase 6 (Documentation & Finalization)
-
-### Critical Path
-1. **Core Infrastructure** → LLM Integration → RAG Implementation
-2. **RAG Implementation** → LangGraph Workflow → API Development
-3. **API Development** → Frontend Development
-4. **API Development** → Evaluation Framework
-5. **All Development** → Testing → Deployment → Documentation
-
-### Technical Prerequisites
-**Already Installed** ✅:
-- Ollama (running locally on host machine)
-- Python 3.11+
-- Git
-
-**To Install**:
-- [ ] Docker & Docker Compose
-- [ ] FastAPI and dependencies
-- [ ] LangChain & LangGraph
-- [ ] ChromaDB
-- [ ] Streamlit
-- [ ] HuggingFace transformers (for embeddings)
-
-### Data Dependencies
-- [ ] MaRV dataset (for evaluation)
-- [ ] Smelly Code Dataset (for RAG examples)
-- [ ] Baseline tool outputs (for comparison)
-
----
-
-## Architecture Notes
-
-### Local LLM Setup (Ollama)
-**Important**: Ollama runs on the **host machine**, NOT in Docker containers.
-
-- **Ollama URL**: `http://localhost:11434` (from host)
-- **From Docker**: Backend container accesses Ollama via `http://host.docker.internal:11434`
-- **Models to Test**:
-  - `codellama:7b` (Code-specialized)
-  - `deepseek-coder:6.7b` (Code-specialized, more recent)
-  - `llama3:8b` (General purpose, good reasoning)
-
-### Docker Container Architecture
-```
-┌─────────────────────────────────────────────────────────────┐
-│ Host Machine                                                │
-│                                                             │
-│  ┌──────────────┐         ┌─────────────────────────────┐  │
-│  │   Ollama     │         │     Docker Containers        │  │
-│  │  (Local)     │         │                              │  │
-│  │ Port: 11434  │◄────────┤  Backend (FastAPI)          │  │
-│  └──────────────┘         │  connects via               │  │
-│                           │  host.docker.internal:11434 │  │
-│                           │                              │  │
-│                           │  Frontend (Streamlit)        │  │
-│                           │  connects to Backend        │  │
-│                           │                              │  │
-│                           │  ChromaDB (Vector Store)     │  │
-│                           │  connects to Backend        │  │
-│                           └─────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Why Ollama is NOT in Docker
-1. **Performance**: Direct GPU access on host is faster
-2. **Model Persistence**: Models stored once, reused across projects
-3. **Resource Efficiency**: Single Ollama instance for all projects
-4. **Easier Updates**: Update Ollama independently of containers
-
----
-
-## Competitive Positioning
-
-**Our System vs. Recent Research (2024-2025)**
-
-```mermaid
-quadrantChart
-    title Research Positioning: Privacy vs. Accuracy
-    x-axis Low Privacy --> High Privacy
-    y-axis Low Accuracy --> High Accuracy
-    quadrant-1 "🏆 Our Sweet Spot"
-    quadrant-2 "Cloud-Based High Accuracy"
-    quadrant-3 "Low Value"
-    quadrant-4 "Privacy-Only Solutions"
-    
-    GPT-4/Claude Code Review: [0.2, 0.85]
-    NOIR (Diff Privacy): [0.5, 0.75]
-    Test Smell Papers: [0.3, 0.65]
-    Traditional Static Analysis: [0.9, 0.55]
-    Our System (RAG + Local LLM): [0.95, 0.80]
-```
-
-**Key Differentiators:**
-| Feature | Cloud APIs (GPT-4) | NOIR | Test Smell Papers | Static Tools | **Our System** |
-|---------|-------------------|------|-------------------|--------------|----------------|
-| **Privacy** | ❌ Low | 🟡 Differential | ❌ Cloud | ✅ 100% Local | ✅ **100% Local** |
-| **Cost** | ❌ $0.01-0.10 | ❌ $0.03+ | ❌ API fees | ✅ Free | ✅ **$0** |
-| **Accuracy** | ✅ 85%+ | 🟡 75% | 🟡 60-70% | 🟡 55-65% | ✅ **80-85% (RAG)** |
-| **Code Type** | 🟡 General | ❌ Generation | ❌ **Test Smells** | 🟡 General | ✅ **Production** |
-| **RAG** | ❌ No | ❌ No | ❌ No | ❌ No | ✅ **Yes (+10-15%)** |
-| **Validation** | 🟡 Auto | 🟡 Auto | 🟡 Auto | 🟡 Auto | ✅ **MaRV 95%+** |
-| **Baselines** | ❌ No | 🟡 1-2 tools | 🟡 1-2 tools | N/A | ✅ **5 Tools** |
-| **Open Source** | ❌ No | 🟡 Partial | 🟡 Partial | ✅ Yes | ✅ **Full** |
-| **LLM Location** | ☁️ Cloud | ☁️ Cloud | ☁️ Cloud | N/A | 🖥️ **Local (Ollama on Host)** |
-
-**Research Novelty:** First privacy-preserving, RAG-enhanced local LLM system for **production** code smell detection, validated on expert-annotated ground truth (MaRV 95%+), with systematic comparison against 5 baseline tools.
-
----
-
-**Note**: This checklist-based WBS will be updated weekly to reflect actual progress. Mark items as completed by changing `[ ]` to `[x]`.
-
-**Last Updated**: February 16, 2026  
-**Next Review**: February 23, 2026
+**Last Updated**: February 26, 2026  
+**Next Review**: March 5, 2026
