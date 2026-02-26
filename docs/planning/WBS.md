@@ -518,28 +518,33 @@ These metrics track LLM behavior and quality beyond traditional ML metrics:
 - [x] LaTeX paper template setup (proposal.tex, references.bib)
 
 ### 1.2 Environment & Project Structure
-- [ ] Create simple project structure
-  - [ ] `src/` - Core Python modules
-  - [ ] `exp/` - Experiments directory
-  - [ ] `data/` - Datasets
-  - [ ] `results/` - Experiment results (see Benchmarking Strategy Section 7)
-    - [ ] `results/predictions/` - Tool predictions
-    - [ ] `results/confusion_matrices/` - Confusion matrices
-    - [ ] `results/performance/` - Timing & latency logs
-    - [ ] `results/resources/` - Resource profiling data
-    - [ ] `results/figures/` - Generated plots for paper
-    - [ ] `results/tables/` - Generated tables (LaTeX, CSV)
-  - [ ] `scripts/` - Utility scripts for benchmarking & experiments
-  - [ ] `visualization/` - Web-based visualization (optional)
-  - [ ] `paper/` - LaTeX source files
-  - [ ] `config.py` - Configuration file
-  - [ ] `requirements.txt` - Python dependencies
+- [x] Create simple project structure
+  - [x] `src/` - Core Python modules
+  - [x] `exp/` - Experiments directory (baseline, rag_experiments, ablation_studies)
+  - [x] `data/` - Datasets (marv, qualitas_corpus, smelly_code, ground_truth)
+  - [x] `results/` - Experiment results (see Benchmarking Strategy Section 7)
+    - [x] `results/predictions/` - Tool predictions (baseline, llm_vanilla, llm_rag)
+    - [x] `results/confusion_matrices/` - Confusion matrices
+    - [x] `results/performance/` - Timing & latency logs
+    - [x] `results/resources/` - Resource profiling data
+    - [x] `results/figures/` - Generated plots for paper
+    - [x] `results/tables/` - Generated tables (LaTeX, CSV)
+    - [x] `results/metrics/` - LLM-specific metrics (hallucination_rate, cache_performance)
+  - [x] `scripts/` - Utility scripts for benchmarking & experiments
+  - [x] `visualization/` - Web-based visualization (optional)
+  - [x] `paper/` - LaTeX source files
+  - [x] `cache/` - LLM response cache directory (git-ignored)
+  - [x] `chromadb_store/` - Vector database storage (git-ignored)
+  - [x] `config.py` - Configuration file (Ollama, ChromaDB, RAG, M4 Pro optimizations)
+  - [x] `requirements.txt` - Python dependencies (pinned versions)
 - [x] Editor config (.editorconfig)
 - [x] Cursor rules configuration
 - [x] Git repository setup
-- [ ] Setup Python environment (conda/venv)
-  - [ ] Python 3.11+
-  - [ ] Core libraries: openai, chromadb, sentence-transformers, tiktoken
+- [x] Setup Python environment (conda/venv)
+  - [x] Python 3.12.12 (venv created at project root)
+  - [x] Core libraries: ollama, chromadb, sentence-transformers, tiktoken, langchain, langgraph, pydantic, structlog
+- [x] Create `.gitignore` (exclude venv/, cache/, chromadb_store/, *.db, __pycache__)
+- [x] Create `PROJECT_STRUCTURE.md` (directory organization and setup instructions)
 
 ---
 
@@ -547,26 +552,32 @@ These metrics track LLM behavior and quality beyond traditional ML metrics:
 
 ### 2.1 Configuration Module (Week 3: Feb 26 - Mar 1, 2026)
 
-- [ ] Create `config.py` at project root
-  - [ ] Ollama configuration (base URL: http://localhost:11434)
-  - [ ] Model selection (codellama:7b or deep seek-coder:6.7b)
-  - [ ] ChromaDB persistent directory path
-  - [ ] Embedding model name (sentence-transformers)
-  - [ ] Experiment result paths
-  - [ ] Dataset paths (MaRV, others)
-  - [ ] Logging configuration
+- [x] Create `config.py` at project root
+  - [x] Ollama configuration (base URL: http://localhost:11434)
+  - [x] Model selection (llama3:8b default, with model selection logic for fast/accurate/code-specialized)
+  - [x] ChromaDB persistent directory path
+  - [x] Embedding model name (sentence-transformers/all-MiniLM-L6-v2)
+  - [x] Experiment result paths
+  - [x] Dataset paths (MaRV, Qualitas Corpus, Smelly Code)
+  - [x] Logging configuration
+  - [x] M4 Pro optimizations (CPU inference, batch_size=5, max_concurrent_requests=2)
+  - [x] Performance targets from Architecture (2-5s latency, 100-200 analyses/hour, 4-8GB RAM)
+  - [x] RAG configuration (top_k=5, similarity_threshold=0.7, MMR diversity_lambda=0.7)
 
-- [ ] Create `requirements.txt` (Architecture Section 11.3 dependencies)
-  - [ ] ollama (Python client)
-  - [ ] chromadb
-  - [ ] sentence-transformers
-  - [ ] tiktoken
-  - [ ] **langchain** - LLM orchestration framework
-  - [ ] **langgraph** - Workflow state machine (Architecture Section 6)
+- [x] Create `requirements.txt` (Architecture Section 11.3 dependencies)
+  - [x] ollama==0.3.3 (Python client)
+  - [x] chromadb==0.5.5
+  - [x] sentence-transformers==3.0.1
+  - [x] tiktoken==0.7.0
+  - [x] **langchain==0.2.16** - LLM orchestration framework
+  - [x] **langgraph==0.2.28** - Workflow state machine (Architecture Section 6)
+  - [x] pydantic==2.9.1 (validation)
+  - [x] structlog==24.4.0 (logging)
   - [ ] pygments (code syntax)
-  - [ ] pandas, numpy
+  - [ ] pandas, numpy (for metrics)
   - [ ] scikit-learn (for metrics)
   - [ ] matplotlib, seaborn (plotting)
+  - [ ] pytest (testing)
   - [ ] flask (optional - for visualization)
   - [ ] pydantic (validation)
   - [ ] structlog (structured logging)

@@ -1,0 +1,129 @@
+# Python Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ChromaDB and Vector Stores
+chromadb_store/
+*.chroma/
+
+# LLM Response Cache
+cache/
+.cache/
+*.cache/
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Results (optional - comment out if you want to track results)
+# results/predictions/
+# results/confusion_matrices/
+# results/performance/
+# results/resources/
+
+# Experiment Outputs (large files)
+exp/*/outputs/
+exp/*/checkpoints/
+
+# Data (optional - comment out if datasets are small)
+# data/datasets/marv/
+# data/datasets/qualitas_corpus/
+# data/datasets/smelly_code/
+
+# Temporary Files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Build Artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Environment Variables
+.env
+.env.local
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# LaTeX Build Artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.pdf
+
+# Backup Files
+*.bak
+*.backup
+*~
+
+# Large Model Files (if downloaded locally)
+models/
+*.bin
+*.safetensors
+*.gguf
+*.pth
+*.pt

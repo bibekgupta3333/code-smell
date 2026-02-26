@@ -1,0 +1,144 @@
+# LLM-Based Code Smell Detection System - Python Dependencies
+# Optimized for M4 Pro laptop, Python 3.11+
+# Updated: February 26, 2026
+
+# ============================================================================
+# LLM & ORCHESTRATION (Architecture Section 11.3)
+# ============================================================================
+ollama==0.3.3                      # Local LLM client for Ollama
+langchain==0.2.16                  # LLM orchestration framework
+langchain-community==0.2.16        # Community integrations
+langchain-core==0.2.38            # Core LangChain abstractions
+langgraph==0.2.28                  # Workflow state machine (Architecture Section 6)
+langsmith==0.1.129                 # LangChain debugging/tracing (optional)
+
+# ============================================================================
+# VECTOR STORE & EMBEDDINGS (RAG Pipeline)
+# ============================================================================
+chromadb==0.5.5                    # Vector database for RAG
+sentence-transformers==3.0.1       # Embedding models
+transformers==4.44.2               # HuggingFace transformers
+torch==2.4.1                       # PyTorch (CPU version for M4 Pro)
+safetensors==0.4.5                # Safe tensor serialization
+
+# ============================================================================
+# DATA PROCESSING & ML
+# ============================================================================
+numpy==1.26.4                      # Numerical computing
+pandas==2.2.2                      # Data manipulation
+scikit-learn==1.5.1               # ML utilities and metrics
+scipy==1.14.1                      # Scientific computing
+
+# ============================================================================
+# CODE ANALYSIS & PARSING
+# ============================================================================
+tree-sitter==0.22.3               # Syntax tree parsing
+tree-sitter-languages==1.10.2     # Pre-built language grammars
+pygments==2.18.0                  # Code syntax highlighting
+radon==6.0.1                      # Code metrics (complexity, LOC)
+lizard==1.17.10                   # Cyclomatic complexity analyzer
+
+# ============================================================================
+# VALIDATION & PARSING
+# ============================================================================
+pydantic==2.9.1                   # Data validation
+pydantic-settings==2.5.2          # Settings management
+jsonschema==4.23.0                # JSON schema validation
+
+# ============================================================================
+# TOKEN MANAGEMENT
+# ============================================================================
+tiktoken==0.7.0                   # OpenAI tokenizer
+tokenizers==0.19.1                # Fast tokenizers
+
+# ============================================================================
+# LOGGING & MONITORING
+# ============================================================================
+structlog==24.4.0                 # Structured logging
+python-json-logger==2.0.7         # JSON log formatter
+tqdm==4.66.5                      # Progress bars
+
+# ============================================================================
+# HTTP & API (Optional - for FastAPI deployment)
+# ============================================================================
+fastapi==0.114.2                  # Web framework (optional)
+uvicorn[standard]==0.30.6         # ASGI server (optional)
+httpx==0.27.2                     # Async HTTP client
+aiofiles==24.1.0                  # Async file I/O
+
+# ============================================================================
+# VISUALIZATION (Optional - for web UI)
+# ============================================================================
+flask==3.0.3                      # Lightweight web framework (optional)
+streamlit==1.38.0                 # Data apps (optional)
+plotly==5.24.1                    # Interactive plots
+matplotlib==3.9.2                 # Static plots
+seaborn==0.13.2                   # Statistical visualizations
+
+# ============================================================================
+# TESTING
+# ============================================================================
+pytest==8.3.3                     # Testing framework
+pytest-asyncio==0.24.0            # Async test support
+pytest-cov==5.0.0                 # Coverage reporting
+pytest-mock==3.14.0               # Mocking utilities
+hypothesis==6.112.1               # Property-based testing
+
+# ============================================================================
+# CODE QUALITY
+# ============================================================================
+black==24.8.0                     # Code formatter
+isort==5.13.2                     # Import sorter
+flake8==7.1.1                     # Linter
+mypy==1.11.2                      # Static type checker
+pylint==3.2.7                     # Code analyzer
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+python-dotenv==1.0.1              # Environment variable management
+click==8.1.7                      # CLI creation
+rich==13.8.1                      # Terminal formatting
+tabulate==0.9.0                   # Table formatting
+python-dateutil==2.9.0.post0      # Date utilities
+pytz==2024.2                      # Timezone handling
+
+# ============================================================================
+# DATABASE
+# ============================================================================
+sqlalchemy==2.0.35                # SQL toolkit (for SQLite)
+alembic==1.13.3                   # Database migrations (optional)
+
+# ============================================================================
+# REPRODUCIBILITY & CONTAINERIZATION
+# ============================================================================
+# Docker image should use this exact requirements.txt
+# Freeze all dependencies: pip freeze > requirements-frozen.txt
+
+# ============================================================================
+# DEVELOPMENT DEPENDENCIES (install separately with -dev suffix)
+# ============================================================================
+# jupyter==1.1.1                  # Notebooks (for exploration)
+# ipython==8.27.0                 # Enhanced Python shell
+# notebook==7.2.2                 # Jupyter notebook
+# jupyterlab==4.2.5              # JupyterLab environment
+
+# ============================================================================
+# PLATFORM-SPECIFIC NOTES
+# ============================================================================
+# M4 Pro Optimization:
+# - PyTorch CPU version (no CUDA needed)
+# - sentence-transformers will use CPU/MPS backend
+# - chromadb optimized for Apple Silicon
+# - All dependencies tested on macOS 14+ (Sonoma)
+#
+# Installation:
+#   python3.11 -m venv venv
+#   source venv/bin/activate
+#   pip install --upgrade pip setuptools wheel
+#   pip install -r requirements.txt
+#
+# Verification:
+#   python -c "import torch; print(f'PyTorch: {torch.__version__}')"
+#   python -c "import chromadb; print(f'ChromaDB: {chromadb.__version__}')"
+#   python -c "import langchain; print(f'LangChain: {langchain.__version__}')"
