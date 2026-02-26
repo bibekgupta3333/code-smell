@@ -1,34 +1,51 @@
-# Cursor AI Rules for Code Review LLM Project
+# Cursor AI Rules for LLM-Based Code Smell Detection Research Project
 
 ## Project Overview
-This is a monorepo project for an LLM-based code review system with:
-- Backend: FastAPI + LangGraph + RAG + Local Ollama
-- Frontend: Streamlit
-- Deployment: Docker containers
-- Vector Store: Local (ChromaDB/FAISS)
+This is a research project evaluating LLMs for code smell detection using the MaRV dataset:
+- **Core Stack:** Python + Ollama (local LLM) + ChromaDB + LangGraph + RAG
+- **Purpose:** Empirical evaluation comparing LLM vs traditional static analysis tools
+- **Dataset:** MaRV (Manually Validated Refactoring)
+- **Status:** Planning & Documentation Phase Complete, Implementation starting
+- **Submission Deadline:** May 26, 2026
 
 ## Code Style and Standards
 
-### Python (Backend & Services)
+### Python (All Modules)
 - Use Python 3.11+
 - Follow PEP 8 style guide
 - Maximum line length: 120 characters
 - Use type hints for all function signatures
 - Use docstrings (Google style) for all public functions and classes
-- Prefer async/await for I/O operations
+- Prefer async/await for I/O operations when dealing with LLM calls
 - Use Pydantic for data validation
-- Follow dependency injection patterns
+- Prioritize reproducibility and experiment tracking
 
 ### File Organization
 ```
-backend/
-  ├── apps/
-  │   ├── api/      # FastAPI routes and endpoints
-  │   ├── service/  # Business logic layer
-  ├── core/         # Core configurations, settings
-  ├── services/     # External service integrations (LLM, embeddings, vector store)
-  ├── utils/        # Utility functions and helpers
-  └── tests/        # Test files
+code-smell/
+├── src/                   # Core Python modules
+│   ├── llm_client.py     # Ollama client wrapper
+│   ├── rag_pipeline.py   # RAG implementation
+│   ├── analysis_coordinator.py
+│   └── ...
+├── data/                  # Datasets and ground truth
+│   ├── datasets/
+│   │   ├── marv/         # MaRV dataset
+│   │   ├── qualitas_corpus/
+│   │   └── smelly_code/
+│   └── ground_truth/
+├── exp/                   # Experiment results
+│   ├── baseline/
+│   ├── rag_experiments/
+│   └── ablation_studies/
+├── results/               # Benchmark results for paper
+│   ├── predictions/
+│   ├── confusion_matrices/
+│   ├── performance/
+│   └── metrics/
+├── scripts/               # Utility scripts
+├── visualization/         # Web-based visualization
+└── paper/                 # LaTeX source files
 ```
 
 ### Naming Conventions
@@ -43,120 +60,309 @@ backend/
 # Standard library imports
 import os
 from typing import List, Optional
+from pathlib import Path
 
 # Third-party imports
-from fastapi import FastAPI
+import chromadb
 from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 # Local application imports
-from core.config import settings
-from services.llm_service import LLMService
+from config import (
+    OLLAMA_URL, DEFAULT_MODEL, EMBEDDING_MODEL,
+    DATA_DIR, RESULTS_DIR, CHROMADB_DIR
+)
 ```
 
-### FastAPI Best Practices
-- Use dependency injection for services
-- Implement proper error handling with HTTPException
-- Use Pydantic models for request/response validation
-- Version your API endpoints (e.g., `/api/v1/`)
-- Add OpenAPI documentation with descriptions
-- Use async endpoints where applicable
+### Research & Experiment Code Practices
+- **Reproducibility:** Set random seeds, log all hyperparameters
+- **Version control:** Track model versions, dataset versions
+- **Experiment logging:** Use clear naming conventions for experiments
+- **Results:** Save all predictions, metrics, and intermediate outputs
+- **Documentation:** Document all experiments in results/logs/
+- **Data handling:** Never modify raw datasets, work with copies
+- **Metrics:** Calculate and log precision, recall, F1, accuracy
+- **Comparisons:** Keep baseline results for comparison
 
 ### LangGraph & RAG Patterns
 - Keep graph nodes focused and testable
 - Use structured state management
 - Implement proper error handling in graph nodes
-- Use streaming responses for long-running operations
-- Cache embeddings when possible
-- Implement retry logic for LLM calls
+- Use streaming responses for long-running operations when beneficial
+- Cache embeddings and LLM responses to reduce cost and latency
+- Implement retry logic for LLM calls with exponential backoff
+- Log all LLM interactions for analysis
 
-### Vector Store
-- Use consistent embedding dimensions
-- Implement proper chunking strategies (max 512 tokens)
-- Add metadata to all stored vectors
-- Implement similarity threshold filtering
-- Use batch operations for efficiency
+### Ollama & Local LLM Best Practices
+- Always check Ollama service availability before making calls
+- Use appropriate temperature settings (0.0 for deterministic, higher for creative)
+- Implement timeout handling for LLM calls
+- Cache responses using SQLite or file-based cache
+- Monitor token usage and generation time
+- Use smaller models (llama3:8b) for faster iteration
+- Include system prompts for consistent behavior
 
-### Environment Variables
-- Never hardcode secrets or API keys
-- Use `.env` files for local development
-- Validate all required env vars at startup
-- Use Pydantic Settings for configuration management
+### Vector Store (ChromaDB)
+- Use consistent embedding dimensions (384 for all-MiniLM-L6-v2)
+- Implement proper chunking strategies (max 512 tokens recommended)
+- Add metadata to all stored vectors (file path, smell type, dataset)
+- Implement similarity threshold filtering (default: 0.7)
+- Use batch operations for efficiency when indexing datasets
+- Use collections to separate different data types
+- Implement backup/restore for reproducibility
+
+### Configuration Management
+- All configuration in `config.py` at root level
+- Never hardcode paths, use config variables
+- Use environment variables for sensitive data (if any)
+- Validate all required settings at startup
+- Document all configuration parameters
+- Use sensible defaults for M4 Pro optimization
 
 ### Error Handling
-- Use custom exception classes
-- Log errors with appropriate severity levels
+- Use custom exception classes for different error types
+- Log errors with appropriate severity levels and context
 - Return user-friendly error messages
-- Include request IDs for tracing
-- Implement circuit breakers for external services
+- Include timestamps and experiment IDs for tracing
+- Implement graceful degradation for LLM failures
+- Save partial results when experiments fail mid-way
 
 ### Testing
-- Write unit tests for all business logic
-- Use pytest for testing
-- Mock external dependencies (LLM, vector store)
-- Aim for >80% code coverage
+- Write unit tests for all core functionality
+- Use pytest for testing framework
+- Mock Ollama LLM calls in tests (use fixtures with sample responses)
+- Mock vector store operations for faster tests
+- Test data processing pipelines with sample MaRV data
+- Aim for >70% code coverage on core modules
 - Use fixtures for common test data
 - Test both success and failure scenarios
+- Validate experiment reproducibility
 
-### Docker & Deployment
-- Use multi-stage builds for smaller images
-- Don't run containers as root
-- Use specific version tags, not `latest`
-- Implement health check endpoints
-- Use environment-specific configs
-- Optimize layer caching
+### Experiment Scripts (scripts/)
+- Each script should be runnable standalone
+- Accept command-line arguments for configuration
+- Use argparse for CLI interface
+- Include --dry-run option for testing
+- Log all parameters and results
+- Save results with timestamps
+- Include progress bars for long operations (tqdm)
+- Implement checkpointing for resumable experiments
+
+### Data Management
+- Never modify files in data/datasets/ - treat as read-only
+- Save all processed data to appropriate results/ subdirectories
+- Use consistent naming: {experiment_name}_{timestamp}_{config}.json
+- Store predictions in results/predictions/{tool_name}/
+- Keep raw outputs AND processed metrics
+- Version datasets if modifications are needed
+- Document any data preprocessing steps
 
 ### Git Workflow
-- Use conventional commits (feat:, fix:, docs:, etc.)
+- Use conventional commits (feat:, fix:, docs:, exp:, etc.)
+- Use `exp:` prefix for experiment-related commits
 - Keep commits atomic and focused
 - Write descriptive commit messages
-- Create feature branches from `main`
-- Squash commits before merging
+- Don't commit large datasets or model files (use .gitignore)
+- Don't commit chromadb_store/, cache/, venv/, or results/
+- Do commit experiment scripts and analysis code
 - Update documentation with code changes
 
 ### Documentation
-- Keep README.md up to date
-- Document all API endpoints
-- Include code examples
-- Update WBS status after completing tasks
-- Document architectural decisions
-- Include setup and deployment instructions
+- Keep README.md and PROJECT_STRUCTURE.md in sync
+- Document all experiments in results/logs/
+- Include code examples in docstrings
+- Document all research decisions in docs/research/
+- Update WBS (docs/planning/WBS.md) after completing tasks
+- Include setup and reproduction instructions
+- Document dataset versions and sources
+- Keep paper draft updated with latest results
 
 ### Security
-- Validate all user inputs
-- Sanitize data before LLM processing
-- Implement rate limiting
-- Use CORS properly
+- Validate all file inputs before processing
+- Sanitize code snippets before sending to LLM
+- Don't include credentials in logs or results
+- Be cautious with code execution from datasets
 - Keep dependencies updated
 - Scan for vulnerabilities regularly
 
 ### Performance
-- Use connection pooling for databases
-- Implement caching strategies
-- Optimize vector search queries
-- Use async for I/O-bound operations
-- Profile and optimize hot paths
-- Monitor resource usage
+- Profile LLM call latency and track in results/performance/
+- Monitor memory usage during batch processing
+- Use connection pooling for ChromaDB
+- Implement caching for embeddings and LLM responses
+- Use async for I/O-bound operations (LLM calls, file I/O)
+- Optimize chunking for M4 Pro specs (32GB RAM)
+- Track and log: latency, throughput, token/sec
+- Use batch processing where possible
+
+### Metrics & Evaluation
+- Calculate standard metrics: Precision, Recall, F1, Accuracy
+- Track per-smell-type metrics
+- Log confusion matrices in results/confusion_matrices/
+- Track LLM-specific metrics:
+  - Hallucination rate
+  - Confidence scores
+  - Explanation quality
+  - Cache hit rate
+- Save metrics as both CSV and JSON
+- Include timestamp and configuration in metric files
 
 ## Code Generation Guidelines
-When generating code:
+When generating code for this project:
 1. Always include proper type hints
-2. Add docstrings with parameter descriptions
-3. Implement error handling
-4. Follow the project structure
-5. Use async/await for I/O operations
-6. Include logging statements
-7. Add unit tests
-8. Update related documentation
+2. Add docstrings with parameter descriptions and examples
+3. Implement error handling and logging
+4. Follow the project structure (src/, scripts/, results/)
+5. Use async/await for LLM and I/O operations
+6. Include experiment tracking and result saving
+7. Add unit tests for core logic
+8. Use config.py for all configuration
+9. Log hyperparameters and settings
+10. Make experiments reproducible with seed setting
+11. Include progress tracking for long operations
+12. Save intermediate results for checkpointing
+
+## Example Code Templates
+
+### LLM Client Call
+```python
+from config import OLLAMA_URL, DEFAULT_MODEL
+import ollama
+from typing import Optional
+import logging
+
+logger = logging.getLogger(__name__)
+
+async def query_llm(
+    prompt: str,
+    model: str = DEFAULT_MODEL,
+    temperature: float = 0.0,
+    max_tokens: int = 512
+) -> Optional[str]:
+    """Query local Ollama LLM with error handling."""
+    try:
+        response = await ollama.chat(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            options={"temperature": temperature, "num_predict": max_tokens}
+        )
+        return response['message']['content']
+    except Exception as e:
+        logger.error(f"LLM call failed: {e}")
+        return None
+```
+
+### Experiment Script Template
+```python
+import argparse
+import json
+import logging
+from pathlib import Path
+from datetime import datetime
+from config import RESULTS_DIR
+
+def main(args):
+    # Setup logging
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_file = RESULTS_DIR / "logs" / f"{args.experiment_name}_{timestamp}.log"
+    logging.basicConfig(level=logging.INFO, filename=log_file)
+
+    # Log configuration
+    config = vars(args)
+    logging.info(f"Experiment config: {config}")
+
+    # Run experiment
+    results = run_experiment(args)
+
+    # Save results
+    output_file = RESULTS_DIR / f"{args.experiment_name}_{timestamp}.json"
+    with open(output_file, 'w') as f:
+        json.dump(results, f, indent=2)
+
+    logging.info(f"Results saved to {output_file}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--experiment-name", required=True)
+    parser.add_argument("--model", default="llama3:8b")
+    parser.add_argument("--dry-run", action="store_true")
+    args = parser.parse_args()
+    main(args)
+```
 
 ## Review Checklist
 Before committing code:
-- [ ] Code follows style guidelines
-- [ ] Type hints are present
-- [ ] Docstrings are complete
+- [ ] Code follows style guidelines (PEP 8, type hints, docstrings)
+- [ ] Type hints are present and correct
+- [ ] Docstrings are complete with examples
 - [ ] Tests are written and passing
-- [ ] No hardcoded secrets
-- [ ] Error handling is implemented
-- [ ] Logging is appropriate
-- [ ] Documentation is updated
-- [ ] Code is optimized
-- [ ] Security considerations addressed
+- [ ] No hardcoded paths or secrets
+- [ ] Error handling is implemented with logging
+- [ ] Logging is appropriate and informative
+- [ ] Configuration uses config.py
+- [ ] Documentation is updated (README, PROJECT_STRUCTURE)
+- [ ] Experiment results are saved properly
+- [ ] Code is reproducible (seeds set, config logged)
+- [ ] Performance is acceptable (profile if needed)
+- [ ] WBS updated if completing a task
+
+## Research-Specific Reminders
+- Always log experiment parameters and results
+- Use timestamps in result filenames
+- Keep raw and processed results separate
+- Document any unexpected findings
+- Save confusion matrices and metrics
+- Track computational resources used
+- Compare against baseline results
+- Validate results make sense before committing
+- Keep paper draft updated with findings
+- Backup important results outside git
+
+## File Naming Conventions
+
+### Experiment Results
+- `{experiment_type}_{model}_{config}_{timestamp}.json`
+- Example: `rag_experiment_llama3_k5_20260226_143022.json`
+
+### Predictions
+- `{tool_name}_{dataset}_{timestamp}.csv`
+- Example: `llm_rag_marv_validation_20260226.csv`
+
+### Metrics
+- `{metric_name}_{experiment_id}.csv`
+- Example: `confusion_matrix_exp001.csv`
+
+### Logs
+- `{script_name}_{timestamp}.log`
+- Example: `run_baseline_20260226_143022.log`
+
+## Quick Reference
+
+### Key Files
+- `config.py` - All configuration parameters
+- `requirements.txt` - Python dependencies with pinned versions
+- `PROJECT_STRUCTURE.md` - Directory structure documentation
+- `docs/planning/WBS.md` - Work breakdown structure and progress
+
+### Key Directories
+- `src/` - Core Python modules (llm_client, rag_pipeline, etc.)
+- `scripts/` - Experiment and utility scripts
+- `data/datasets/marv/` - MaRV dataset (read-only)
+- `results/` - All experimental outputs
+- `chromadb_store/` - Vector database (gitignored)
+- `cache/` - LLM response cache (gitignored)
+
+### Common Commands
+```bash
+# Activate environment
+source venv/bin/activate
+
+# Run experiment
+python scripts/run_experiment.py --experiment-name baseline_llm
+
+# Index dataset
+python scripts/index_datasets.py --dataset marv
+
+# Analyze results
+python scripts/analyze_results.py --experiment-id exp001
+```
