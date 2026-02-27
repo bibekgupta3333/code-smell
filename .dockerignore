@@ -1,0 +1,174 @@
+# Docker ignore file for LLM-Based Code Smell Detection System
+# Prevents unnecessary files from being copied into Docker image
+# Optimizes build time and reduces image size
+
+# ============================================================================
+# VERSION CONTROL
+# ============================================================================
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# MyPy type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================================
+# DATASETS (Mount as volumes instead)
+# ============================================================================
+data/datasets/marv/
+data/datasets/qualitas_corpus/
+data/datasets/smelly_code/
+data/ground_truth/
+# Keep directory structure but ignore large files
+*.jar
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# ============================================================================
+# RESULTS (Mount as volumes)
+# ============================================================================
+results/
+exp/baseline/
+exp/rag_experiments/
+exp/ablation_studies/
+
+# ============================================================================
+# DATABASE & CACHE (Mount as volumes)
+# ============================================================================
+chromadb_store/
+cache/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ============================================================================
+# LOGS
+# ============================================================================
+*.log
+logs/
+*.out
+
+# ============================================================================
+# IDE & EDITORS
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# ============================================================================
+# DOCUMENTATION (selectively include)
+# ============================================================================
+# Include docs/ and paper/, but exclude build artifacts
+docs/**/*.pdf
+paper/**/*.aux
+paper/**/*.bbl
+paper/**/*.blg
+paper/**/*.log
+paper/**/*.out
+paper/**/*.synctex.gz
+paper/**/*.fdb_latexmk
+paper/**/*.fls
+
+# ============================================================================
+# JUPYTER NOTEBOOKS
+# ============================================================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ============================================================================
+# DOCKER
+# ============================================================================
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+Jenkinsfile
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# ============================================================================
+# MACOS
+# ============================================================================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# ============================================================================
+# RESEARCH & PLANNING (not needed in image)
+# ============================================================================
+idea.txt
+research-proposal.txt
+WBS.old.md
+example-codebase-similar-research-investigation/
+
+# ============================================================================
+# KEEP THESE FILES (explicitly not ignored)
+# ============================================================================
+# !src/
+# !scripts/
+# !config.py
+# !requirements.txt
+# !README.md
+# !PROJECT_STRUCTURE.md
+# !docs/architecture/
+# !paper/*.tex
+# !paper/*.bib

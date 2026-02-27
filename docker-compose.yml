@@ -1,0 +1,172 @@
+# Docker Compose Configuration for LLM-Based Code Smell Detection System
+# Provides multi-container orchestration for reproducible research environment
+# Version: 1.0.0
+# Date: February 26, 2026
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # CODE SMELL DETECTOR APPLICATION
+  # Note: Ollama runs on host machine (localhost:11434)
+  # ============================================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-smell-app
+    restart: unless-stopped
+    environment:
+      # Ollama runs on host machine - accessible via host.docker.internal
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - DEFAULT_MODEL=llama3:8b
+
+      # Logging
+      - LOG_LEVEL=INFO
+      - ENABLE_STRUCTURED_LOGGING=true
+
+      # Python optimization
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      # Mount datasets (read-only for safety)
+      - ./data:/app/data:ro
+
+      # Mount results directory (read-write for outputs)
+      - ./results:/app/results
+
+      # Mount vector database (persistent across runs)
+      - ./chromadb_store:/app/chromadb_store
+
+      # Mount cache directory
+      - ./cache:/app/cache
+
+      # Development mounts (comment out for production)
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+    networks:
+      - code-smell-network
+    deploy:
+      resources:
+        limits:
+          # M4 Pro optimization
+          cpus: '4.0'
+          memory: 8G
+    # Override default command (examples below)
+    # command: python -c "import config; print('Ready')"
+    # command: python scripts/run_experiment.py --experiment-name test
+    # command: /bin/bash  # Interactive shell
+    stdin_open: true
+    tty: true
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  code-smell-network:
+    driver: bridge
+    name: code-smell-network
+
+# ============================================================================
+# USAGE INSTRUCTIONS
+# ============================================================================
+#
+# Prerequisites: Ollama must be running on host machine
+#
+# 1. Start Ollama (if not already running):
+#    ollama serve
+#    # Or use Ollama Desktop app
+#
+# 2. Pull required LLM models (one-time setup):
+#    ollama pull llama3:8b
+#    ollama pull codellama:7b
+#
+# 3. Start app container:
+#    docker-compose up -d
+#
+# 4. Run interactive shell in app container:
+#    docker-compose exec app /bin/bash
+#
+# 5. Run an experiment:
+#    docker-compose exec app python scripts/run_experiment.py --experiment-name baseline
+#
+# 6. View logs:
+#    docker-compose logs -f app
+#
+# 7. Stop app container:
+#    docker-compose down
+#
+# 8. Rebuild containers after code changes:
+#    docker-compose up -d --build
+#
+# ============================================================================
+# DEVELOPMENT WORKFLOW
+# ============================================================================
+#
+# For development with live code reloading:
+#   1. Ensure src/ and scripts/ are mounted as volumes (see above)
+#   2. Make code changes on host machine
+#   3. Changes are immediately reflected in container
+#   4. No rebuild needed for Python code changes
+#
+# For testing reproducibility:
+#   1. Comment out development volume mounts
+#   2. Rebuild: docker-compose up -d --build
+#   3. Code is baked into image
+#   4. Fully reproducible environment
+#
+# ============================================================================
+# M4 PRO OPTIMIZATION NOTES
+# ============================================================================
+#
+# Resource allocation:
+#   - Ollama: Runs on host machine (uses available system resources)
+#   - App: 8GB RAM, 4 CPUs (for embeddings, RAG, processing)
+#
+# If you have 32GB M4 Pro and want to increase app resources:
+#   - Edit docker-compose.yml and increase memory/cpus limits
+#   - Enable concurrent processing (MAX_CONCURRENT_REQUESTS=4)
+#
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+#
+# Override any config via .env file in project root:
+#   OLLAMA_BASE_URL=http://host.docker.internal:11434
+#   DEFAULT_MODEL=llama3:8b
+#   LOG_LEVEL=DEBUG
+#   BATCH_SIZE=10
+#   MAX_CONCURRENT_REQUESTS=4
+#
+# Create .env file:
+#   cp .env.example .env
+#   # Edit .env with your settings
+#
+# ============================================================================
+# ============================================================================
+#
+# Resource allocation tuned for M4 Pro (16GB RAM typical):
+#   - Ollama: 8GB RAM, 4 CPUs (for LLM inference)
+#   - App: 8GB RAM, 4 CPUs (for embeddings, RAG, processing)
+#   - Total: 16GB RAM, 8 CPUs (adjust based on your M4 Pro config)
+#
+# If you have 32GB M4 Pro:
+#   - Increase memory limits to 12-16GB per service
+#   - Enable concurrent processing (MAX_CONCURRENT_REQUESTS=4)
+#
+# ============================================================================
+# ENVIRONMENT VARIABLES
+# ============================================================================
+#
+# Override any config via .env file in project root:
+#   OLLAMA_BASE_URL=http://ollama:11434
+#   DEFAULT_MODEL=llama3:8b
+#   LOG_LEVEL=DEBUG
+#   BATCH_SIZE=10
+#   MAX_CONCURRENT_REQUESTS=4
+#
+# Create .env file:
+#   cp .env.example .env
+#   # Edit .env with your settings
+#
+# ============================================================================
