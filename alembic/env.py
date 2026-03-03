@@ -64,11 +64,11 @@ def run_migrations_online() -> None:
 
     """
     from sqlalchemy.pool import QueuePool
-    
+
     config_dict = config.get_section(config.config_ini_section, {})
     config_dict['sqlalchemy.poolclass'] = QueuePool
     config_dict['sqlalchemy.pool_pre_ping'] = True
-    
+
     connectable = engine_from_config(
         config_dict,
         prefix="sqlalchemy.",

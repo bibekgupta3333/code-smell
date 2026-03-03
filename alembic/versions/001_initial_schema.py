@@ -1,7 +1,7 @@
 """Initial database schema from SQLAlchemy ORM models
 
 Revision ID: 001_initial_schema
-Revises: 
+Revises:
 Create Date: 2026-03-02 16:55:00.000000
 
 """
@@ -20,7 +20,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Create all database tables from SQLAlchemy ORM models."""
-    
+
     # Create agents table
     op.create_table('agents',
         sa.Column('agent_id', sa.String(), nullable=False),
