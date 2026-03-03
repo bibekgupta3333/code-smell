@@ -56,7 +56,7 @@ class RAGRetriever:
         self.cache_hits = 0
         self.retrieval_cache = {}  # Simple in-memory cache for M4 Pro
 
-        logger.info(f"RAG Retriever initialized: {self.agent_name}")
+        logger.info("RAG Retriever initialized: %s", self.agent_name)  # noqa: G201
 
     async def find_relevant_examples(
         self,
@@ -141,14 +141,15 @@ class RAGRetriever:
             )
 
             logger.info(
-                f"Found {len(examples)} relevant examples "
-                f"(similarity: {examples[0]['similarity']:.3f})"
+                "Found %d relevant examples (similarity: %.3f)",  # noqa: G201
+                len(examples),
+                examples[0]['similarity'] if examples else 0.0
             )
 
             return examples
 
-        except Exception as e:
-            logger.error(f"Retrieval failed: {e}")
+        except ValueError as e:
+            logger.error("Retrieval failed: %s", e)  # noqa: G201
             return []
 
     async def rank_by_relevance(
@@ -182,7 +183,7 @@ class RAGRetriever:
             # Just sort by similarity
             ranked = sorted(examples, key=lambda x: -x["similarity"])
 
-        logger.debug(f"Ranked {len(ranked)} examples")
+        logger.debug("Ranked %d examples", len(ranked))  # noqa: G201
         return ranked
 
     async def augment_context(
@@ -231,7 +232,7 @@ class RAGRetriever:
             total_lines += 1
 
         context = "\n".join(context_lines)
-        logger.debug(f"Augmented context: {len(context)} chars")
+        logger.debug("Augmented context: %d chars", len(context))  # noqa: G201
 
         return context
 
@@ -300,7 +301,7 @@ def process_data(data):
 
     # Get stats
     stats = retriever.get_stats()
-    print(f"\n✓ Statistics:")
+    print("\n✓ Statistics:")
     print(f"  Total queries: {stats['total_queries']}")
     print(f"  Cache hit rate: {stats['cache_hit_rate']:.1%}")
 

@@ -1,0 +1,2 @@
+finding_id,run_id,smell_type,severity,confidence,agent_id,explanation,created_at
+find_001,run_001,Long Method,HIGH,0.85,detector_v1,Method exceeds recommended length,2026-03-02 21:19:26

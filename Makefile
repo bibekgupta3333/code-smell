@@ -1,4 +1,4 @@
-.PHONY: help run-coordinator run-detector run-workflow run-all clean venv
+.PHONY: help run-coordinator run-detector run-workflow run-all run-database clean venv
 
 # Python environment
 PYTHON := python3
@@ -13,17 +13,18 @@ help:
 	@echo "Code Smell Detection System - Available Commands"
 	@echo ""
 	@echo "Setup:"
-	@echo "  make venv          - Create Python virtual environment"
-	@echo "  make install       - Install dependencies"
+	@echo "  make venv              - Create Python virtual environment"
+	@echo "  make install           - Install dependencies"
 	@echo ""
 	@echo "Execution:"
-	@echo "  make run-detector  - Run Deep Agent detector on sample code"
-	@echo "  make run-workflow  - Run LangGraph workflow pipeline"
-	@echo "  make run-coordinator - Run Analysis Coordinator"
-	@echo "  make run-all       - Run complete integrated system"
+	@echo "  make run-detector      - Run Deep Agent detector"
+	@echo "  make run-workflow      - Run LangGraph workflow pipeline"
+	@echo "  make run-coordinator   - Run Analysis Coordinator"
+	@echo "  make run-database      - Run database manager validation"
+	@echo "  make run-all           - Run complete integrated system"
 	@echo ""
 	@echo "Cleanup:"
-	@echo "  make clean         - Remove cache and temporary files"
+	@echo "  make clean             - Remove cache and temporary files"
 
 venv:
 	$(PYTHON) -m venv $(VENV)
@@ -42,6 +43,11 @@ run-workflow:
 run-coordinator:
 	$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Analysis Coordinator initialized'); print(f'Detectors: {len(c.detectors)}')"
 
+run-database:
+	@echo "Testing Database Manager..."
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database manager initialized'); print(f'Tables: {len(stats) - 1}'); print(f'Database size: {stats[\"database_size_mb\"]:.2f} MB')"
+	@echo "✓ Database manager operational"
+
 run-all:
 	@echo "Running Complete System Verification..."
 	@echo ""
@@ -53,6 +59,9 @@ run-all:
 	@echo ""
 	@echo "3. Initializing Analysis Coordinator..."
 	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Coordinator OK')"
+	@echo ""
+	@echo "4. Testing Database Manager..."
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database OK')"
 	@echo ""
 	@echo "✅ All systems operational and ready for Phase 3"
 
