@@ -8,7 +8,7 @@ Architecture: Supports all agent modules with common operations
 import re
 import json
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime
 from enum import Enum
@@ -139,7 +139,7 @@ def merge_results(
         merged_findings = _find_common_findings(results_list)
 
     else:
-        logger.warning(f"Unknown merge strategy: {strategy}, using union")
+        logger.warning("Unknown merge strategy: %s, using union", strategy)
         merged_findings = _deduplicate_findings(
             [f for r in results_list for f in r.findings]
         )
@@ -232,7 +232,7 @@ def _find_common_findings(results_list: List[DetectionResult]) -> List[CodeSmell
         if item["count"] >= min_detections
     ]
 
-    logger.info(f"Found {len(common_findings)} common findings across agents")
+    logger.info("Found %d common findings across agents", len(common_findings))
     return common_findings
 
 

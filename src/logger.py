@@ -12,8 +12,6 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 from pathlib import Path
 
-import structlog
-
 from config import RESULTS_DIR
 
 logger = logging.getLogger(__name__)
@@ -82,7 +80,7 @@ def setup_logging(
     file_handler.setFormatter(json_formatter)
     root_logger.addHandler(file_handler)
 
-    logger.info(f"Logging configured, writing to {log_file}")
+    logger.info("Logging configured, writing to %s", log_file)  # noqa: G201
 
     return log_file
 
@@ -130,7 +128,8 @@ def log_llm_request(
         temperature: Temperature parameter
     """
     logger.info(
-        f"[{agent_name}] LLM request",
+        "[%s] LLM request",  # noqa: G201
+        agent_name,
         extra={
             'extra': {
                 'agent': agent_name,
@@ -163,7 +162,9 @@ def log_llm_response(
         cached: Whether response was from cache
     """
     logger.info(
-        f"[{agent_name}] LLM response {'(cached)' if cached else ''}",
+        "[%s] LLM response %s",  # noqa: G201
+        agent_name,
+        "(cached)" if cached else "",
         extra={
             'extra': {
                 'agent': agent_name,
@@ -201,7 +202,9 @@ def log_detection_result(
         processing_time: Processing time in seconds
     """
     logger.info(
-        f"[{agent_name}] Detection complete: {smells_found} smells",
+        "[%s] Detection complete: %d smells",  # noqa: G201
+        agent_name,
+        smells_found,
         extra={
             'extra': {
                 'agent': agent_name,
@@ -237,7 +240,10 @@ def log_rag_retrieval(
         cached: Whether results were cached
     """
     logger.info(
-        f"[{agent_name}] RAG retrieval {'(cached)' if cached else ''}: {results_count} results",
+        "[%s] RAG retrieval %s: %d results",  # noqa: G201
+        agent_name,
+        "(cached)" if cached else "",
+        results_count,
         extra={
             'extra': {
                 'agent': agent_name,
@@ -304,7 +310,10 @@ def log_error(
         extra_data.update(context)
 
     logger.error(
-        f"[{agent_name}] {error_type}: {error_message}",
+        "[%s] %s: %s",  # noqa: G201
+        agent_name,
+        error_type,
+        error_message,
         extra={'extra': extra_data},
     )
 
@@ -331,7 +340,9 @@ def log_metric(
         extra_data.update(tags)
 
     logger.info(
-        f"Metric: {metric_name} = {metric_value}",
+        "Metric: %s = %s",  # noqa: G201
+        metric_name,
+        metric_value,
         extra={'extra': extra_data},
     )
 

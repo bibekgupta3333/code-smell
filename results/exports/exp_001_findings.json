@@ -1,0 +1,12 @@
+[
+  {
+    "finding_id":"find_001",
+    "run_id":"run_001",
+    "smell_type":"Long Method",
+    "severity":"HIGH",
+    "confidence":0.85,
+    "agent_id":"detector_v1",
+    "explanation":"Method exceeds recommended length",
+    "created_at":"2026-03-02 21:19:26"
+  }
+]

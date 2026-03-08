@@ -1,0 +1,2 @@
+agent_id,name,role,system_prompt,framework,created_at,updated_at
+detector_v1,Code Smell Detector,Member Agent,Detect code smells in Python code,LangChain Deep Agent,2026-03-02 21:19:26,2026-03-02 21:19:26

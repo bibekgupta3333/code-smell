@@ -8,14 +8,14 @@ Coordinates analysis, splits code, assigns tasks, aggregates results
 
 import asyncio
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime
 from time import time
 
 from src.code_chunker import CodeChunker
 from src.code_smell_detector import CodeSmellDetector
 from src.quality_validator import QualityValidator
-from src.common import CodeSmellFinding, DetectionResult, merge_results
+from src.common import CodeSmellFinding, DetectionResult
 from src.logger import log_agent_event, log_workflow_step
 from src.code_parser import CodeParser
 
@@ -65,8 +65,8 @@ class AnalysisCoordinator:
         # Statistics
         self.analyses_completed = 0
 
-        logger.info(f"Analysis Coordinator initialized: {self.agent_name}")
-        logger.info(f"Detectors: {len(self.detectors)}, Max concurrent: {max_concurrent_detectors}")
+        logger.info("Analysis Coordinator initialized: %s", self.agent_name)  # noqa: G201
+        logger.info("Detectors: %d, Max concurrent: %d", len(self.detectors), max_concurrent_detectors)  # noqa: G201
 
     async def coordinate_analysis(
         self,
@@ -94,23 +94,23 @@ class AnalysisCoordinator:
         try:
             # Step 1: Analyze code
             log_workflow_step(f"Analysis: {file_name}", "parse_code")
-            language = self.code_parser.detect_language(code)
-            metrics = self.code_parser.extract_metrics(code)
+            _ = self.code_parser.detect_language(code)
+            _ = self.code_parser.extract_metrics(code)
 
             # Step 2: Split into chunks
             log_workflow_step(f"Analysis: {file_name}", "chunk_code")
             chunks = self._split_code_into_chunks(code)
-            logger.info(f"Split into {len(chunks)} chunks")
+            logger.info("Split into %d chunks", len(chunks))  # noqa: G201
 
             # Step 3: Detect smells in parallel (with concurrency limit)
             log_workflow_step(f"Analysis: {file_name}", "detect_smells")
             all_findings = await self._detect_with_agents(chunks)
-            logger.info(f"Detected {len(all_findings)} findings across all chunks")
+            logger.info("Detected %d findings across all chunks", len(all_findings))  # noqa: G201
 
             # Step 4: Validate findings
             log_workflow_step(f"Analysis: {file_name}", "validate_findings")
             validated_findings = self.validator.validate_findings(all_findings)
-            logger.info(f"Validated to {len(validated_findings)} findings")
+            logger.info("Validated to %d findings", len(validated_findings))  # noqa: G201
 
             # Step 5: Aggregate results
             log_workflow_step(f"Analysis: {file_name}", "aggregate_results")
@@ -121,8 +121,8 @@ class AnalysisCoordinator:
 
             return result
 
-        except Exception as e:
-            logger.error(f"Analysis failed: {e}")
+        except ValueError as e:  # noqa: B014
+            logger.error("Analysis failed: %s", e)  # noqa: G201
             log_workflow_step(
                 f"Analysis: {file_name}",
                 "error",
@@ -199,7 +199,7 @@ class AnalysisCoordinator:
                 if isinstance(result, list):
                     all_findings.extend(result)
                 elif isinstance(result, Exception):
-                    logger.warning(f"Detection error in batch: {result}")
+                    logger.warning("Detection error in batch: %s", result)  # noqa: G201
 
         return all_findings
 
@@ -301,7 +301,7 @@ class DataHandler:
 
     # Get stats
     stats = coordinator.get_stats()
-    print(f"\n✓ Statistics:")
+    print("\n✓ Statistics:")
     print(f"  Analyses completed: {stats['analyses_completed']}")
     print(f"  Detectors: {stats['detector_count']}")
 

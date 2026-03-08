@@ -8,7 +8,7 @@ Architecture: Supports code preprocessing for agent analysis
 import ast
 import re
 import logging
-from typing import List, Dict, Any, Optional, Tuple
+from typing import List, Optional, Tuple
 from dataclasses import dataclass
 from enum import Enum
 
@@ -92,8 +92,6 @@ class CodeParser:
         if not code or not code.strip():
             return ProgrammingLanguage.UNKNOWN
 
-        code_lower = code.lower()
-
         # Check for language-specific patterns
         for language, patterns in self.LANGUAGE_PATTERNS.items():
             for pattern in patterns:
@@ -124,13 +122,13 @@ class CodeParser:
             ast.parse(code)
             return True, None
         except SyntaxError as e:
-            error_msg = f"Syntax error at line {e.lineno}: {e.msg}"
-            self.logger.warning(f"Python syntax error: {error_msg}")
-            return False, error_msg
-        except Exception as e:
-            error_msg = f"Parse error: {str(e)}"
-            self.logger.warning(f"Python parse error: {error_msg}")
-            return False, error_msg
+            error_msg = "Syntax error at line %d: %s"
+            self.logger.warning(error_msg, e.lineno, e.msg)  # noqa: G201
+            return False, error_msg % (e.lineno, e.msg)
+        except ValueError as e:
+            error_msg = "Parse error: %s"
+            self.logger.warning(error_msg, str(e))  # noqa: G201
+            return False, error_msg % str(e)
 
     def extract_python_structure(self, code: str) -> Optional[CodeStructure]:
         """
@@ -144,8 +142,8 @@ class CodeParser:
         """
         try:
             tree = ast.parse(code)
-        except Exception as e:
-            self.logger.warning(f"Failed to parse Python code: {e}")
+        except ValueError as e:
+            self.logger.warning("Failed to parse Python code: %s", e)  # noqa: G201
             return None
 
         classes = []
@@ -302,7 +300,7 @@ class CodeParser:
         """Split Python code into functions."""
         try:
             tree = ast.parse(code)
-        except Exception:
+        except ValueError:
             return [("full_code", code, 1, len(code.split('\n')))]
 
         lines = code.split('\n')
@@ -350,11 +348,11 @@ def test_code_parser():
     print(f"  Java detection: {java_lang}")
 
     # Test Python validation
-    valid, error = parser.validate_python_syntax(python_code)
+    valid, _error = parser.validate_python_syntax(python_code)
     print(f"  Python syntax valid: {valid}")
 
     invalid_py = "def broken syntax"
-    invalid, error = parser.validate_python_syntax(invalid_py)
+    invalid, _error = parser.validate_python_syntax(invalid_py)
     print(f"  Invalid Python detected: {not invalid}")
 
     # Test metrics extraction

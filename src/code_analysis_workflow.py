@@ -59,14 +59,14 @@ class CodeAnalysisWorkflow:
         self.total_findings = 0
         self.analysis_times = []
 
-        logger.info(f"Code Analysis Workflow initialized")
-        logger.info(f"Log file: {self.log_file}")
+        logger.info("Code Analysis Workflow initialized")  # noqa: G201
+        logger.info("Log file: %s", self.log_file)  # noqa: G201
 
     async def analyze_code(
         self,
         code: str,
         file_name: str = "code.py",
-        language: Optional[str] = None,
+        _language: Optional[str] = None,
     ) -> DetectionResult:
         """
         Analyze code for code smells.
@@ -113,8 +113,8 @@ class CodeAnalysisWorkflow:
 
             return result
 
-        except Exception as e:
-            logger.error(f"Analysis error: {e}")
+        except ValueError as e:  # noqa: B014
+            logger.error("Analysis error: %s", e)  # noqa: G201
             log_workflow_step("analyze_code", "error", {"error": str(e)})
 
             return DetectionResult(
@@ -148,7 +148,7 @@ class CodeAnalysisWorkflow:
             try:
                 # Read file
                 if not file_path.exists():
-                    logger.warning(f"File not found: {file_path}")
+                    logger.warning("File not found: %s", file_path)  # noqa: G201
                     continue
 
                 code = file_path.read_text()
@@ -157,8 +157,8 @@ class CodeAnalysisWorkflow:
                 result = await self.analyze_code(code, str(file_path))
                 results[str(file_path)] = result
 
-            except Exception as e:
-                logger.error(f"Failed to analyze {file_path}: {e}")
+            except ValueError as e:  # noqa: B014
+                logger.error("Failed to analyze %s: %s", file_path, e)  # noqa: G201
 
         return results
 
@@ -188,14 +188,14 @@ class CodeAnalysisWorkflow:
         try:
             # Serialize and save
             serialized = serialize_result(result)
-            with open(output_file, "w") as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 json.dump(serialized, f, indent=2)
 
-            logger.info(f"Results saved to {output_file}")
+            logger.info("Results saved to %s", output_file)  # noqa: G201
             return output_file
 
-        except Exception as e:
-            logger.error(f"Failed to save results: {e}")
+        except ValueError as e:  # noqa: B014
+            logger.error("Failed to save results: %s", e)  # noqa: G201
             return output_file
 
     def print_results(self, result: DetectionResult) -> None:

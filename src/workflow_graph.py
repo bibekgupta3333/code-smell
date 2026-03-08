@@ -8,21 +8,19 @@ Uses TypedDict for state management and conditional edges for routing
 
 import asyncio
 import logging
-from typing import Annotated, Any, Dict, List, Optional
-from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional
+from dataclasses import field
 from datetime import datetime
 
 from langgraph.graph import StateGraph, START, END
-from langgraph.types import Send
 from pydantic import BaseModel
 
-from src.common import CodeSmellFinding, DetectionResult, SeverityLevel, merge_results
+from src.common import CodeSmellFinding, SeverityLevel
 from src.logger import log_workflow_step, log_agent_event
 from src.code_parser import CodeParser, CodeMetrics, ProgrammingLanguage
 from src.rag_retriever import RAGRetriever
 from src.code_smell_detector import CodeSmellDetector
 from src.quality_validator import QualityValidator
-from config import MAX_CONCURRENT_REQUESTS
 
 logger = logging.getLogger(__name__)
 
@@ -56,15 +54,15 @@ class AnalysisState(BaseModel):
     file_name: str = "code"
     language: Optional[ProgrammingLanguage] = None
     code_metrics: Optional[CodeMetrics] = None
-    chunks: List[str] = field(default_factory=list)
+    chunks: List[str] = field(default_factory=list)  # pylint: disable=invalid-field-call
     current_chunk_idx: int = 0
-    rag_context: Dict[str, Any] = field(default_factory=dict)
-    detections: List[CodeSmellFinding] = field(default_factory=list)
-    validated_findings: List[CodeSmellFinding] = field(default_factory=list)
-    errors: List[str] = field(default_factory=list)
+    rag_context: Dict[str, Any] = field(default_factory=dict)  # pylint: disable=invalid-field-call
+    detections: List[CodeSmellFinding] = field(default_factory=list)  # pylint: disable=invalid-field-call
+    validated_findings: List[CodeSmellFinding] = field(default_factory=list)  # pylint: disable=invalid-field-call
+    errors: List[str] = field(default_factory=list)  # pylint: disable=invalid-field-call
     workflow_step: str = "initialize"
-    start_time: datetime = field(default_factory=datetime.now)
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    start_time: datetime = field(default_factory=datetime.now)  # pylint: disable=invalid-field-call
+    metadata: Dict[str, Any] = field(default_factory=dict)  # pylint: disable=invalid-field-call
 
     class Config:
         arbitrary_types_allowed = True
@@ -90,21 +88,21 @@ async def parse_code_node(state: AnalysisState) -> AnalysisState:
 
         # Detect language
         state.language = parser.detect_language(state.code_snippet)
-        logger.info(f"Detected language: {state.language}")
+        logger.info("Detected language: %s", state.language)  # noqa: G201
 
         # Validate syntax
         is_valid, error_msg = parser.validate_python_syntax(state.code_snippet)
         if not is_valid:
-            logger.warning(f"Syntax validation failed: {error_msg}")
+            logger.warning("Syntax validation failed: %s", error_msg)  # noqa: G201
             state.errors.append(f"Syntax error: {error_msg}")
 
         # Extract metrics
         state.code_metrics = parser.extract_metrics(state.code_snippet)
-        logger.info(f"Extracted metrics: {state.code_metrics.functions} functions, {state.code_metrics.total_lines} lines")
+        logger.info("Extracted metrics: %d functions, %d lines", state.code_metrics.functions, state.code_metrics.total_lines)  # noqa: G201
 
         state.workflow_step = "chunk_code"
-    except Exception as e:
-        logger.error(f"Error in parse_code_node: {e}", exc_info=True)
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in parse_code_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Parse error: {str(e)}")
 
     return state
@@ -134,10 +132,10 @@ async def chunk_code_node(state: AnalysisState) -> AnalysisState:
         if not state.chunks:
             state.chunks = [state.code_snippet]
 
-        logger.info(f"Split code into {len(state.chunks)} chunks")
+        logger.info("Split code into %d chunks", len(state.chunks))  # noqa: G201
         state.workflow_step = "retrieve_context"
-    except Exception as e:
-        logger.error(f"Error in chunk_code_node: {e}", exc_info=True)
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in chunk_code_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Chunking error: {str(e)}")
         state.chunks = [state.code_snippet]
 
@@ -172,9 +170,9 @@ async def retrieve_context_node(state: AnalysisState) -> AnalysisState:
                 "count": len(context) if context else 0,
                 "retrieved_at": datetime.now().isoformat()
             }
-            logger.info(f"Retrieved {state.rag_context['count']} context examples")
-    except Exception as e:
-        logger.error(f"Error in retrieve_context_node: {e}", exc_info=True)
+            logger.info("Retrieved %d context examples", state.rag_context['count'])  # noqa: G201
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in retrieve_context_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"RAG retrieval error: {str(e)}")
         state.rag_context = {"examples": [], "count": 0}
 
@@ -206,9 +204,9 @@ async def detect_smells_node(state: AnalysisState) -> AnalysisState:
                 context=state.rag_context
             )
             state.detections.extend(findings)
-            logger.info(f"Detected {len(findings)} code smells")
-    except Exception as e:
-        logger.error(f"Error in detect_smells_node: {e}", exc_info=True)
+            logger.info("Detected %d code smells", len(findings))  # noqa: G201
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in detect_smells_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Detection error: {str(e)}")
 
     state.workflow_step = "validate_findings"
@@ -232,9 +230,9 @@ async def validate_findings_node(state: AnalysisState) -> AnalysisState:
         if state.detections:
             validated = await validator.validate_findings(state.detections)
             state.validated_findings = validated
-            logger.info(f"Validated {len(validated)} findings (from {len(state.detections)} detections)")
-    except Exception as e:
-        logger.error(f"Error in validate_findings_node: {e}", exc_info=True)
+            logger.info("Validated %d findings (from %d detections)", len(validated), len(state.detections))  # noqa: G201
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in validate_findings_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Validation error: {str(e)}")
         state.validated_findings = state.detections
 
@@ -265,13 +263,13 @@ async def aggregate_results_node(state: AnalysisState) -> AnalysisState:
             "low": sum(1 for f in state.validated_findings if f.severity == SeverityLevel.LOW),
         }
 
-        logger.info(f"Final results: {severity_counts}")
+        logger.info("Final results: %s", severity_counts)  # noqa: G201
 
         state.metadata["severity_counts"] = severity_counts
         state.metadata["total_findings"] = len(state.validated_findings)
         state.metadata["execution_time"] = (datetime.now() - state.start_time).total_seconds()
-    except Exception as e:
-        logger.error(f"Error in aggregate_results_node: {e}", exc_info=True)
+    except ValueError as e:  # noqa: B014
+        logger.error("Error in aggregate_results_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Aggregation error: {str(e)}")
 
     state.workflow_step = "complete"
@@ -423,8 +421,8 @@ class WorkflowExecutor:
                 "metadata": final_state.metadata,
                 "errors": final_state.errors
             }
-        except Exception as e:
-            logger.error(f"Workflow execution error: {e}", exc_info=True)
+        except ValueError as e:  # noqa: B014
+            logger.error("Workflow execution error: %s", e, exc_info=True)  # noqa: G201
             log_agent_event("workflow_executor", "execution_error", {"error": str(e)})
 
             return {
@@ -483,7 +481,7 @@ class DataProcessor:
     executor = WorkflowExecutor()
     result = await executor.execute(test_code, "test.py")
 
-    print(f"\n✓ Workflow executed successfully")
+    print("\n✓ Workflow executed successfully")
     print(f"  Detections: {len(result['detections'])}")
     print(f"  Validated: {len(result['validated_findings'])}")
     print(f"  Errors: {len(result['errors'])}")

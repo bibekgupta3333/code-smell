@@ -7,7 +7,7 @@ Validates findings and assigns confidence/quality scores
 """
 
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from datetime import datetime
 
 from src.common import CodeSmellFinding, SeverityLevel
@@ -60,7 +60,7 @@ class QualityValidator:
             },
         }
 
-        logger.info(f"Quality Validator initialized: {self.agent_name}")
+        logger.info("Quality Validator initialized: %s", self.agent_name)  # noqa: G201
 
     def validate_findings(self, findings: List[CodeSmellFinding]) -> List[CodeSmellFinding]:
         """
@@ -103,8 +103,9 @@ class QualityValidator:
             else:
                 self.false_positives_filtered += 1
                 logger.warning(
-                    f"Filtered likely false positive: {finding.smell_type} "
-                    f"at {finding.location}"
+                    "Filtered likely false positive: %s at %s",  # noqa: G201
+                    finding.smell_type,
+                    finding.location
                 )
 
         self.validations_performed += 1
@@ -155,7 +156,7 @@ class QualityValidator:
         }
 
         if finding.smell_type not in known_types:
-            logger.warning(f"Unknown smell type: {finding.smell_type}")
+            logger.warning("Unknown smell type: %s", finding.smell_type)  # noqa: G201
             return False, 0.0
 
         # Apply smell-specific validation rules
@@ -168,8 +169,9 @@ class QualityValidator:
             for pattern in rules.get("false_positive_patterns", []):
                 if pattern.lower() in finding.explanation.lower():
                     logger.info(
-                        f"Detected false positive pattern '{pattern}' "
-                        f"in {finding.smell_type}"
+                        "Detected false positive pattern '%s' in %s",  # noqa: G201
+                        pattern,
+                        finding.smell_type
                     )
                     return False, 0.0
 
@@ -184,14 +186,15 @@ class QualityValidator:
             return False, 0.0
 
         if finding.confidence < 0.3:
-            logger.info(f"Confidence too low for {finding.smell_type}: {finding.confidence}")
+            logger.info("Confidence too low for %s: %f", finding.smell_type, finding.confidence)  # noqa: G201
             return False, 0.0
 
         # Check severity alignment
         if finding.severity == SeverityLevel.CRITICAL and finding.confidence < 0.7:
             logger.warning(
-                f"Critical severity without high confidence: "
-                f"{finding.smell_type} ({finding.confidence})"
+                "Critical severity without high confidence: %s (%.2f)",  # noqa: G201
+                finding.smell_type,
+                finding.confidence
             )
             return True, -0.1  # Reduce confidence
 
@@ -245,23 +248,23 @@ class QualityValidator:
 
             if smell_type == "Long Method" and count > 0:
                 suggestions["per_smell"][smell_type] = (
-                    f"Extract smaller methods. Focus on single responsibility."
+                    "Extract smaller methods. Focus on single responsibility."
                 )
 
             elif smell_type == "God Class" and count > 0:
                 suggestions["per_smell"][smell_type] = (
-                    f"Split into multiple focused classes."
+                    "Split into multiple focused classes."
                 )
 
             elif smell_type == "Feature Envy" and count > 0:
                 suggestions["per_smell"][smell_type] = (
-                    f"Move methods closer to data they access."
+                    "Move methods closer to data they access."
                 )
 
             elif count > 1:
                 suggestions["per_smell"][smell_type] = (
                     f"Multiple instances of {smell_type} detected. "
-                    f"Establish refactoring patterns."
+                    "Establish refactoring patterns."
                 )
 
         return suggestions
@@ -349,13 +352,13 @@ def test_quality_validator():
 
     # Get suggestions
     suggestions = validator.suggest_improvements(validated)
-    print(f"\n  Improvement suggestions:")
+    print("\n  Improvement suggestions:")
     for suggestion in suggestions["overall"]:
         print(f"    - {suggestion}")
 
     # Get stats
     stats = validator.get_stats()
-    print(f"\n✓ Statistics:")
+    print("\n✓ Statistics:")
     print(f"  False positives filtered: {stats['false_positives_filtered']}")
     print(f"  Average confidence: {stats['average_confidence']:.2f}")
 
