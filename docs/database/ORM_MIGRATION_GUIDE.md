@@ -457,6 +457,314 @@ sqlite3 cache/system.db ".tables"
 
 ---
 
+## ORM Cheat Sheet
+
+### Quick Schema Updates
+
+**Add a new column to existing table:**
+
+```python
+# 1. Update model
+class Agent(Base):
+    __tablename__ = "agents"
+    version = Column(String, default="1.0")  # New field
+
+# 2. Generate migration
+# alembic revision --autogenerate -m "Add version to agents"
+
+# 3. Apply migration
+# alembic upgrade head
+```
+
+**Rename a column:**
+
+```python
+# 1. Alembic doesn't auto-detect renames, create empty migration
+# alembic revision -m "Rename agent.name to agent.display_name"
+
+# 2. Edit migration file manually
+def upgrade():
+    # SQLite doesn't support ALTER COLUMN directly
+    # Must recreate table or use raw SQL
+    op.execute("""
+        ALTER TABLE agents RENAME COLUMN name TO display_name
+    """)
+
+def downgrade():
+    op.execute("""
+        ALTER TABLE agents RENAME COLUMN display_name TO name
+    """)
+```
+
+**Add a new table:**
+
+```python
+# 1. Define new model
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    log_id = Column(String, primary_key=True, index=True)
+    action = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+# 2. Generate and apply migration
+# alembic revision --autogenerate -m "Add audit_log table"
+# alembic upgrade head
+```
+
+### Relationship Examples
+
+**One-to-Many (Agent has many Requests):**
+
+```python
+class Agent(Base):
+    __tablename__ = "agents"
+    agent_id = Column(String, primary_key=True)
+    # Relationship to AgentRequest
+    requests = relationship(
+        "AgentRequest",
+        back_populates="agent",
+        cascade="all, delete-orphan"  # Delete requests when agent deleted
+    )
+
+class AgentRequest(Base):
+    __tablename__ = "agent_requests"
+    request_id = Column(String, primary_key=True)
+    agent_id = Column(String, ForeignKey("agents.agent_id"), nullable=False)
+    # Relationship back to Agent
+    agent = relationship("Agent", back_populates="requests")
+
+# Usage
+session = db.get_session()
+agent = session.query(Agent).filter(Agent.agent_id == "agent_1").first()
+for request in agent.requests:  # Lazy loaded on access
+    print(request.user_prompt)
+```
+
+**One-to-One (Experiment has one AnalysisRun):**
+
+```python
+class Experiment(Base):
+    __tablename__ = "experiments"
+    exp_id = Column(String, primary_key=True)
+    primary_run_id = Column(String, ForeignKey("analysis_runs.run_id"))
+    primary_run = relationship(
+        "AnalysisRun",
+        uselist=False,  # One-to-One relationship
+        back_populates="experiment"
+    )
+
+class AnalysisRun(Base):
+    __tablename__ = "analysis_runs"
+    run_id = Column(String, primary_key=True)
+    experiment = relationship("Experiment", back_populates="primary_run")
+
+# Usage
+run = session.query(AnalysisRun).filter_by(run_id="run_1").first()
+exp = run.experiment  # Access related experiment
+```
+
+**Many-to-Many (Agents detect Findings):**
+
+```python
+# Association table
+agent_findings = Table(
+    "agent_findings",
+    Base.metadata,
+    Column("agent_id", String, ForeignKey("agents.agent_id"), primary_key=True),
+    Column("finding_id", String, ForeignKey("code_smell_findings.finding_id"), primary_key=True),
+)
+
+class Agent(Base):
+    __tablename__ = "agents"
+    agent_id = Column(String, primary_key=True)
+    findings = relationship(
+        "CodeSmellFinding",
+        secondary=agent_findings,
+        back_populates="detectors"
+    )
+
+class CodeSmellFinding(Base):
+    __tablename__ = "code_smell_findings"
+    finding_id = Column(String, primary_key=True)
+    detectors = relationship(
+        "Agent",
+        secondary=agent_findings,
+        back_populates="findings"
+    )
+
+# Usage
+agent = session.query(Agent).get("agent_1")
+agent.findings.append(finding)
+session.commit()
+```
+
+### Atomic Transactions
+
+**Basic Transaction (ACID properties):**
+
+```python
+from sqlalchemy.exc import SQLAlchemyError
+
+db = get_database_manager()
+session = db.get_session()
+
+try:
+    # All operations in this block are atomic
+    db.add_agent("agent_1", "Analyzer", "detector", "Detect code smells")
+    db.add_request("req_1", "agent_1", "Analyze code", "gpt-4")
+    db.add_response("resp_1", "req_1", "Found issues", 150, 0.8)
+    
+    # Commit all changes together
+    session.commit()
+    print("✓ Transaction committed successfully")
+    
+except SQLAlchemyError as e:
+    # If ANY operation fails, ROLLBACK all changes
+    session.rollback()
+    print(f"✗ Transaction failed and rolled back: {e}")
+finally:
+    session.close()
+```
+
+**Nested Transactions (Savepoints):**
+
+```python
+from sqlalchemy import event
+
+db = get_database_manager()
+session = db.get_session()
+
+try:
+    # Main transaction start
+    db.add_agent("agent_1", "Analyzer", "detector", "Analyze code")
+    
+    # Create savepoint (nested transaction)
+    savepoint = session.begin_nested()
+    try:
+        db.add_request("req_1", "agent_1", "Analyze", "gpt-4")
+        savepoint.commit()
+    except Exception as e:
+        savepoint.rollback()  # Only rollback nested transaction
+        print(f"Nested transaction failed: {e}")
+    
+    # Main transaction still valid
+    db.add_finding("find_1", "run_1", "long_method", "HIGH", 0.95, "agent_1")
+    session.commit()
+    
+except SQLAlchemyError as e:
+    session.rollback()
+    print(f"Main transaction failed: {e}")
+```
+
+**Batch Operations (Bulk Insert):**
+
+```python
+db = get_database_manager()
+session = db.get_session()
+
+# Prepare all data first
+findings = [
+    CodeSmellFinding(
+        finding_id=f"find_{i}",
+        run_id="run_1",
+        smell_type="long_method",
+        severity="HIGH",
+        confidence=0.9 + (i * 0.01),
+        agent_id="agent_1"
+    )
+    for i in range(100)
+]
+
+try:
+    # Add all in one transaction
+    session.bulk_insert_mappings(
+        CodeSmellFinding,
+        [asdict(f) for f in findings]
+    )
+    session.commit()
+    print(f"✓ Inserted {len(findings)} findings atomically")
+except SQLAlchemyError as e:
+    session.rollback()
+    print(f"✗ Bulk insert failed: {e}")
+```
+
+**Pessimistic Locking (Avoid Conflicts):**
+
+```python
+from sqlalchemy import select
+
+db = get_database_manager()
+session = db.get_session()
+
+try:
+    # Lock row during read (select for update)
+    agent = session.query(Agent).with_for_update().filter_by(agent_id="agent_1").first()
+    
+    # No other transaction can modify this row until commit
+    agent.name = "Updated Analyzer"
+    
+    # Do other operations...
+    db.add_request("req_1", "agent_1", "Analyze", "gpt-4")
+    
+    session.commit()  # Release lock
+    print("✓ Pessimistic lock succeeded")
+    
+except SQLAlchemyError as e:
+    session.rollback()
+    print(f"✗ Lock conflict: {e}")
+```
+
+**Transaction Isolation Levels:**
+
+```python
+# SQLite uses DEFERRED isolation by default
+# Transactions don't acquire locks until first read/write
+
+from sqlalchemy import create_engine
+
+# Configure isolation level
+engine = create_engine(
+    "sqlite:///./cache/system.db",
+    connect_args={
+        "timeout": 30.0,
+        "isolation_level": "DEFERRED"  # Default, safe for most cases
+    }
+)
+
+# Isolation levels explained:
+# - DEFERRED: Lock acquired on first read/write (default, recommended)
+# - IMMEDIATE: Lock acquired immediately (prevents concurrent writes)
+# - EXCLUSIVE: Exclusive lock (single writer, multiple readers blocked)
+```
+
+**Context Manager Pattern (Recommended):**
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def transactional_session(db):
+    """Guaranteed rollback on exception."""
+    session = db.get_session()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+# Usage
+db = get_database_manager()
+with transactional_session(db) as session:
+    agent = Agent(agent_id="agent_1", name="Analyzer", role="detector")
+    session.add(agent)
+    # Commit on success, rollback on exception
+```
+
+---
+
 ## References
 
 - **SQLAlchemy Docs**: https://docs.sqlalchemy.org/
