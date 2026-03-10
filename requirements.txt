@@ -65,6 +65,7 @@ tokenizers==0.22.2                 # Fast tokenizers
 structlog==25.5.0                  # Structured logging
 python-json-logger==4.0.0          # JSON log formatter
 tqdm==4.67.3                       # Progress bars
+psutil==7.0.0                      # System resource monitoring (CPU, memory)
 
 # ============================================================================
 # HTTP & API (Optional - for FastAPI deployment)

@@ -1,0 +1,31 @@
+module.exports = {
+  env: {
+    browser: true,
+    node: true,
+    es2021: true,
+  },
+  extends: 'eslint:recommended',
+  parserOptions: {
+    ecmaVersion: 2021,
+    sourceType: 'module',
+  },
+  rules: {
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'no-console': 'off',
+    'semi': ['warn', 'always'],
+    'quotes': ['warn', 'single', { avoidEscape: true }],
+    'indent': ['warn', 2],
+    'no-var': 'warn',
+    'prefer-const': 'warn',
+    'eqeqeq': ['warn', 'always'],
+    'no-implied-eval': 'warn',
+    'no-with': 'warn',
+    'no-eval': 'warn',
+    'no-multiple-empty-lines': ['warn', { max: 2 }],
+    'no-empty-function': 'warn',
+    'no-empty': 'warn',
+    'no-duplicate-imports': 'warn',
+    'no-dupe-keys': 'warn',
+  },
+  ignorePatterns: ['node_modules/', '.venv/', 'dist/', 'build/'],
+};

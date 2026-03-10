@@ -1,0 +1,40 @@
+================================================================================
+BASELINE TOOL ANALYSIS REPORT
+================================================================================
+
+SUMMARY STATISTICS
+--------------------------------------------------------------------------------
+Total Tools Analyzed: 8
+Total Findings: 3062
+Average Findings per Tool: 382.8
+
+FINDINGS BY TOOL
+--------------------------------------------------------------------------------
+JAVA/INTELLIJ: 0 findings (Critical: 0, High: 0, Medium: 0, Low: 0)
+JAVA/SPOTBUGS: 0 findings (Critical: 0, High: 0, Medium: 0, Low: 0)
+JAVA/PMD: 160 findings (Critical: 1, High: 0, Medium: 159, Low: 0)
+JAVA/SONARQUBE: 0 findings (Critical: 0, High: 0, Medium: 0, Low: 0)
+JAVA/CHECKSTYLE: 0 findings (Critical: 0, High: 0, Medium: 0, Low: 0)
+PYTHON/FLAKE8: 423 findings (Critical: 0, High: 0, Medium: 423, Low: 0)
+PYTHON/PYLINT: 679 findings (Critical: 0, High: 6, Medium: 673, Low: 0)
+JAVASCRIPT/ESLINT: 1800 findings (Critical: 1800, High: 0, Medium: 0, Low: 0)
+
+MOST COMMON CODE SMELL TYPES
+--------------------------------------------------------------------------------
+ 1. Other (indent): 1452 occurrences
+ 2. Other (quotes): 330 occurrences
+ 3. Other (E501): 318 occurrences
+ 4. Other (missing-function-docstring): 274 occurrences
+ 5. Other (line-too-long): 168 occurrences
+ 6. Dead Code: 99 occurrences
+ 7. Other (duplicate-code): 44 occurrences
+ 8. Other (LiteralsFirstInComparisons): 37 occurrences
+ 9. Other (E302): 37 occurrences
+10. Other (invalid-name): 29 occurrences
+
+FINDINGS BY SEVERITY
+--------------------------------------------------------------------------------
+CRITICAL: 1801 findings
+HIGH: 6 findings
+MEDIUM: 1255 findings
+LOW: 0 findings

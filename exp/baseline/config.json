@@ -1,0 +1,63 @@
+{
+  "baseline_config": {
+    "description": "Baseline LLM Experiment Configuration (No RAG)",
+    "experiment_type": "baseline",
+    "models": [
+      "llama3:8b",
+      "llama3:13b",
+      "codellama:7b"
+    ],
+    "inference_params": {
+      "temperature": 0.1,
+      "top_p": 0.9,
+      "seed": 42,
+      "max_tokens": 2048
+    },
+    "prompt_variants": [
+      "default",
+      "detailed",
+      "structured"
+    ],
+    "execution": {
+      "batch_size": 1,
+      "workers": 1,
+      "timeout_per_file": 120
+    },
+    "benchmarking_strategy_section": "Phase 3.3, Section 6"
+  },
+  "performance_targets": {
+    "latency": {
+      "unit": "seconds",
+      "target": "2-5",
+      "breakdown": {
+        "embedding": "< 100ms",
+        "retrieval": "< 50ms",
+        "inference": "1-3s",
+        "parsing": "< 50ms",
+        "overhead": "< 200ms"
+      }
+    },
+    "throughput": {
+      "unit": "analyses_per_hour",
+      "target": "100-200"
+    },
+    "resource_usage": {
+      "memory": "4-8 GB",
+      "cpu": "40-80%",
+      "disk": "500MB-2GB"
+    }
+  },
+  "evaluation_metrics": {
+    "accuracy": ["precision", "recall", "f1", "accuracy"],
+    "per_smell_type": true,
+    "resource_metrics": true,
+    "llm_quality": [
+      "hallucination_rate",
+      "cache_hit_rate",
+      "json_parse_success",
+      "validation_failure",
+      "confidence_calibration"
+    ]
+  },
+  "notes": "Baseline experiments compare vanilla LLM prompting without RAG. Used as baseline for RAG improvement calculation (RQ2)."
+}

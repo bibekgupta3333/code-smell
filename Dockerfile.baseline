@@ -1,0 +1,40 @@
+FROM eclipse-temurin:17-jdk
+
+LABEL maintainer="code-smell-research"
+LABEL version="1.0.0"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace
+
+# Install PMD 7.0.0
+RUN mkdir -p /opt && \
+    curl -fsSL https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0/pmd-dist-7.0.0-bin.zip \
+    -o /tmp/pmd.zip && \
+    unzip -q /tmp/pmd.zip -d /opt && \
+    mv /opt/pmd-bin-7.0.0 /opt/pmd && \
+    chmod +x /opt/pmd/bin/pmd && \
+    rm /tmp/pmd.zip && \
+    /opt/pmd/bin/pmd --version
+
+# Install Checkstyle
+RUN curl -fsSL https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.14.0/checkstyle-10.14.0-all.jar \
+    -o /opt/checkstyle.jar && \
+    java -jar /opt/checkstyle.jar --version
+
+# Install SpotBugs
+RUN curl -fsSL https://github.com/spotbugs/spotbugs/releases/download/4.8.3/spotbugs-4.8.3.tgz \
+    -o /tmp/spotbugs.tgz && \
+    tar -xzf /tmp/spotbugs.tgz -C /opt && \
+    chmod +x /opt/spotbugs-4.8.3/bin/spotbugs && \
+    rm /tmp/spotbugs.tgz && \
+    /opt/spotbugs-4.8.3/bin/spotbugs -version
+
+# Note: SonarScanner is available via SonarQube Docker service on host.docker.internal:9000
+# For CLI usage, SonarScanner can be accessed through docker-compose sonarqube service
+# Alternative: Install from Maven Central if needed
+
+ENTRYPOINT ["/bin/bash"]

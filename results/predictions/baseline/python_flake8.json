@@ -1,0 +1,4240 @@
+{
+  "tool": "flake8",
+  "language": "python",
+  "input": "/Users/bibekgupta/Downloads/projects/code-smell/data/datasets/SmellyCodeDataset",
+  "timestamp": "2026-03-09T23:34:26.482684",
+  "elapsed_seconds": 0.28,
+  "total_findings": 423,
+  "findings": [
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 46,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (124 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 47,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (102 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 48,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (118 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 51,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 52,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 53,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (95 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (102 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 57,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (109 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 58,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (103 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 61,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 62,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 65,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 66,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (160 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 70,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (111 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 70,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 84,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Comparison.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 13,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 15,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (102 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 28,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 29,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (104 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 32,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (100 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 36,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (86 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 37,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 40,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 41,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 46,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 66,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 79,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 80,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (83 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 84,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 86,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 88,
+      "smell_type": "Other (F841)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "local variable 'categories_list' is assigned to but never used",
+      "raw_rule": "F841"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 89,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 99,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 103,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 105,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 106,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 107,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 110,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (95 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 111,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 112,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Language_Level_Generate_Visuals.py",
+      "line": 132,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (108 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 49,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 51,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 54,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (98 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (105 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (99 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 59,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 60,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 63,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (123 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 64,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (150 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (99 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 82,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Comparison.py",
+      "line": 83,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 14,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 21,
+      "smell_type": "Other (F841)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "local variable 'colors' is assigned to but never used",
+      "raw_rule": "F841"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 25,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (132 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 26,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (136 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 27,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (141 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 31,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (116 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 37,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (120 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (125 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (126 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 44,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (150 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (194 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 59,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 69,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 79,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 83,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (85 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 86,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 90,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 91,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 92,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Category_Level_Generate_Visuals.py",
+      "line": 112,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 36,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (116 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 37,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 45,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (103 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Clean_csv.py",
+      "line": 56,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 37,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 50,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 51,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (132 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 52,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (142 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "CodeHeatMapsGenerateVisuals..py",
+      "line": 53,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (131 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 54,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (86 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 59,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 60,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 63,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 64,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (146 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (99 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 82,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Comparison.py",
+      "line": 83,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (130 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 14,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (95 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 26,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 28,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (132 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 29,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (136 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 30,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (141 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (116 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 40,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (120 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 41,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (125 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 42,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (126 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 47,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (150 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 53,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (194 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 88,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (85 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 89,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 93,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 94,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 95,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Language_Level_Generate_Visuals.py",
+      "line": 115,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 40,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 42,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (96 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 43,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 44,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 47,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (85 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 48,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (109 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 71,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Comparison.py",
+      "line": 72,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 14,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 21,
+      "smell_type": "Other (F841)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "local variable 'colors' is assigned to but never used",
+      "raw_rule": "F841"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 25,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (156 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (121 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 46,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (170 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 62,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Model_Level_Generate_Visuals.py",
+      "line": 81,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (110 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 46,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (124 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 47,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (102 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 48,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (118 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 51,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 52,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (100 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 53,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (98 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (105 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 57,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (112 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 58,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (106 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 61,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 62,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 65,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (130 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 66,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (157 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 70,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 70,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 84,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Comparison.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (129 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 14,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (118 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 27,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (99 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 28,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (106 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 31,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 32,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (102 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 36,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (96 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (86 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 40,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 45,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 65,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 66,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 75,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (86 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 95,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 115,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (83 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 125,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 126,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Language_Level_Generate_Visuals.py",
+      "line": 136,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 10,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'os' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 21,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (133 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (119 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 49,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 51,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (82 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 54,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (96 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 59,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 60,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 63,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (120 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 64,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (147 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (101 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 68,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 82,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Comparison.py",
+      "line": 83,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (112 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 12,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 21,
+      "smell_type": "Other (F841)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "local variable 'colors' is assigned to but never used",
+      "raw_rule": "F841"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 25,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (134 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 26,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (138 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 27,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (143 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 31,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (116 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 37,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (122 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (127 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 44,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (150 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (196 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 59,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 69,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 79,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 83,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 85,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (85 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 86,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (80 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 90,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (91 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 91,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 92,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (84 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Type_Level_Generate_Visuals.py",
+      "line": 112,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 9,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'re' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 16,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (156 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 17,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 18,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (104 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 19,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (110 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 20,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (134 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 21,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (132 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 22,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (149 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 23,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (124 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 24,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (123 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 25,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (146 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 26,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (107 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 27,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (109 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 31,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (99 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 32,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (121 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (108 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 34,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (113 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (109 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 36,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (123 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 37,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (120 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (117 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 40,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (137 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 44,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 47,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 49,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (171 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (249 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 60,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (115 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 61,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (90 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 62,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (154 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 64,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (86 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 70,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 82,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 84,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 89,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (101 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 95,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (109 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 100,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 102,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (94 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 103,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (96 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 104,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (81 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 105,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (107 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 109,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 128,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "analyze_python_code.py",
+      "line": 129,
+      "smell_type": "Other (W292)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "no newline at end of file",
+      "raw_rule": "W292"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 9,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'Pizza.Pizza' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 11,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 43,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 60,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 62,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 94,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 152,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 153,
+      "smell_type": "Other (W391)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line at end of file",
+      "raw_rule": "W391"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 11,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 52,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 109,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 125,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 133,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 135,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 169,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 10,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 31,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (106 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 35,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (123 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 36,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (123 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 39,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 61,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (190 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 90,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 92,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 150,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 8,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 12,
+      "smell_type": "Other (W293)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line contains whitespace",
+      "raw_rule": "W293"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 18,
+      "smell_type": "Other (E301)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 1 blank line, found 0",
+      "raw_rule": "E301"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 13,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 30,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 38,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 95,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 109,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (98 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 117,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 119,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 150,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 154,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 13,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 50,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 107,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 139,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 159,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 162,
+      "smell_type": "Other (W391)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "blank line at end of file",
+      "raw_rule": "W391"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 9,
+      "smell_type": "Other (F401)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "'Pizza.Pizza' imported but unused",
+      "raw_rule": "F401"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 11,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 55,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 56,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Cashier.py",
+      "line": 84,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 11,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 33,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (89 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 46,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 107,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 115,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Chef.py",
+      "line": 116,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 11,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 54,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (190 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 79,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (93 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Customer.py",
+      "line": 81,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Drink.py",
+      "line": 8,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 13,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Main.py",
+      "line": 30,
+      "smell_type": "Other (E305)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines after class or function definition, found 1",
+      "raw_rule": "E305"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 32,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (88 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 91,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (98 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 99,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (114 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 100,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (165 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Pizza.py",
+      "line": 127,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (92 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 2,
+      "smell_type": "Other (W291)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "trailing whitespace",
+      "raw_rule": "W291"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 5,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (128 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 13,
+      "smell_type": "Other (E302)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "expected 2 blank lines, found 1",
+      "raw_rule": "E302"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 44,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (87 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 118,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    },
+    {
+      "tool": "flake8",
+      "file": "Shop.py",
+      "line": 137,
+      "smell_type": "Other (E501)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "line too long (97 > 79 characters)",
+      "raw_rule": "E501"
+    }
+  ]
+}

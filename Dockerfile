@@ -56,9 +56,6 @@ RUN python config.py
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 
-# Copy data directory structure (but not large datasets - mount as volume)
-COPY data/.gitkeep ./data/.gitkeep 2>/dev/null || true
-
 # Copy paper and documentation
 COPY paper/ ./paper/
 COPY docs/ ./docs/
@@ -94,7 +91,7 @@ ENV OLLAMA_BASE_URL=http://ollama:11434 \
     PYTHONPATH=/app
 
 # Ollama runs on host machine - accessible via host.docker.internal on macOS
-ENV OLLAMA_BASE_URL=http://host.docker.internalll (override for specific tasks)
+# Override via: docker run -e OLLAMA_BASE_URL=http://host.docker.internal:11434 <image>
 # Example overrides:
 #   - Run experiment: docker run <image> python scripts/run_experiment.py
 #   - Interactive shell: docker run -it <image> /bin/bash

@@ -1,0 +1,1610 @@
+{
+  "tool": "pmd",
+  "language": "java",
+  "input": "/Users/bibekgupta/Downloads/projects/code-smell/data/datasets/SmellyCodeDataset",
+  "timestamp": "2026-03-09T23:32:56.171102",
+  "elapsed_seconds": 1.55,
+  "total_findings": 160,
+  "findings": [
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'frequentCustomerDiscount'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 23,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 24,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 156,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 158,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 160,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'completedOrders'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'breaksTaken'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'kitchenClean'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'extraCheese'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 21,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 22,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 23,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 24,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 27,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 28,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 124,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 126,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 128,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'frequentCustomerDiscount'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 23,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 24,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 154,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 156,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 158,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'isLargeSize'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerFirstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerLastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerAddress'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerPhoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerEmail'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 23,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 24,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 101,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 103,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'extraCheese'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerFirstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerLastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerAddress'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 21,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerPhoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 22,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerEmail'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 25,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 26,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 116,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 118,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 120,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 209,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "main.java",
+      "line": 12,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "main.java",
+      "line": 12,
+      "smell_type": "Other (ClassNamingConventions)",
+      "severity": "CRITICAL",
+      "confidence": 0.8,
+      "explanation": "The utility class name 'main' doesn't match '[A-Z][a-zA-Z0-9]*'",
+      "raw_rule": "ClassNamingConventions"
+    },
+    {
+      "tool": "PMD",
+      "file": "main.java",
+      "line": 12,
+      "smell_type": "Other (UseUtilityClass)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "This utility class has a non-private constructor",
+      "raw_rule": "UseUtilityClass"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 11,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'frequentCustomerDiscount'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 52,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 134,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 136,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 138,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Cashier.java",
+      "line": 145,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'completedOrders'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'breaksTaken'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'kitchenClean'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'extraCheese'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 21,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 22,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 107,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 109,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 111,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 122,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 125,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Chef.java",
+      "line": 184,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 11,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'frequentCustomerDiscount'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 39,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 131,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 133,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 135,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Customer.java",
+      "line": 142,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 11,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'isLargeSize'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerFirstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerLastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerAddress'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerPhoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerEmail'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 84,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 86,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 97,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 100,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Drink.java",
+      "line": 145,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'extraCheese'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerFirstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerLastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerAddress'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerPhoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'customerEmail'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 99,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 101,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 103,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 114,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 117,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 171,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    },
+    {
+      "tool": "PMD",
+      "file": "Pizza.java",
+      "line": 182,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 9,
+      "smell_type": "Other (NoPackage)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "All classes, interfaces, enums and annotations must belong to a named package",
+      "raw_rule": "NoPackage"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 12,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'pizza'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 13,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'frequentCustomerDiscount'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 14,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'firstName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 15,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'lastName'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 16,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'address'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 17,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'phoneNumber'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 18,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'email'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 19,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempDiscountCode'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 20,
+      "smell_type": "Dead Code",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Avoid unused private fields such as 'tempOrderNote'.",
+      "raw_rule": "UnusedPrivateField"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 35,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 37,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 39,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 41,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 102,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 104,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 106,
+      "smell_type": "Other (LiteralsFirstInComparisons)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Position literals first in String comparisons",
+      "raw_rule": "LiteralsFirstInComparisons"
+    },
+    {
+      "tool": "PMD",
+      "file": "Shop.java",
+      "line": 117,
+      "smell_type": "Other (UncommentedEmptyMethodBody)",
+      "severity": "MEDIUM",
+      "confidence": 0.8,
+      "explanation": "Document empty method body",
+      "raw_rule": "UncommentedEmptyMethodBody"
+    }
+  ]
+}

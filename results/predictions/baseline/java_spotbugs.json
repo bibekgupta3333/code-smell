@@ -1,0 +1,9 @@
+{
+  "tool": "spotbugs",
+  "language": "java",
+  "input": "/Users/bibekgupta/Downloads/projects/code-smell/data/datasets/SmellyCodeDataset",
+  "timestamp": "2026-03-09T23:32:57.719885",
+  "elapsed_seconds": 0.0,
+  "total_findings": 0,
+  "findings": []
+}

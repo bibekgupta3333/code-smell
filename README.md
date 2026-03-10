@@ -275,6 +275,9 @@ See [ORM Migration Guide](docs/database/ORM_MIGRATION_GUIDE.md) for schema detai
 - [Backend Architecture](docs/architecture/BACKEND_ARCHITECTURE.md) — API, services
 - [Database Architecture](docs/architecture/DATABASE_ARCHITECTURE.md) — Data storage
 
+### Baseline & Benchmarking
+- [Baseline Tools Guide](docs/baseline/BASELINE_GUIDE.md) — Installation, running, tools reference, troubleshooting
+
 ### Development
 - [ORM Migration Guide](docs/database/ORM_MIGRATION_GUIDE.md) — SQLAlchemy patterns, cheat sheets, transactions
 - [Deployment Guide](docs/deployment/DEPLOYMENT_GUIDE.md) — Docker setup

@@ -1,0 +1,84 @@
+{
+  "rag_config": {
+    "description": "RAG-Enhanced LLM Experiment Configuration",
+    "experiment_type": "rag",
+    "models": [
+      "llama3:8b",
+      "llama3:13b",
+      "codellama:7b"
+    ],
+    "inference_params": {
+      "temperature": 0.1,
+      "top_p": 0.9,
+      "seed": 42,
+      "max_tokens": 2048
+    },
+    "rag_parameters": {
+      "embedding_models": [
+        "sentence-transformers/all-MiniLM-L6-v2",
+        "sentence-transformers/bge-small-en-v1.5"
+      ],
+      "top_k_values": [1, 3, 5, 10],
+      "similarity_thresholds": [0.5, 0.6, 0.7, 0.8],
+      "diversify_lambda": [0.5, 0.7, 0.9]
+    },
+    "prompt_variants": [
+      "rag_default",
+      "rag_detailed",
+      "rag_with_examples"
+    ],
+    "execution": {
+      "batch_size": 1,
+      "workers": 1,
+      "timeout_per_file": 120
+    },
+    "benchmarking_strategy_section": "Phase 3.3, Section 3 (RAG Effectiveness), Section 5 (Cross-Validation)"
+  },
+  "ablation_studies": {
+    "primary": "top_k_sweep",
+    "defaults": {
+      "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+      "top_k": 5,
+      "similarity_threshold": 0.7,
+      "diversity_lambda": 0.7
+    }
+  },
+  "performance_targets": {
+    "latency": {
+      "unit": "seconds",
+      "target": "2-5",
+      "components": {
+        "embedding": "< 100ms",
+        "retrieval": "< 50ms",
+        "inference": "1-3s",
+        "parsing": "< 50ms"
+      }
+    },
+    "rag_effectiveness": {
+      "f1_improvement_percentage": "10-15",
+      "fp_reduction_percentage": "20-30",
+      "retrieval_quality": {
+        "precision_at_k": "> 0.8",
+        "ndcg_at_k": "> 0.75"
+      }
+    },
+    "throughput": {
+      "unit": "analyses_per_hour",
+      "target": "100-200"
+    }
+  },
+  "evaluation_metrics": {
+    "accuracy": ["precision", "recall", "f1", "accuracy"],
+    "per_smell_type": true,
+    "rag_specific": [
+      "f1_improvement_vs_baseline",
+      "false_positive_reduction",
+      "retrieval_precision_at_k",
+      "ndcg_at_k",
+      "example_relevance_scores"
+    ],
+    "resource_metrics": true,
+    "ablation_metrics": true
+  },
+  "notes": "RAG experiments evaluate the effectiveness of retrieval-augmented generation for improving detection accuracy (RQ2). Ablation studies vary top-k, embedding models, and retrieval strategies."
+}

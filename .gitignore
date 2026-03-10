@@ -127,3 +127,7 @@ models/
 *.gguf
 *.pth
 *.pt
+
+# Baseline Tool Binaries (large, downloaded by setup_baseline_tools.sh)
+tools/
+data/datasets
