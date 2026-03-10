@@ -10,8 +10,8 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime
 
-from src.common import CodeSmellFinding, SeverityLevel
-from src.logger import log_agent_event
+from src.utils.common import CodeSmellFinding, SeverityLevel
+from src.utils.logger import log_agent_event
 
 logger = logging.getLogger(__name__)
 

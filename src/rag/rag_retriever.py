@@ -11,9 +11,9 @@ import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from src.vector_store import VectorStore
-from src.embedding_service import EmbeddingService
-from src.logger import log_rag_retrieval, log_agent_event
+from src.rag.vector_store import VectorStore
+from src.rag.embedding_service import EmbeddingService
+from src.utils.logger import log_rag_retrieval, log_agent_event
 from config import RAG_CONFIG
 
 logger = logging.getLogger(__name__)

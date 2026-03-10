@@ -12,12 +12,12 @@ from typing import List, Dict, Any
 from datetime import datetime
 from time import time
 
-from src.code_chunker import CodeChunker
-from src.code_smell_detector import CodeSmellDetector
-from src.quality_validator import QualityValidator
-from src.common import CodeSmellFinding, DetectionResult
-from src.logger import log_agent_event, log_workflow_step
-from src.code_parser import CodeParser
+from src.analysis.code_chunker import CodeChunker
+from src.analysis.code_smell_detector import CodeSmellDetector
+from src.analysis.quality_validator import QualityValidator
+from src.utils.common import CodeSmellFinding, DetectionResult
+from src.utils.logger import log_agent_event, log_workflow_step
+from src.analysis.code_parser import CodeParser
 
 logger = logging.getLogger(__name__)
 

@@ -10,12 +10,12 @@ import asyncio
 import logging
 from typing import List, Dict, Any, Optional
 
-from llm_client import OllamaClient
-from embedding_service import EmbeddingService
-from vector_store import VectorStore
-from code_chunker import CodeChunker, CodeChunk
-from prompt_templates import create_rag_prompt, create_production_analysis_prompt
-from response_parser import ResponseParser, AnalysisResult
+from src.llm.llm_client import OllamaClient
+from src.rag.embedding_service import EmbeddingService
+from src.rag.vector_store import VectorStore
+from src.analysis.code_chunker import CodeChunker, CodeChunk
+from src.llm.prompt_templates import create_rag_prompt, create_production_analysis_prompt
+from src.llm.response_parser import ResponseParser, AnalysisResult
 from config import RAG_CONFIG, DEFAULT_MODEL
 
 logger = logging.getLogger(__name__)

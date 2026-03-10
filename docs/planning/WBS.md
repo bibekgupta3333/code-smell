@@ -957,38 +957,38 @@ These metrics track LLM behavior and quality beyond traditional ML metrics:
 
 **Focus: Production Code Smells Only (Gap #12)**
 
-- [ ] Create `data/datasets/` directory structure
-  - [ ] `data/datasets/marv/` - MaRV dataset
-  - [ ] `data/datasets/qualitas_corpus/` - Java projects
-  - [ ] `data/datasets/smelly_code/` - Labeled smell examples
-  - [ ] `data/ground_truth/` - Manually verified examples
+- [x] Create `data/datasets/` directory structure
+  - [x] `data/datasets/marv/` - MaRV dataset
+  - [x] `data/datasets/qualitas_corpus/` - Java projects
+  - [x] `data/datasets/smelly_code/` - Labeled smell examples
+  - [x] `data/ground_truth/` - Manually verified examples
 
 - [ ] Download MaRV dataset
-  - [ ] Research dataset source
+  - [x] Research dataset source
   - [ ] Download and extract
   - [ ] **Verify production code smell labels (not test smells)**
-  - [ ] Document dataset structure in `data/datasets/marv/README.md`
+  - [x] Document dataset structure in `data/datasets/marv/README.md`
 
 - [ ] Download additional datasets
   - [ ] Qualitas Corpus (Java code smells)
   - [ ] Code Smell Detection datasets from literature
   - [ ] **Filter for production code only**
 
-- [ ] Create `src/data_loader.py`
-  - [ ] Load datasets from various formats (JSON, CSV, XML)
-  - [ ] Parse code files
-  - [ ] Extract smell annotations
-  - [ ] Unified data model for all datasets
+- [x] Create `src/data_loader.py`
+  - [x] Load datasets from various formats (JSON, CSV, XML)
+  - [x] Parse code files
+  - [x] Extract smell annotations
+  - [x] Unified data model for all datasets
 
-- [ ] Create `src/data_preprocessor.py`
-  - [ ] Clean code samples (remove comments, normalize formatting)
-  - [ ] Extract features (metrics)
-  - [ ] Label validation (ensure production code smells)
-  - [ ] **Train/validation/test split: 60/20/20** (per Benchmarking Section 1)
-    - [ ] Training set (60%): For RAG knowledge base indexing
-    - [ ] Validation set (20%): For hyperparameter tuning
-    - [ ] Test set (20%): For final evaluation (never seen during development)
-  - [ ] Save preprocessed data with split labels
+- [x] Create `src/data_preprocessor.py`
+  - [x] Clean code samples (remove comments, normalize formatting)
+  - [x] Extract features (metrics)
+  - [x] Label validation (ensure production code smells)
+  - [x] **Train/validation/test split: 60/20/20** (per Benchmarking Section 1)
+    - [x] Training set (60%): For RAG knowledge base indexing
+    - [x] Validation set (20%): For hyperparameter tuning
+    - [x] Test set (20%): For final evaluation (never seen during development)
+  - [x] Save preprocessed data with split labels
 
 ### 3.2 Vector Store Indexing (Week 6: Apr 1-4, 2026)
 

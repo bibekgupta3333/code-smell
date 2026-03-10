@@ -154,21 +154,26 @@ CODE_SMELL_TYPES = [
     "Large Class",
     "Long Parameter List",
     "Primitive Obsession",
+    "Data Clumps",
     # Couplers
     "Feature Envy",
     "Inappropriate Intimacy",
     "Message Chains",
+    "Middle Man",
     # Change Preventers
     "Divergent Change",
     "Shotgun Surgery",
+    "Parallel Inheritance Hierarchies",
     # Dispensables
     "Duplicate Code",
     "Lazy Class",
     "Data Class",
     "Dead Code",
+    "Speculative Generality",
     # Object-Oriented Abusers
     "Switch Statements",
     "Refused Bequest",
+    "Temporary Field",
 ]
 
 # ============================================================================

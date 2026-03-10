@@ -13,9 +13,9 @@ from pathlib import Path
 from datetime import datetime
 import json
 
-from src.analysis_coordinator import AnalysisCoordinator
-from src.common import DetectionResult, format_result_for_display, serialize_result
-from src.logger import setup_logging, log_workflow_step
+from src.workflow.analysis_coordinator import AnalysisCoordinator
+from src.utils.common import DetectionResult, format_result_for_display, serialize_result
+from src.utils.logger import setup_logging, log_workflow_step
 from config import RESULTS_DIR
 
 logger = logging.getLogger(__name__)

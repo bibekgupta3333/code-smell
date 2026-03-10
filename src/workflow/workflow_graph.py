@@ -15,12 +15,12 @@ from datetime import datetime
 from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel
 
-from src.common import CodeSmellFinding, SeverityLevel
-from src.logger import log_workflow_step, log_agent_event
-from src.code_parser import CodeParser, CodeMetrics, ProgrammingLanguage
-from src.rag_retriever import RAGRetriever
-from src.code_smell_detector import CodeSmellDetector
-from src.quality_validator import QualityValidator
+from src.utils.common import CodeSmellFinding, SeverityLevel
+from src.utils.logger import log_workflow_step, log_agent_event
+from src.analysis.code_parser import CodeParser, CodeMetrics, ProgrammingLanguage
+from src.rag.rag_retriever import RAGRetriever
+from src.analysis.code_smell_detector import CodeSmellDetector
+from src.analysis.quality_validator import QualityValidator
 
 logger = logging.getLogger(__name__)
 

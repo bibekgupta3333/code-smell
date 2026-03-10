@@ -150,7 +150,7 @@ alembic upgrade head
 ### Run Analysis
 
 ```python
-from src.code_analysis_workflow import CodeAnalysisWorkflow
+from src.workflow.code_analysis_workflow import CodeAnalysisWorkflow
 
 workflow = CodeAnalysisWorkflow()
 results = workflow.analyze_file("path/to/your/code.py")

@@ -1,0 +1,14 @@
+{
+  "split_ratios": {
+    "train": 0.6,
+    "validation": 0.2,
+    "test": 0.2
+  },
+  "random_seed": 42,
+  "sizes": {
+    "train": 16,
+    "validation": 6,
+    "test": 6
+  },
+  "total": 28
+}

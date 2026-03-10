@@ -68,33 +68,33 @@ install:
 	@echo "✓ Dependencies installed"
 
 run-detector:
-	$(VENV_ACTIVATE) $(PYTHON) -c "from src.code_smell_detector import CodeSmellDetector; d = CodeSmellDetector(specialization='Long Method expert'); print('✓ Deep Agent detector initialized'); s = d.get_stats(); print(f'Framework: {s[\"framework\"]}'); print(f'Tools available: {len(s[\"tools_available\"])}')"
+	$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis.code_smell_detector import CodeSmellDetector; d = CodeSmellDetector(specialization='Long Method expert'); print('✓ Deep Agent detector initialized'); s = d.get_stats(); print(f'Framework: {s.get(\"framework\")}'); print(f'Tools available: {len(s.get(\"tools_available\", []))}')"
 
 run-workflow:
-	$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow_graph import build_workflow_graph; g = build_workflow_graph(); print('✓ LangGraph workflow compiled'); print('✓ Ready for analysis')"
+	$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow.workflow_graph import build_workflow_graph; g = build_workflow_graph(); print('✓ LangGraph workflow compiled'); print('✓ Ready for analysis')"
 
 run-coordinator:
-	$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Analysis Coordinator initialized'); print(f'Detectors: {len(c.detectors)}')"
+	$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Analysis Coordinator initialized'); print(f'Detectors: {len(c.detectors)}')"
 
 run-database:
 	@echo "Testing Database Manager..."
-	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database manager initialized'); print(f'Tables: {len(stats) - 1}'); print(f'Database size: {stats[\"database_size_mb\"]:.2f} MB')"
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database manager initialized'); print(f'Tables: {len(stats) - 1}'); print(f'Database size: {stats.get(\"database_size_mb\", 0):.2f} MB')"
 	@echo "✓ Database manager operational"
 
 run-all:
 	@echo "Running Complete System Verification..."
 	@echo ""
 	@echo "1. Initializing Deep Agent Detector..."
-	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.code_smell_detector import CodeSmellDetector; d = CodeSmellDetector(); print('✓ Detector OK')"
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis.code_smell_detector import CodeSmellDetector; d = CodeSmellDetector(); print('✓ Detector OK')"
 	@echo ""
 	@echo "2. Building LangGraph Workflow..."
-	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow_graph import build_workflow_graph; g = build_workflow_graph(); print('✓ Workflow OK')"
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow.workflow_graph import build_workflow_graph; g = build_workflow_graph(); print('✓ Workflow OK')"
 	@echo ""
 	@echo "3. Initializing Analysis Coordinator..."
-	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Coordinator OK')"
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.workflow.analysis_coordinator import AnalysisCoordinator; c = AnalysisCoordinator(); print('✓ Coordinator OK')"
 	@echo ""
 	@echo "4. Testing Database Manager..."
-	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database OK')"
+	@$(VENV_ACTIVATE) $(PYTHON) -c "from src.database.database_manager import DatabaseManager; db = DatabaseManager(); stats = db.get_database_stats(); print('✓ Database OK')"
 	@echo ""
 	@echo "✅ All systems operational and ready for Phase 3"
 
@@ -120,12 +120,12 @@ run-generate-baseline-report:
 run-benchmark-verify:
 	@echo "Verifying benchmarking infrastructure..."
 	@$(VENV_ACTIVATE) $(PYTHON) -c "\
-from src.benchmark_utils import calculate_metrics, build_confusion_matrix, per_smell_breakdown, \
+from src.utils.benchmark_utils import calculate_metrics, build_confusion_matrix, per_smell_breakdown, \
     statistical_tests, latency_profiler, ResourceMonitor, confidence_calibration, \
     rag_retrieval_quality, cache_hit_rate, validation_failure_rate, \
     calculate_hallucination_rate, compare_tools, save_metrics; \
 print('✓ benchmark_utils — all functions imported'); \
-from src.result_exporter import to_latex_table, to_csv, export_predictions_csv, \
+from src.utils.result_exporter import to_latex_table, to_csv, export_predictions_csv, \
     plot_f1_comparison, plot_per_smell_heatmap, plot_confusion_matrix, \
     plot_latency_comparison, plot_confidence_calibration, plot_resource_usage, plot_delta_f1; \
 print('✓ result_exporter — all functions imported'); \
@@ -169,10 +169,10 @@ baseline-report:
 # Verify benchmarking Python modules
 baseline-verify:
 	@$(VENV_ACTIVATE) $(PYTHON) -c "\
-from src.benchmark_utils import calculate_metrics, build_confusion_matrix, per_smell_breakdown, \
+from src.utils.benchmark_utils import calculate_metrics, build_confusion_matrix, per_smell_breakdown, \
     statistical_tests, latency_profiler, ResourceMonitor; \
 print('✓ benchmark_utils OK'); \
-from src.result_exporter import to_latex_table, to_csv, plot_f1_comparison; \
+from src.utils.result_exporter import to_latex_table, to_csv, plot_f1_comparison; \
 print('✓ result_exporter OK'); \
 print('✅ Baseline modules verified')"
 

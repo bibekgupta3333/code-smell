@@ -53,18 +53,18 @@ from config import (
     LLM_CONFIG,
     RAG_CONFIG,
 )
-from src.llm_client import OllamaClient
-from src.code_smell_detector import CodeSmellDetector
-from src.rag_pipeline import RAGPipeline
-from src.analysis_coordinator import AnalysisCoordinator
-from src.code_parser import CodeParser
-from src.benchmark_utils import (
+from src.llm.llm_client import OllamaClient
+from src.analysis.code_smell_detector import CodeSmellDetector
+from src.rag.rag_pipeline import RAGPipeline
+from src.workflow.analysis_coordinator import AnalysisCoordinator
+from src.analysis.code_parser import CodeParser
+from src.utils.benchmark_utils import (
     calculate_metrics,
     build_confusion_matrix,
     profile_resource_usage,
     ResourceProfile,
 )
-from src.logger import log_agent_event, log_detection_result
+from src.utils.logger import log_agent_event, log_detection_result
 
 # Setup logging
 logging.basicConfig(

@@ -21,12 +21,12 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-from src.llm_client import OllamaClient
-from src.prompt_templates import create_rag_prompt, get_system_prompt
-from src.response_parser import ResponseParser, AnalysisResult
-from src.rag_retriever import RAGRetriever
-from src.common import CodeSmellFinding, SeverityLevel, parse_smell_severity
-from src.logger import log_agent_event, log_detection_result, log_llm_request, log_llm_response
+from src.llm.llm_client import OllamaClient
+from src.llm.prompt_templates import create_rag_prompt, get_system_prompt
+from src.llm.response_parser import ResponseParser, AnalysisResult
+from src.rag.rag_retriever import RAGRetriever
+from src.utils.common import CodeSmellFinding, SeverityLevel, parse_smell_severity
+from src.utils.logger import log_agent_event, log_detection_result, log_llm_request, log_llm_response
 from config import DEFAULT_MODEL
 
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def analyze_code_structure(code: str) -> str:
     Returns:
         Structured analysis of code
     """
-    from src.code_parser import CodeParser
+    from src.analysis.code_parser import CodeParser
     try:
         parser = CodeParser()
         metrics = parser.extract_metrics(code)
@@ -70,7 +70,7 @@ def analyze_code_structure(code: str) -> str:
 @tool
 def classify_severity_level(smell_description: str, code_section: str) -> str:
     """Classify the severity level of a detected code smell.
-    
+
     Deep Agent tool for severity classification with precise rules.
 
     Args:
@@ -106,7 +106,7 @@ def classify_severity_level(smell_description: str, code_section: str) -> str:
 @tool
 def retrieve_similar_patterns(code: str) -> str:
     """Retrieve similar code patterns from knowledge base.
-    
+
     Deep Agent tool for context-aware RAG integration.
 
     Args:
@@ -116,10 +116,10 @@ def retrieve_similar_patterns(code: str) -> str:
         Similar patterns and best practices
     """
     try:
-        from src.rag_retriever import RAGRetriever
+        from src.rag.rag_retriever import RAGRetriever
         retriever = RAGRetriever()
         results = retriever.retrieve_similar(code, top_k=3)
-        
+
         if results:
             return f"Found {len(results)} similar patterns in codebase:\n" + "\n".join(
                 [f"- {r['snippet'][:100]}..." for r in results[:3]]
@@ -133,7 +133,7 @@ def retrieve_similar_patterns(code: str) -> str:
 @tool
 def extract_refactoring_suggestions(code: str, smell_type: str) -> str:
     """Extract concrete refactoring suggestions for identified smell.
-    
+
     Deep Agent tool for generating actionable refactoring advice.
 
     Args:
@@ -152,7 +152,7 @@ def extract_refactoring_suggestions(code: str, smell_type: str) -> str:
         "dead code": "Remove unused functions, variables, and imports.",
         "complex conditional": "Extract to boolean helper methods or use polymorphism.",
     }
-    
+
     suggestion = suggestions.get(
         smell_type.lower(),
         "Review code structure and consider SOLID principles"
@@ -302,7 +302,7 @@ class CodeSmellDetector:
 
             # Step 3: LLM-based smell detection with context
             smell_filter = f"Focus on: {', '.join(smell_types)}" if smell_types else "Analyze all code smell types"
-            
+
             llm_input = f"""Deep Agent Analysis Task: Detect Code Smells
 
 Code Analysis Results:
@@ -354,7 +354,7 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
             # Step 4: Tool invocation for identified smells
             # Extract and classify each smell
             findings_raw = await self._parse_response(response_text, code)
-            
+
             findings = []
             for raw_finding in findings_raw:
                 # Use Deep Agent tools to enhance classification
@@ -376,7 +376,7 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
                     # Enhance finding with tool results
                     raw_finding.severity = parse_smell_severity(severity_detail.split(":")[0]) or raw_finding.severity
                     raw_finding.refactoring = suggestions
-                    
+
                 findings.append(raw_finding)
 
             # Update statistics
@@ -481,7 +481,7 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
             "tools_invoked_count": self.tools_invoked_count,
             "tools_available": [
                 "analyze_code_structure",
-                "classify_severity_level", 
+                "classify_severity_level",
                 "retrieve_similar_patterns",
                 "extract_refactoring_suggestions"
             ],
