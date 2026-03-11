@@ -1,91 +1,229 @@
 {
-  "ablation_studies_config": {
-    "description": "Systematic Ablation Studies for RAG and Prompt Engineering",
-    "experiment_type": "ablation",
-    "phase": "Phase 4.2 (Weeks 9)",
-    "studies": {
-      "rag_hyperparameters": {
-        "description": "Vary RAG parameters to find optimal configuration",
-        "parameters": {
-          "top_k": {
-            "values": [1, 3, 5, 10],
-            "default": 5,
-            "reason": "Benchmarking Section 5 cross-validation"
-          },
-          "similarity_threshold": {
-            "values": [0.5, 0.6, 0.7, 0.8],
-            "default": 0.7,
-            "reason": "Filter retrieved examples by relevance"
-          },
-          "diversity_lambda": {
-            "values": [0.5, 0.7, 0.9],
-            "default": 0.7,
-            "reason": "MMR diversity parameter for example diversity"
-          }
-        },
-        "method": "grid_search",
-        "evaluation": "5_fold_cross_validation",
-        "metric": "f1_score"
-      },
-      "embedding_models": {
-        "description": "Compare different embedding models for RAG",
-        "embedding_models": [
-          "sentence-transformers/all-MiniLM-L6-v2",
-          "sentence-transformers/bge-small-en-v1.5",
-          "sentence-transformers/paraphrase-MiniLM-L6-v2"
-        ],
-        "default": "sentence-transformers/all-MiniLM-L6-v2",
-        "reason": "Lightweight, 384-dim, fast inference on M4 Pro"
-      },
-      "prompt_variants": {
-        "description": "Test different prompting strategies",
-        "variants": [
-          "default",
-          "detailed",
-          "structured_json",
-          "with_examples",
-          "chain_of_thought"
-        ],
-        "metric": "f1_score",
-        "expected_impact": "5-10% variance"
-      },
-      "model_size_comparison": {
-        "description": "Compare model sizes for accuracy-latency tradeoff",
-        "models": [
-          "llama3:7b",
-          "llama3:8b",
-          "llama3:13b",
-          "codellama:7b",
-          "codellama:13b"
-        ],
-        "metrics": ["f1_score", "latency_ms", "memory_mb", "tokens_per_analysis"]
-      }
-    },
-    "validation_method": {
-      "strategy": "5_fold_cross_validation",
-      "test_set": "Hold out 20% from Benchmarking Section 1",
-      "repeated_runs": 3,
-      "random_seeds": [42, 123, 456],
-      "reason": "Ensure reproducibility and stability across runs"
-    },
-    "output": {
-      "per_smell_type_breakdown": true,
-      "heatmaps": true,
-      "sensitivity_analysis": true,
-      "optimal_configuration": true
-    },
-    "performance_targets": {
-      "f1_improvement_target": "10-15%",
-      "compute_budget": "2 hours CPU",
-      "latency_overhead": "< 10%"
-    },
-    "notes": "Systematic ablation study to understand which factors drive improvement. Results guide final model configuration."
+  "metadata": {
+    "study_name": "Phase 4.2: Systematic Ablation Studies",
+    "description": "Evaluates impact of RAG, retrieval k, prompting, and parameter variations using local llama3:8b",
+    "model": "llama3:8b",
+    "note": "All ablations use local model only (no external APIs per project constraints)"
   },
-  "cross_language_validation": {
-    "description": "Phase 4.3: Validate across Java, Python, JavaScript (Week 10)",
-    "languages": ["java", "python", "javascript"],
-    "per_language_metrics": true,
-    "evaluation": "Generalization across programming languages",
-    "expected_finding": "Per-language performance variance analysis"
+  "ablations": {
+    "baseline_no_rag": {
+      "name": "Baseline: LLM without RAG",
+      "description": "RQ1 baseline - Pure LLM detection without knowledge base",
+      "experiment_type": "baseline",
+      "use_rag": false,
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "rag_topk_1": {
+      "name": "RAG with k=1",
+      "description": "RQ2: RAG with minimal retrieval (top-1 example)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 1,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "rag_topk_3": {
+      "name": "RAG with k=3",
+      "description": "RQ2: RAG with moderate retrieval (top-3 examples) - default",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "rag_topk_5": {
+      "name": "RAG with k=5",
+      "description": "RQ2: RAG with higher retrieval (top-5 examples)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 5,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "rag_topk_10": {
+      "name": "RAG with k=10",
+      "description": "RQ2: RAG with extensive retrieval (top-10 examples)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 10,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "few_shot_0": {
+      "name": "Few-shot: 0 examples",
+      "description": "Ablation: Pure zero-shot with RAG (k=3)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "few_shot_1": {
+      "name": "Few-shot: 1 example",
+      "description": "Ablation: One in-context example + RAG (k=3)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 1,
+      "max_samples": 100
+    },
+    "few_shot_3": {
+      "name": "Few-shot: 3 examples",
+      "description": "Ablation: Three in-context examples + RAG (k=3)",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 3,
+      "max_samples": 100
+    },
+    "temp_0_0": {
+      "name": "Temperature: 0.0 (deterministic)",
+      "description": "Ablation: No randomness in LLM inference",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.0,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "temp_0_1": {
+      "name": "Temperature: 0.1 (low variance)",
+      "description": "Ablation: Low randomness - default setting",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "temp_0_3": {
+      "name": "Temperature: 0.3 (higher variance)",
+      "description": "Ablation: More diverse outputs for robustness testing",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "none"
+      },
+      "model": "llama3:8b",
+      "temperature": 0.3,
+      "num_context_examples": 0,
+      "max_samples": 100
+    },
+    "rag_with_mmr": {
+      "name": "RAG with MMR reranking",
+      "description": "Ablation: Max Marginal Relevance to reduce redundancy",
+      "experiment_type": "rag",
+      "use_rag": true,
+      "rag_params": {
+        "top_k": 3,
+        "similarity_threshold": 0.7,
+        "reranking": "mmr",
+        "reranking_lambda": 0.5
+      },
+      "model": "llama3:8b",
+      "temperature": 0.1,
+      "num_context_examples": 0,
+      "max_samples": 100
+    }
+  },
+  "evaluation": {
+    "description": "Evaluation methodology for ablations",
+    "dataset_split": "test",
+    "holdout_samples": 20,
+    "statistical_tests": [
+      "paired_t_test(rag vs baseline)",
+      "cohens_d effect size",
+      "bootstrap_ci for F1 (95%)"
+    ],
+    "metrics": [
+      "precision",
+      "recall",
+      "f1_score",
+      "accuracy",
+      "per_smell_f1",
+      "confusion_matrix"
+    ]
+  },
+  "expected_deliverables": {
+    "tables": [
+      "ablation_results.csv - Summary of all ablations",
+      "topk_analysis.csv - F1 vs k values",
+      "fewshot_analysis.csv - F1 vs num examples",
+      "temperature_analysis.csv - F1 vs temperature"
+    ],
+    "figures": [
+      "figure5_rag_topk_ablation.png - F1 vs k",
+      "figure6_fewshot_sensitivity.png - F1 vs num_examples",
+      "figure7_temperature_sensitivity.png - F1 vs temperature",
+      "ablation_comparison_bar.png - All ablations ranked by F1"
+    ],
+    "documentation": [
+      "exp/ablation_studies/README.md - Findings summary",
+      "ablation_results_*.json - Detailed results with configs"
+    ]
+  },
+  "notes": {
+    "model_constraints": "Using llama3:8b (small context ~3k tokens) - careful with large code samples",
+    "rag_knowledge_base": "Training set (60%) indexed in ChromaDB - fixed for all ablations",
+    "evaluation_set": "Test set (20% holdout) - new data for fair evaluation",
+    "seed": 42,
+    "reproducibility": "Fixed seed and deterministic test set for reproducible comparisons"
   }
 }
