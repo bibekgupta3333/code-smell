@@ -19,6 +19,175 @@
 
 ---
 
+## 📁 Project Path Reference
+
+Quick reference for all paths used throughout the project. Organized by category.
+
+### Core Source Code (`src/`)
+
+**Agent Modules**
+- `src/analysis_coordinator.py` - Analysis Coordinator (Manager Agent)
+- `src/code_smell_detector.py` - Code Smell Detector (Member Agent) with Deep Agent pattern
+- `src/rag_retriever.py` - RAG Retriever (Custodian Agent)
+- `src/quality_validator.py` - Quality Validator (CodeReviewer Agent)
+
+**LLM & RAG Infrastructure**
+- `src/llm_client.py` - Ollama API client wrapper
+- `src/prompt_templates.py` - System and user prompt templates
+- `src/response_parser.py` - LLM response JSON parsing & validation
+- `src/embedding_service.py` - HuggingFace embedding model (lazy loading)
+- `src/vector_store.py` - ChromaDB client and collection management
+- `src/rag_pipeline.py` - RAG-enhanced code analysis orchestration
+- `src/code_chunker.py` - AST-based code chunking with metadata tracking
+
+**Workflow & Orchestration**
+- `src/workflow_graph.py` - LangGraph StateGraph for end-to-end analysis (520+ lines)
+- `src/code_analysis_workflow.py` - Multi-agent workflow orchestration
+- `src/database_manager.py` - SQLAlchemy ORM + agent/experiment tracking (757 lines)
+
+**Utilities & Helpers**
+- `src/code_parser.py` - Code syntax validation & structure identification
+- `src/common.py` - Shared utility functions (agent name generation, helpers)
+- `src/logger.py` - Structured JSON logging for experiments
+- `src/data_loader.py` - Load datasets from various sources
+- `src/data_preprocessor.py` - Preprocess & normalize code samples
+
+**Benchmarking & Analysis**
+- `src/benchmark_utils.py` - Benchmark execution utilities
+- `src/result_exporter.py` - CSV/JSON export for paper results
+- `src/evaluation.py` - Metrics calculation & analysis
+
+**Optional Modules**
+- `src/api_server.py` - FastAPI REST API (optional)
+- `src/cli.py` - Command-line interface (optional)
+
+### Data & Datasets (`data/`)
+
+**Datasets**
+- `data/datasets/marv/` - MaRV dataset (expert-validated, 95%+ accuracy)
+- `data/datasets/qualitas_corpus/` - Large-scale Java systems
+- `data/datasets/smelly_code/` - Labeled code smell examples
+- `data/datasets/SmellyCodeDataset/` - Alternative smell dataset
+- `data/ground_truth/` - Manually verified examples
+
+**Processed Data**
+- `data/processed/split_metadata.json` - Train/val/test splits
+- `data/processed/train.json` - Training dataset
+- `data/processed/validation.json` - Validation dataset
+- `data/processed/test.json` - Test dataset
+
+### Results & Analysis (`results/`)
+
+**Predictions & Baselines**
+- `results/predictions/baseline/` - Baseline tool outputs (SonarQube, PMD, etc.)
+- `results/predictions/llm_vanilla/` - Vanilla LLM results (no RAG)
+- `results/predictions/llm_rag/` - RAG-enhanced LLM results
+
+**Performance & Metrics**
+- `results/confusion_matrices/` - Confusion matrix data per tool
+- `results/performance/{tool}_timing.csv` - Latency & throughput logs
+- `results/resources/{tool}_profile.json` - CPU/Memory/GPU profiling
+- `results/metrics/hallucination_rate.csv` - LLM hallucination detection logs
+- `results/metrics/cache_performance.csv` - Cache hit/miss rates
+- `results/metrics/validation_failures.csv` - LLM response validation failures
+- `results/metrics/confidence_scores.csv` - Confidence score distributions
+- `results/metrics/rag_retrieval_quality.csv` - Precision@k, NDCG@k metrics
+
+**Outputs for Paper**
+- `results/figures/` - Generated plots & visualizations
+- `results/tables/` - Generated tables (LaTeX, CSV, Markdown)
+- `results/logs/` - Detailed experiment logs (JSON format)
+- `results/exports/` - CSV/JSON exports for analysis
+  - `results/exports/exp_001_agents.csv`
+  - `results/exports/exp_001_analysis_runs.csv`
+  - `results/exports/exp_001_findings.csv`
+
+### Cache & Database
+
+**Caching**
+- `cache/` - LLM response cache directory (git-ignored)
+- `cache/embeddings/` - Cached embedding vectors
+- `cachesystem.db` - SQLite cache file (git-ignored)
+
+**Vector Store**
+- `chromadb_store/` - ChromaDB persistent storage (git-ignored)
+- `chromadb_store/chroma.sqlite3` - ChromaDB SQLite backend
+
+**System Database**
+- `cache/system.db` - Main SQLAlchemy database (agents, requests, responses, analysis runs)
+
+### Database Migrations (`alembic/`)
+
+- `alembic/` - Alembic migration infrastructure
+- `alembic/env.py` - Migration environment configuration
+- `alembic/script.py.mako` - Migration script template
+- `alembic/versions/` - Migration files
+- `alembic/versions/001_initial_schema.py` - Initial 9-table schema
+
+### Documentation (`docs/`)
+
+**Architecture & Design**
+- `docs/architecture/BACKEND_ARCHITECTURE.md` - Backend system design
+- `docs/architecture/DATABASE_ARCHITECTURE.md` - Database schema & ORM design
+- `docs/architecture/LLM_ARCHITECTURE.md` - LLM integration architecture
+- `docs/architecture/SYSTEM_ARCHITECTURE.md` - Overall system architecture
+
+**Planning & Research**
+- `docs/planning/WBS.md` - Work Breakdown Structure (this file)
+- `docs/planning/WBS.old.md` - Previous WBS version (archived)
+- `docs/research/RESEARCH_PROPOSAL.md` - Initial research proposal
+- `docs/research/SIMILAR_PAPERS_AND_GAPS.md` - Literature review
+- `docs/research/proposal-latex/` - LaTeX paper source files
+
+**Deployment & Usage**
+- `docs/deployment/DEPLOYMENT_GUIDE.md` - Installation & deployment instructions
+- `docs/database/ORM_MIGRATION_GUIDE.md` - SQLAlchemy ORM migration docs
+
+**Baseline & Analysis**
+- `docs/baseline/BASELINE_GUIDE.md` - Running baseline tools
+- `docs/SONARQUBE_USAGE.md` - SonarQube setup & execution
+- `docs/SONARQUBE_JAVA_ANALYSIS.md` - Java analysis with SonarQube
+
+### Root Configuration Files
+
+- `config.py` - Central configuration (Ollama, RAG, model settings)
+- `requirements.txt` - Python dependencies (pinned versions, Python 3.14 compatible)
+- `alembic.ini` - Alembic configuration
+- `Dockerfile` - Docker image for Python 3.14-slim
+- `Dockerfile.baseline` - Docker image for baseline tools (Java, SonarQube, etc.)
+- `docker-compose.yml` - Multi-container orchestration
+- `Makefile` - Common build & run targets
+- `eslint.config.js` - ESLint configuration (for JavaScript code analysis)
+- `.gitignore` - Git ignore rules (venv/, cache/, chromadb_store/, __pycache__)
+- `.editorconfig` - Editor formatting rules
+- `PROJECT_STRUCTURE.md` - Directory organization guide
+- `README.md` - Project overview & quick start
+
+### Research & Analysis Tools
+
+- `scripts/run_experiment.py` - Main experiment runner (baseline/RAG/ablation)
+- `scripts/index_datasets.py` - Index training data into ChromaDB for RAG
+- `scripts/test_retrieval_quality.py` - Evaluate RAG retrieval hit rate per smell type
+- `scripts/validate_config.py` - Configuration validator
+- `scripts/baseline/` - Baseline tool scripts
+  - `scripts/baseline/install.sh` - Install baseline tools
+  - `scripts/baseline/install_tools.sh` - Detailed tool installation
+  - `scripts/baseline/analyze.sh` - Run baseline analysis
+  - `scripts/baseline/run_tools.py` - Execute baseline tools with normalized output
+  - `scripts/baseline/generate_report.py` - Baseline report generation
+
+### Optional Utilities
+
+- `tools/baseline/` - Baseline tool executables & scripts
+- `visualization/` - Visualization scripts for results
+- `paper/` - Paper draft & final submission
+- `exp/` - Experiment configurations
+  - `exp/baseline/config.json` - Baseline experiment config
+  - `exp/rag_experiments/config.json` - RAG experiment config
+  - `exp/ablation_studies/config.json` - Ablation study config
+
+---
+
 ## Recent Enhancements (Mar 3, 2026)
 
 **Python 3.14 Compatibility Migration Complete**
@@ -992,67 +1161,73 @@ These metrics track LLM behavior and quality beyond traditional ML metrics:
 
 ### 3.2 Vector Store Indexing (Week 6: Apr 1-4, 2026)
 
-- [ ] Create `scripts/index_datasets.py`
-  - [ ] Load preprocessed datasets
-  - [ ] Generate embeddings for all code examples
-  - [ ] Batch processing for efficiency
-  - [ ] Index into ChromaDB
-  - [ ] Track indexing progress
-  - [ ] Save indexing statistics
+- [x] Create `scripts/index_datasets.py`
+  - [x] Load preprocessed datasets
+  - [x] Generate embeddings for all code examples
+  - [x] Batch processing for efficiency
+  - [x] Index into ChromaDB
+  - [x] Track indexing progress
+  - [x] Save indexing statistics
 
-- [ ] Test retrieval quality
-  - [ ] Sample queries for each smell type
-  - [ ] Evaluate top-k accuracy
-  - [ ] Adjust embedding model if needed
+- [x] Test retrieval quality
+  - [x] Create `scripts/test_retrieval_quality.py`
+  - [x] Sample queries for each smell type
+  - [x] Evaluate top-k accuracy (hit rate per smell)
+  - [x] Support MMR reranking evaluation
+  - [ ] Adjust embedding model if needed (run after initial results)
 
 ### 3.3 Initial Experiments (Week 7-8: Apr 5-18, 2026)
 
 **Benchmark Execution: See "Benchmarking Strategy" section for detailed protocols**
 
-- [ ] Setup baseline tools (per Benchmarking Strategy Section 2)
-  - [ ] Install SonarQube v10.x, PMD v7.x, Checkstyle v10.x, SpotBugs v4.x
-  - [ ] Configure IntelliJ IDEA 2024.x inspection engine
-  - [ ] Create `scripts/run_baseline_tools.py` - Execute all 5 baseline tools
-  - [ ] Normalize outputs to common JSON schema
-  - [ ] Save baseline predictions to `results/predictions/baseline/`
+- [x] Setup baseline tools (per Benchmarking Strategy Section 2)
+  - [x] Install SonarQube v10.x, PMD v7.x, Checkstyle v10.x, SpotBugs v4.x
+  - [x] Configure IntelliJ IDEA 2024.x inspection engine
+  - [x] Create `scripts/baseline/run_tools.py` - Execute all baseline tools (Java, Python, JS)
+  - [x] Normalize outputs to common JSON schema
+  - [x] Save baseline predictions to `results/predictions/baseline/`
 
-- [ ] Create `exp/baseline/` directory
-  - [ ] Experiment on baseline LLM (no RAG)
+- [x] Create `exp/baseline/` directory
+  - [x] `exp/baseline/config.json` with models, inference params, prompt variants
+  - [ ] Experiment on baseline LLM (no RAG) — run pending
   - [ ] Compare different LLM models (CodeLlama 7B/13B, DeepSeek-Coder 6.7B/33B)
   - [ ] Test prompt variations
-  - [ ] Fixed experimental conditions: temp=0.1, top_p=0.9, seed=42
+  - [x] Fixed experimental conditions: temp=0.1, top_p=0.9, seed=42
 
-- [ ] Create `exp/rag_experiments/` directory
-  - [ ] Experiment with RAG-enhanced detection
+- [x] Create `exp/rag_experiments/` directory
+  - [x] `exp/rag_experiments/config.json` with RAG params, top-k values, embedding models
+  - [ ] Experiment with RAG-enhanced detection — run pending
   - [ ] Vary top-k retrieval (k = 1, 3, 5, 10) - See Benchmarking Section 5
   - [ ] Test different embedding models (all-MiniLM-L6-v2, bge-small-en-v1.5)
   - [ ] Compare retrieval strategies
 
-- [ ] Create `scripts/run_experiment.py`
-  - [ ] Main experiment runner
-  - [ ] Configuration via command-line args or config file
-  - [ ] Batch processing of test set (20% holdout from Benchmarking Section 1)
-  - [ ] Save results to database and `results/predictions/{experiment}/`
-  - [ ] Progress tracking with ETA
-  - [ ] **Resource profiling**: Track CPU, memory, latency per analysis
+- [x] Create `scripts/run_experiment.py` ✅ (Enhanced Mar 11, 2026)
+  - [x] Main experiment runner (ExperimentExecutor)
+  - [x] Configuration via command-line args or config file
+  - [x] Batch processing of test set (20% holdout from Benchmarking Section 1)
+  - [x] Load from preprocessed dataset (`--dataset test`) OR file paths (`--input`)
+  - [x] Save results to database and `results/predictions/{experiment}/`
+  - [x] Progress tracking with ETA (tqdm)
+  - [x] **Resource profiling**: Track CPU, memory, latency per analysis (ResourceProfiler)
+  - [x] Ground truth comparison with metrics calculation
 
-- [ ] Performance metrics calculation (See Benchmarking Section 3)
-  - [ ] Precision, Recall, F1-score per smell type (12+ smells)
-  - [ ] Overall accuracy
-  - [ ] **Comparison with existing tools (Gap #7)**
-  - [ ] **Performance benchmarks (Benchmarking Section 3)**:
-    - [ ] Latency measurements (embedding + retrieval + inference)
-    - [ ] Throughput (analyses per hour, target 100-200/hr)
-    - [ ] Memory footprint (base + peak, target 4-8GB)
-    - [ ] Token usage per analysis
-  - [ ] **LLM-Specific Quality Metrics (Architecture Section 10.1)**:
-    - [ ] Hallucination rate tracking (target < 5%)
-    - [ ] Cache hit rate (target 20-40%)
-    - [ ] JSON parse success rate (target > 95%)
-    - [ ] Validation failure rate (target < 3%)
-    - [ ] Confidence score distribution
-    - [ ] Model selection distribution
-  - [ ] Generate initial results tables (Benchmarking Section 7, Table 1 draft)
+- [x] Performance metrics calculation (See Benchmarking Section 3)
+  - [x] Precision, Recall, F1-score per smell type (12+ smells) — `src/utils/benchmark_utils.py`
+  - [x] Overall accuracy — `calculate_metrics()`
+  - [x] **Comparison with existing tools (Gap #7)** — `statistical_tests()`
+  - [x] **Performance benchmarks (Benchmarking Section 3)**:
+    - [x] Latency measurements (embedding + retrieval + inference) — `latency_profiler()`
+    - [x] Throughput (analyses per hour, target 100-200/hr)
+    - [x] Memory footprint (base + peak, target 4-8GB) — `ResourceMonitor`
+    - [x] Token usage per analysis
+  - [x] **LLM-Specific Quality Metrics (Architecture Section 10.1)**:
+    - [x] Hallucination rate tracking (target < 5%) — `calculate_hallucination_rate()`
+    - [x] Cache hit rate (target 20-40%) — `cache_hit_rate()`
+    - [x] JSON parse success rate (target > 95%)
+    - [x] Validation failure rate (target < 3%) — `validation_failure_rate()`
+    - [x] Confidence score distribution
+    - [x] Model selection distribution
+  - [ ] Generate initial results tables (Benchmarking Section 7, Table 1 draft) — run pending
 
 ---
 
