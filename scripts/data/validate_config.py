@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 # Add project root to Python path
-PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+PROJECT_ROOT = Path(__file__).parent.parent.parent.absolute()
 sys.path.insert(0, str(PROJECT_ROOT))
 
 def test_imports():
@@ -49,9 +49,8 @@ def test_imports():
     if failed:
         print(f"❌ {len(failed)} package(s) failed to import: {', '.join(failed)}")
         return False
-    else:
-        print(f"✅ All {len(required_packages)} required packages imported successfully")
-        return True
+    print(f"✅ All {len(required_packages)} required packages imported successfully")
+    return True
 
 
 def test_config():
@@ -130,9 +129,8 @@ def test_directories():
         if all_exist:
             print(f"✅ All {len(required_dirs)} directories exist")
             return True
-        else:
-            print("❌ Some directories are missing")
-            return False
+        print("❌ Some directories are missing")
+        return False
 
     except Exception as e:
         print(f"❌ Failed to verify directories: {e}")
@@ -270,11 +268,10 @@ def main():
         print("2. Pull models: ollama pull llama3:8b")
         print("3. Proceed to Phase 2.2 (LLM Integration Module)")
         return 0
-    else:
-        failed_count = sum(1 for v in results.values() if not v)
-        print(f"❌ {failed_count}/{len(results)} tests failed")
-        print("Please fix the issues above before proceeding.")
-        return 1
+    failed_count = sum(1 for v in results.values() if not v)
+    print(f"❌ {failed_count}/{len(results)} tests failed")
+    print("Please fix the issues above before proceeding.")
+    return 1
 
 
 if __name__ == "__main__":

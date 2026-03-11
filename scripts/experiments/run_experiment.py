@@ -40,7 +40,7 @@ import numpy as np
 from tqdm import tqdm
 
 # Add project root to Python path
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import (
@@ -254,19 +254,11 @@ class ExperimentExecutor:
             self.coordinator = AnalysisCoordinator()
 
             # Initialize detector for vanilla experiments
-            self.detector = CodeSmellDetector(
-                model=self.config.model,
-                temperature=self.config.temperature,
-                top_p=self.config.top_p,
-                seed=self.config.seed,
-            )
+            self.detector = CodeSmellDetector()
 
             # Initialize RAG for RAG experiments
             if self.config.experiment_type == ExperimentType.RAG:
-                self.rag_pipeline = RAGPipeline(
-                    embedding_model=self.config.embedding_model,
-                    top_k=self.config.top_k,
-                )
+                self.rag_pipeline = RAGPipeline()
                 self.logger.info(f"RAG Pipeline initialized: top_k={self.config.top_k}")
 
             self.logger.info(f"Components initialized: model={self.config.model}")
@@ -378,10 +370,13 @@ class ExperimentExecutor:
             start_time = time.time()
 
             if self.config.experiment_type == ExperimentType.RAG:
-                detections = self.rag_pipeline.analyze_with_rag(
+                detections = asyncio.run(self.rag_pipeline.analyze_with_rag(
                     code=code,
-                    prompt_variant=self.config.prompt_variant,
-                )
+                    top_k=self.config.top_k,
+                ))
+                # Extract detections from AnalysisResult if needed
+                if hasattr(detections, 'detections'):
+                    detections = detections.detections
             else:
                 detections = self.detector.detect_smells(code)
 
@@ -392,11 +387,14 @@ class ExperimentExecutor:
             result.model_used = self.config.model
 
             log_detection_result(
-                file_path=result.file_path,
-                detections=detections,
-                analysis_time_ms=elapsed_ms,
-                model=self.config.model,
-                experiment_type=self.config.experiment_type.value,
+                agent_name="CodeSmellDetector",
+                file_name=str(result.file_path),
+                smells_found=len(detections),
+                critical=sum(1 for d in detections if d.get('severity') == 'critical'),
+                high=sum(1 for d in detections if d.get('severity') == 'high'),
+                medium=sum(1 for d in detections if d.get('severity') == 'medium'),
+                low=sum(1 for d in detections if d.get('severity') == 'low'),
+                processing_time=elapsed_ms / 1000.0,
             )
 
         except Exception as e:
@@ -510,10 +508,9 @@ class ExperimentExecutor:
         """Get output directory for results"""
         if metrics.experiment_type == "baseline":
             return PREDICTIONS_DIR / "llm_vanilla" / metrics.experiment_id
-        elif metrics.experiment_type == "rag":
+        if metrics.experiment_type == "rag":
             return PREDICTIONS_DIR / "llm_rag" / metrics.experiment_id
-        else:
-            return PREDICTIONS_DIR / "ablation" / metrics.experiment_id
+        return PREDICTIONS_DIR / "ablation" / metrics.experiment_id
 
 
 # ============================================================================
@@ -550,16 +547,26 @@ class ResourceProfiler:
 
     def profile(self):
         """Context manager for profiling resource usage"""
+        profiler = self
+
         class ProfileContext:
-            def __init__(profiler_self):
-                self.profiler = self
+            def __init__(self):
+                self._profiler = profiler
 
-            def __enter__(profiler_self):
-                self.start_profiling()
-                return self
+            def __enter__(self):
+                self._profiler.start_profiling()
+                return self._profiler
 
-            def __exit__(profiler_self, *args):
-                self.stop_profiling()
+            def __exit__(self, *args):
+                self._profiler.stop_profiling()
+
+            def start_profiling(self):
+                """Delegate to profiler"""
+                return self._profiler.start_profiling()
+
+            def stop_profiling(self):
+                """Delegate to profiler"""
+                return self._profiler.stop_profiling()
 
         return ProfileContext()
 

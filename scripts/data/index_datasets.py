@@ -25,8 +25,8 @@ from typing import Dict, List, Tuple
 
 from tqdm import tqdm
 
-# Add project root to Python path
-PROJECT_ROOT = Path(__file__).parent.parent
+# Add project root to Python path (adjusted for scripts subdirectory)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import CHROMADB_DIR, CHROMADB_COLLECTION_NAME, DATA_DIR

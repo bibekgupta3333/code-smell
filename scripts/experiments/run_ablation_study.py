@@ -17,7 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-PROJECT_ROOT = Path(__file__).parent.parent
+PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import (
@@ -89,24 +89,38 @@ class AblationStudy:
 
         # Import runner here to avoid circular deps
         try:
-            from scripts.run_experiment import ExperimentExecutor
+            from scripts.experiments.run_experiment import ExperimentExecutor, ExperimentConfig
+            from src.data.data_preprocessor import DataPreprocessor
 
-            executor = ExperimentExecutor(experiment_config=ablation_config)
-            metrics = executor.run_batch(
-                max_samples=ablation_config.get("max_samples", 100),
-            )
+            # Create config object from ablation config dict
+            config = ExperimentConfig(**ablation_config)
+            executor = ExperimentExecutor(config=config)
+
+            # Load samples from dataset
+            split = DataPreprocessor.load_split()
+            dataset_name = ablation_config.get("dataset", "test")
+            samples = split[dataset_name]
+
+            # Limit samples if configured
+            max_samples = ablation_config.get("max_samples", 100)
+            if max_samples and len(samples) > max_samples:
+                samples = samples[:max_samples]
+
+            metrics = executor.run_experiment(samples=samples)
 
             self.results[ablation_name] = {
                 "config": ablation_config,
-                "metrics": metrics,
+                "metrics": metrics.to_dict() if hasattr(metrics, 'to_dict') else metrics.__dict__,
                 "timestamp": datetime.now().isoformat(),
             }
 
-            logger.info(f"✓ Ablation {ablation_name} completed: F1={metrics.get('f1', 0):.4f}")
+            logger.info(f"✓ Ablation {ablation_name} completed: F1={metrics.f1_score:.4f}")
             return True
 
         except Exception as e:
             logger.error(f"✗ Ablation {ablation_name} failed: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return False
 
     def run_all_ablations(self) -> int:
