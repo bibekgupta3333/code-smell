@@ -77,48 +77,7 @@ services:
     stdin_open: true
     tty: true
 
-  # ============================================================================
-  # SONARQUBE SERVICE
-  # Static analysis platform: SonarQube 10.4-community
-  # ============================================================================
-  sonarqube:
-    image: sonarqube:10.4-community
-    container_name: code-smell-sonarqube
-    environment:
-      - SONARQUBE_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonarqube
-      - SONARQUBE_JDBC_USERNAME=sonarqube
-      - SONARQUBE_JDBC_PASSWORD=sonarqube
-      - SONAR_HOST_URL=http://sonarqube:9000
-    ports:
-      - "9000:9000"
-    volumes:
-      - sonarqube_data:/opt/sonarqube/data
-      - sonarqube_logs:/opt/sonarqube/logs
-      - sonarqube_extensions:/opt/sonarqube/extensions
-    networks:
-      - code-smell-network
-    depends_on:
-      - sonarqube-db
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/api/system/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # ============================================================================
-  # POSTGRESQL DATABASE FOR SONARQUBE
-  # ============================================================================
-  sonarqube-db:
-    image: postgres:15-alpine
-    container_name: code-smell-sonarqube-db
-    environment:
-      - POSTGRES_DB=sonarqube
-      - POSTGRES_USER=sonarqube
-      - POSTGRES_PASSWORD=sonarqube
-    volumes:
-      - sonarqube_db:/var/lib/postgresql/data
-    networks:
-      - code-smell-network
 
 # ============================================================================
 # NETWORKS
@@ -131,11 +90,7 @@ networks:
 # ============================================================================
 # VOLUMES
 # ============================================================================
-volumes:
-  sonarqube_data:
-  sonarqube_logs:
-  sonarqube_extensions:
-  sonarqube_db:
+volumes: {}
 
 # ============================================================================
 # USAGE INSTRUCTIONS
@@ -171,7 +126,6 @@ volumes:
 #
 # 9. Rebuild containers after code changes:
 #    docker-compose up -d --build
-#
 # ============================================================================
 # DEVELOPMENT WORKFLOW
 # ============================================================================
