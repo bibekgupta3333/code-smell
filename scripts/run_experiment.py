@@ -44,6 +44,8 @@ PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from config import (
+    CODE_SMELL_TYPES,
+    DATA_DIR,
     DEFAULT_MODEL,
     AVAILABLE_MODELS,
     RESULTS_DIR,
@@ -58,11 +60,17 @@ from src.analysis.code_smell_detector import CodeSmellDetector
 from src.rag.rag_pipeline import RAGPipeline
 from src.workflow.analysis_coordinator import AnalysisCoordinator
 from src.analysis.code_parser import CodeParser
+from src.data.data_preprocessor import DataPreprocessor
+from src.data.data_loader import CodeSample
 from src.utils.benchmark_utils import (
     calculate_metrics,
     build_confusion_matrix,
-    profile_resource_usage,
-    ResourceProfile,
+    per_smell_breakdown,
+    ResourceMonitor,
+    save_latency_profile,
+    save_resource_profile,
+    cache_hit_rate as calc_cache_hit_rate,
+    validation_failure_rate as calc_validation_failure_rate,
 )
 from src.utils.logger import log_agent_event, log_detection_result
 
@@ -267,25 +275,39 @@ class ExperimentExecutor:
             self.logger.error(f"Failed to initialize components: {e}")
             raise
 
-    def run_experiment(self,
-                      code_files: List[Path],
-                      ground_truth: Optional[Dict[str, Any]] = None) -> ExperimentMetrics:
+    def run_experiment(
+        self,
+        code_files: Optional[List[Path]] = None,
+        samples: Optional[List[CodeSample]] = None,
+        ground_truth: Optional[Dict[str, Any]] = None,
+    ) -> ExperimentMetrics:
         """
-        Run the experiment on a list of code files.
+        Run the experiment on code files OR preprocessed CodeSamples.
 
         Args:
-            code_files: List of code file paths to analyze
-            ground_truth: Optional ground truth labels for evaluation
+            code_files: List of code file paths to analyze (legacy mode).
+            samples: List of CodeSample objects from processed dataset.
+            ground_truth: Optional ground truth labels (auto-extracted from samples).
 
         Returns:
-            ExperimentMetrics with results
+            ExperimentMetrics with results.
         """
         experiment_id = f"{self.config.experiment_type.value}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.logger.info(f"Starting experiment: {experiment_id}")
         self.logger.info(f"Config: {self.config.to_dict()}")
 
+        # Build ground truth from samples if available
+        if samples and ground_truth is None:
+            ground_truth = {
+                s.sample_id: [a.smell_type for a in s.annotations]
+                for s in samples
+                if s.has_smells
+            }
+
+        count = len(samples) if samples else len(code_files or [])
+
         if self.config.dry_run:
-            self.logger.info(f"DRY RUN: Would analyze {len(code_files)} files")
+            self.logger.info(f"DRY RUN: Would analyze {count} items")
             return ExperimentMetrics(
                 experiment_id=experiment_id,
                 experiment_type=self.config.experiment_type.value,
@@ -296,12 +318,18 @@ class ExperimentExecutor:
         resource_profiler = ResourceProfiler()
 
         with resource_profiler.profile():
-            # Analyze all files
-            for file_path in tqdm(code_files, desc="Analyzing files"):
-                result = self._analyze_file(Path(file_path))
-
-                with self.result_lock:
-                    self.results.append(result)
+            if samples:
+                for sample in tqdm(samples, desc="Analyzing samples"):
+                    result = self._analyze_sample(sample)
+                    with self.result_lock:
+                        self.results.append(result)
+            elif code_files:
+                for file_path in tqdm(code_files, desc="Analyzing files"):
+                    result = self._analyze_file(Path(file_path))
+                    with self.result_lock:
+                        self.results.append(result)
+            else:
+                self.logger.error("No code_files or samples provided")
 
         # Calculate metrics
         metrics = self._calculate_metrics(
@@ -318,28 +346,43 @@ class ExperimentExecutor:
 
         return metrics
 
+    def _analyze_sample(self, sample: CodeSample) -> AnalysisResult:
+        """Analyze a single CodeSample from the processed dataset."""
+        result = AnalysisResult(
+            file_path=sample.sample_id,
+            detected_smells=[],
+            ground_truth_smells=[
+                {"smell_type": a.smell_type, "category": a.category, "method": a.method}
+                for a in sample.annotations
+            ] if sample.annotations else None,
+        )
+        return self._run_analysis(result, sample.source_code)
+
     def _analyze_file(self, file_path: Path) -> AnalysisResult:
-        """Analyze a single code file"""
+        """Analyze a single code file from disk."""
         result = AnalysisResult(
             file_path=str(file_path),
             detected_smells=[],
         )
-
         try:
-            # Read file
             with open(file_path, 'r') as f:
                 code = f.read()
+        except Exception as e:
+            result.error = str(e)
+            return result
+        return self._run_analysis(result, code)
 
+    def _run_analysis(self, result: AnalysisResult, code: str) -> AnalysisResult:
+        """Core analysis logic shared by file and sample modes."""
+        try:
             start_time = time.time()
 
             if self.config.experiment_type == ExperimentType.RAG:
-                # RAG-enhanced analysis
                 detections = self.rag_pipeline.analyze_with_rag(
                     code=code,
                     prompt_variant=self.config.prompt_variant,
                 )
             else:
-                # Vanilla LLM analysis
                 detections = self.detector.detect_smells(code)
 
             elapsed_ms = (time.time() - start_time) * 1000
@@ -348,9 +391,8 @@ class ExperimentExecutor:
             result.analysis_time_ms = elapsed_ms
             result.model_used = self.config.model
 
-            # Log result to database
             log_detection_result(
-                file_path=str(file_path),
+                file_path=result.file_path,
                 detections=detections,
                 analysis_time_ms=elapsed_ms,
                 model=self.config.model,
@@ -359,7 +401,7 @@ class ExperimentExecutor:
 
         except Exception as e:
             result.error = str(e)
-            self.logger.error(f"Error analyzing {file_path}: {e}")
+            self.logger.error(f"Error analyzing {result.file_path}: {e}")
 
         return result
 
@@ -392,12 +434,35 @@ class ExperimentExecutor:
 
         # Calculate performance metrics if ground truth available
         if ground_truth:
-            # This would require matching predictions to ground truth
-            # For now, provide placeholder
-            metrics.precision = 0.75
-            metrics.recall = 0.70
-            metrics.f1_score = 0.72
-            metrics.accuracy = 0.72
+            y_true = []
+            y_pred = []
+
+            for result in self.results:
+                if result.error:
+                    continue
+                sample_id = result.file_path
+                gt_smells = ground_truth.get(sample_id, [])
+
+                pred_smells = []
+                for d in result.detected_smells:
+                    smell = d.get("smell_type", d.get("type", "")) if isinstance(d, dict) else ""
+                    if smell:
+                        pred_smells.append(smell)
+
+                # Binary: does the sample have smells?
+                has_gt = len(gt_smells) > 0
+                has_pred = len(pred_smells) > 0
+                y_true.append(1 if has_gt else 0)
+                y_pred.append(1 if has_pred else 0)
+
+            if y_true:
+                y_true_str = [str(v) for v in y_true]
+                y_pred_str = [str(v) for v in y_pred]
+                m = calculate_metrics(y_true_str, y_pred_str)
+                metrics.precision = m["precision"]
+                metrics.recall = m["recall"]
+                metrics.f1_score = m["f1"]
+                metrics.accuracy = m["accuracy"]
 
         # Calculate resource metrics
         successful_times = [r.analysis_time_ms for r in self.results if r.error is None]
@@ -546,8 +611,14 @@ def main():
     parser.add_argument(
         "--input",
         type=Path,
-        required=True,
+        default=None,
         help="Input file or directory of code files to analyze"
+    )
+    parser.add_argument(
+        "--dataset",
+        choices=["train", "validation", "test"],
+        default=None,
+        help="Use preprocessed dataset split instead of --input"
     )
 
     # Model selection
@@ -629,22 +700,36 @@ def main():
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    # Validate input
-    if not args.input.exists():
-        logger.error(f"Input not found: {args.input}")
-        sys.exit(1)
+    # Load data: either from processed dataset or from file paths
+    code_files = None
+    samples = None
 
-    # Collect code files
-    if args.input.is_file():
-        code_files = [args.input]
+    if args.dataset:
+        # Load from preprocessed JSON dataset
+        processed_dir = DATA_DIR / "processed"
+        logger.info(f"Loading {args.dataset} split from {processed_dir}")
+        split = DataPreprocessor.load_split(processed_dir)
+        split_map = {"train": split.train, "validation": split.validation, "test": split.test}
+        samples = split_map.get(args.dataset)
+        if not samples:
+            logger.error(f"No samples in '{args.dataset}' split")
+            sys.exit(1)
+        logger.info(f"Loaded {len(samples)} samples from {args.dataset} split")
+    elif args.input:
+        if not args.input.exists():
+            logger.error(f"Input not found: {args.input}")
+            sys.exit(1)
+        if args.input.is_file():
+            code_files = [args.input]
+        else:
+            code_files = list(args.input.glob("**/*.java")) + list(args.input.glob("**/*.py"))
+        if not code_files:
+            logger.error(f"No code files found in: {args.input}")
+            sys.exit(1)
+        logger.info(f"Found {len(code_files)} code files to analyze")
     else:
-        code_files = list(args.input.glob("**/*.java")) + list(args.input.glob("**/*.py"))
-
-    if not code_files:
-        logger.error(f"No code files found in: {args.input}")
+        logger.error("Provide --input or --dataset")
         sys.exit(1)
-
-    logger.info(f"Found {len(code_files)} code files to analyze")
 
     # Create experiment configuration
     config = ExperimentConfig(
@@ -662,7 +747,7 @@ def main():
 
     # Run experiment
     executor = ExperimentExecutor(config)
-    metrics = executor.run_experiment(code_files)
+    metrics = executor.run_experiment(code_files=code_files, samples=samples)
 
     # Print summary
     logger.info("\n" + "="*60)
