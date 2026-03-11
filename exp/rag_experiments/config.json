@@ -2,6 +2,12 @@
   "rag_config": {
     "description": "RAG-Enhanced LLM Experiment Configuration",
     "experiment_type": "rag",
+    "dataset": {
+      "split": "test",
+      "source": "data/processed/test.json",
+      "knowledge_base": "data/processed/train.json",
+      "note": "Train set (60%) indexed in ChromaDB; test set (20%) for evaluation"
+    },
     "models": [
       "llama3:8b",
       "llama3:13b",

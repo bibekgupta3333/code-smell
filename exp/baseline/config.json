@@ -2,6 +2,11 @@
   "baseline_config": {
     "description": "Baseline LLM Experiment Configuration (No RAG)",
     "experiment_type": "baseline",
+    "dataset": {
+      "split": "test",
+      "source": "data/processed/test.json",
+      "note": "20% holdout - never seen during development"
+    },
     "models": [
       "llama3:8b",
       "llama3:13b",
