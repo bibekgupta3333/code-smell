@@ -1,0 +1,43 @@
+{
+  "experiment_id": "baseline_20260311_104514",
+  "experiment_type": "baseline",
+  "config": {
+    "experiment_type": "baseline",
+    "model": "llama3:latest",
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "seed": 42,
+    "top_k": 5,
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "prompt_variant": "default",
+    "enable_caching": true,
+    "num_workers": 1,
+    "batch_size": 1
+  },
+  "total_files_analyzed": 6,
+  "successful_analyses": 0,
+  "failed_analyses": 6,
+  "total_detections": 0,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "accuracy": 0.0,
+  "per_smell_metrics": {},
+  "avg_analysis_time_ms": 0.0,
+  "min_analysis_time_ms": Infinity,
+  "max_analysis_time_ms": 0.0,
+  "total_tokens": 0,
+  "avg_tokens_per_analysis": 0.0,
+  "cache_hit_rate": 0.0,
+  "hallucination_rate": 0.0,
+  "json_parse_success_rate": 0.95,
+  "validation_failure_rate": 0.0,
+  "resource_profile": {
+    "duration_seconds": 0.013550758361816406,
+    "max_memory_mb": 540.75,
+    "avg_memory_mb": 540.75,
+    "avg_cpu_percent": 12.5,
+    "max_cpu_percent": 12.5
+  },
+  "timestamp": "2026-03-11T10:45:15.031811"
+}

@@ -1,7 +1,8 @@
 .PHONY: help venv install clean \
 	run-detector run-workflow run-coordinator run-database run-all \
 	baseline-install baseline-install-verify baseline-java baseline-python baseline-js baseline-run baseline-report baseline-verify \
-	llm-baseline-run llm-rag-run llm-ablation-run
+	llm-baseline-run llm-rag-run llm-ablation-run \
+	inference-baseline inference-rag inference-quick inference-results
 
 # Python environment
 PYTHON := python3
@@ -52,9 +53,18 @@ help:
 	@echo "  LLM EXPERIMENTS                        scripts/"
 	@echo "═══════════════════════════════════════════════════════════════"
 	@echo ""
+	@echo "  Quick Inference (Recommended):"
+	@echo "    make inference-quick              - Test run on test split (1 min)"
+	@echo "    make inference-baseline SPLIT=test MODEL=codellama - Baseline inference"
+	@echo "    make inference-rag      SPLIT=test MODEL=codellama - RAG inference"
+	@echo ""
+	@echo "  Full Inference:"
 	@echo "  make llm-baseline-run  [MODEL=llama3:8b] [DIR=data/datasets/marv/]"
 	@echo "  make llm-rag-run       [MODEL=llama3:8b] [K=5] [DIR=data/datasets/marv/]"
 	@echo "  make llm-ablation-run  [DIR=data/datasets/marv/]"
+	@echo ""
+	@echo "  Results:"
+	@echo "  make inference-results            - Show latest results & metrics"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean             - Remove cache and temporary files"
@@ -246,3 +256,84 @@ llm-ablation-run:
 		--batch-size 1 \
 		--verbose
 	@echo "✅ Ablation study completed. Results in results/predictions/llm_rag/"
+
+# ============================================================================
+# Quick Inference Commands (Dataset-based)
+# ============================================================================
+
+inference-quick:
+	@echo "🚀 Quick Baseline Inference (Test Set)"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "Settings: Model=codellama | Split=test | Samples=6 | Time=~2min"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@$(VENV_ACTIVATE) $(PYTHON) scripts/experiments/run_experiment.py \
+		--experiment-type baseline \
+		--dataset test \
+		--model codellama \
+		--temperature 0.1 \
+		--top-p 0.9 \
+		--seed 42 \
+		--workers 1 \
+		--batch-size 1
+	@echo ""
+	@echo "✅ Results: results/predictions/llm_vanilla/baseline_<timestamp>/"
+
+inference-baseline:
+	@SPLIT=$(SPLIT) MODEL=$(MODEL) ; \
+	if [ -z "$$SPLIT" ]; then SPLIT=test; fi ; \
+	if [ -z "$$MODEL" ]; then MODEL=codellama; fi ; \
+	echo "📊 Baseline LLM Inference (Vanilla Prompting)" ; \
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" ; \
+	echo "Split: $$SPLIT | Model: $$MODEL | Temp: 0.1 | Workers: 1" ; \
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" ; \
+	$(VENV_ACTIVATE) $(PYTHON) scripts/experiments/run_experiment.py \
+		--experiment-type baseline \
+		--dataset $$SPLIT \
+		--model $$MODEL \
+		--temperature 0.1 \
+		--top-p 0.9 \
+		--seed 42 \
+		--workers 1 \
+		--batch-size 1 \
+		--verbose ; \
+	echo "" ; \
+	echo "✅ Results: results/predictions/llm_vanilla/baseline_<timestamp>/"
+
+inference-rag:
+	@SPLIT=$(SPLIT) MODEL=$(MODEL) K=$(K) ; \
+	if [ -z "$$SPLIT" ]; then SPLIT=test; fi ; \
+	if [ -z "$$MODEL" ]; then MODEL=codellama; fi ; \
+	if [ -z "$$K" ]; then K=5; fi ; \
+	echo "🔍 RAG-Enhanced LLM Inference (with Retrieval)" ; \
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" ; \
+	echo "Split: $$SPLIT | Model: $$MODEL | Top-K: $$K | Temp: 0.1" ; \
+	echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" ; \
+	$(VENV_ACTIVATE) $(PYTHON) scripts/experiments/run_experiment.py \
+		--experiment-type baseline \
+		--dataset $$SPLIT \
+		--model $$MODEL \
+		--top-k $$K \
+		--temperature 0.1 \
+		--top-p 0.9 \
+		--seed 42 \
+		--workers 1 \
+		--batch-size 1 \
+		--verbose ; \
+	echo "" ; \
+	echo "✅ Results: results/predictions/llm_rag/baseline_<timestamp>/"
+
+inference-results:
+	@echo "📈 Latest Inference Results"
+	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+	@LATEST=$$(ls -td results/predictions/llm_vanilla/baseline_* 2>/dev/null | head -1); \
+	if [ -z "$$LATEST" ]; then \
+		echo "❌ No baseline results found"; \
+	else \
+		echo "✓ Latest Baseline Run: $$(basename $$LATEST)"; \
+		echo ""; \
+		echo "Metrics:"; \
+		cat $$LATEST/metrics.json | grep -E "total_files_analyzed|successful_analyses|total_detections|avg_analysis_time_ms|experiment_id" | head -5; \
+		echo ""; \
+		echo "Full results: $$LATEST/"; \
+	fi
+

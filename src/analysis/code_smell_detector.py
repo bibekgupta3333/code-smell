@@ -34,22 +34,11 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# Deep Agent Tools for Code Smell Detection
+# Helper Functions (Non-Decorated, Used by AsyncIO)
 # ============================================================================
 
-@tool
-def analyze_code_structure(code: str) -> str:
-    """Analyze and extract code structure information.
-
-    Extracts: functions, classes, lines of code, complexity metrics.
-    Used by Deep Agent for reasoning about code patterns.
-
-    Args:
-        code: Code snippet to analyze
-
-    Returns:
-        Structured analysis of code
-    """
+def _analyze_code_structure_impl(code: str) -> str:
+    """Implementation of code structure analysis (non-decorated for asyncio compatibility)."""
     from src.analysis.code_parser import CodeParser
     try:
         parser = CodeParser()
@@ -67,19 +56,8 @@ def analyze_code_structure(code: str) -> str:
         return f"Error analyzing structure: {str(e)}"
 
 
-@tool
-def classify_severity_level(smell_description: str, code_section: str) -> str:
-    """Classify the severity level of a detected code smell.
-
-    Deep Agent tool for severity classification with precise rules.
-
-    Args:
-        smell_description: Description of the code smell
-        code_section: The problematic code section
-
-    Returns:
-        Severity level (LOW, MEDIUM, HIGH, CRITICAL)
-    """
+def _classify_severity_impl(smell_description: str, code_section: str) -> str:
+    """Implementation of severity classification (non-decorated)."""
     code_length = len(code_section)
     description_lower = smell_description.lower()
 
@@ -103,18 +81,8 @@ def classify_severity_level(smell_description: str, code_section: str) -> str:
         return "MEDIUM: General code smell detected - review recommendation"
 
 
-@tool
-def retrieve_similar_patterns(code: str) -> str:
-    """Retrieve similar code patterns from knowledge base.
-
-    Deep Agent tool for context-aware RAG integration.
-
-    Args:
-        code: Code snippet to find similar patterns for
-
-    Returns:
-        Similar patterns and best practices
-    """
+def _retrieve_patterns_impl(code: str) -> str:
+    """Implementation of pattern retrieval (non-decorated)."""
     try:
         from src.rag.rag_retriever import RAGRetriever
         retriever = RAGRetriever()
@@ -130,19 +98,8 @@ def retrieve_similar_patterns(code: str) -> str:
         return f"Unable to retrieve patterns: {str(e)}"
 
 
-@tool
-def extract_refactoring_suggestions(code: str, smell_type: str) -> str:
-    """Extract concrete refactoring suggestions for identified smell.
-
-    Deep Agent tool for generating actionable refactoring advice.
-
-    Args:
-        code: Code section with smell
-        smell_type: Type of code smell identified
-
-    Returns:
-        Specific refactoring suggestions
-    """
+def _extract_refactoring_impl(code: str, smell_type: str) -> str:
+    """Implementation of refactoring suggestions (non-decorated)."""
     suggestions = {
         "long method": "Break into smaller methods with single responsibilities. Consider helper functions.",
         "god class": "Split into multiple focused classes. Extract related functionality.",
@@ -158,6 +115,73 @@ def extract_refactoring_suggestions(code: str, smell_type: str) -> str:
         "Review code structure and consider SOLID principles"
     )
     return f"{smell_type.title()}: {suggestion}"
+
+
+# ============================================================================
+# Deep Agent Tools for Code Smell Detection (LangChain Integration)
+# ============================================================================
+
+@tool
+def analyze_code_structure(code: str) -> str:
+    """Analyze and extract code structure information.
+
+    Extracts: functions, classes, lines of code, complexity metrics.
+    Used by Deep Agent for reasoning about code patterns.
+
+    Args:
+        code: Code snippet to analyze
+
+    Returns:
+        Structured analysis of code
+    """
+    return _analyze_code_structure_impl(code)
+
+
+@tool
+def classify_severity_level(smell_description: str, code_section: str) -> str:
+    """Classify the severity level of a detected code smell.
+
+    Deep Agent tool for severity classification with precise rules.
+
+    Args:
+        smell_description: Description of the code smell
+        code_section: The problematic code section
+
+    Returns:
+        Severity level (LOW, MEDIUM, HIGH, CRITICAL)
+    """
+    return _classify_severity_impl(smell_description, code_section)
+
+
+@tool
+def retrieve_similar_patterns(code: str) -> str:
+    """Retrieve similar code patterns from knowledge base.
+
+    Deep Agent tool for context-aware RAG integration.
+
+    Args:
+        code: Code snippet to find similar patterns for
+
+    Returns:
+        Similar patterns and best practices
+    """
+    return _retrieve_patterns_impl(code)
+
+
+@tool
+def extract_refactoring_suggestions(code: str, smell_type: str) -> str:
+    """Extract concrete refactoring suggestions for identified smell.
+
+    Deep Agent tool for generating actionable refactoring advice.
+
+    Args:
+        code: Code section with smell
+        smell_type: Type of code smell identified
+
+    Returns:
+        Specific refactoring suggestions
+    """
+    return _extract_refactoring_impl(code, smell_type)
 
 
 # ============================================================================
@@ -190,6 +214,7 @@ class CodeSmellDetector:
         specialization: Optional[str] = None,
         llm_client: Optional[OllamaClient] = None,
         rag_retriever: Optional[RAGRetriever] = None,
+        model: Optional[str] = None,
     ):
         """
         Initialize Deep Agent detector.
@@ -198,12 +223,14 @@ class CodeSmellDetector:
             specialization: Smell type specialization (e.g., "Long Method expert")
             llm_client: Ollama client for LLM calls
             rag_retriever: RAG retriever for context
+            model: Model to use for LLM inference (default: DEFAULT_MODEL)
         """
         self.specialization = specialization or "General code smell detector"
         self.agent_name = f"detector_{specialization.lower().replace(' ', '_')[:30]}" if specialization else "detector_general"
         self.llm_client = llm_client or OllamaClient()
         self.rag_retriever = rag_retriever or RAGRetriever()
         self.response_parser = ResponseParser()
+        self.model = model or DEFAULT_MODEL
 
         # Statistics
         self.detections_count = 0
@@ -214,7 +241,7 @@ class CodeSmellDetector:
 
         # Initialize LangChain ChatOllama for Deep Agent
         self.llm = ChatOllama(
-            model=DEFAULT_MODEL,
+            model=self.model,
             base_url="http://localhost:11434",
             temperature=0.1,
         )
@@ -284,7 +311,7 @@ class CodeSmellDetector:
             # Step 1: Analyze code structure
             logger.info("Deep Agent: Analyzing code structure...")
             structure_analysis = await asyncio.to_thread(
-                analyze_code_structure,
+                _analyze_code_structure_impl,
                 code
             )
             self.tools_invoked_count += 1
@@ -294,7 +321,7 @@ class CodeSmellDetector:
             if use_rag:
                 logger.info("Deep Agent: Retrieving similar patterns...")
                 similar_patterns = await asyncio.to_thread(
-                    retrieve_similar_patterns,
+                    _retrieve_patterns_impl,
                     code
                 )
                 rag_context = similar_patterns
@@ -360,14 +387,14 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
                 # Use Deep Agent tools to enhance classification
                 if raw_finding.smell_type:
                     severity_detail = await asyncio.to_thread(
-                        classify_severity_level,
+                        _classify_severity_impl,
                         raw_finding.smell_type,
                         code[max(0, 0):max(0, 500)]
                     )
                     self.tools_invoked_count += 1
 
                     suggestions = await asyncio.to_thread(
-                        extract_refactoring_suggestions,
+                        _extract_refactoring_impl,
                         code[max(0, 0):max(0, 500)],
                         raw_finding.smell_type
                     )
@@ -394,6 +421,8 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
                 len(findings),
                 sum(1 for f in findings if f.severity == SeverityLevel.CRITICAL),
                 sum(1 for f in findings if f.severity == SeverityLevel.HIGH),
+                sum(1 for f in findings if f.severity == SeverityLevel.MEDIUM),
+                sum(1 for f in findings if f.severity == SeverityLevel.LOW),
                 processing_time
             )
 

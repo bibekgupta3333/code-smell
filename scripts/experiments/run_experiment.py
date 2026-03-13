@@ -254,7 +254,7 @@ class ExperimentExecutor:
             self.coordinator = AnalysisCoordinator()
 
             # Initialize detector for vanilla experiments
-            self.detector = CodeSmellDetector()
+            self.detector = CodeSmellDetector(model=self.config.model)
 
             # Initialize RAG for RAG experiments
             if self.config.experiment_type == ExperimentType.RAG:
@@ -378,7 +378,24 @@ class ExperimentExecutor:
                 if hasattr(detections, 'detections'):
                     detections = detections.detections
             else:
-                detections = self.detector.detect_smells(code)
+                # Baseline: async detect_smells needs to be awaited
+                detections = asyncio.run(self.detector.detect_smells(code))
+
+            # Convert CodeSmellFinding objects to dictionaries for serialization
+            if detections and hasattr(detections[0], '__dict__'):
+                detections = [
+                    {
+                        'smell_type': d.smell_type,
+                        'location': d.location,
+                        'severity': str(d.severity.value) if hasattr(d.severity, 'value') else str(d.severity),
+                        'explanation': d.explanation,
+                        'refactoring': d.refactoring,
+                        'confidence': d.confidence,
+                        'agent_name': d.agent_name,
+                        'timestamp': d.timestamp,
+                    }
+                    for d in detections
+                ]
 
             elapsed_ms = (time.time() - start_time) * 1000
 

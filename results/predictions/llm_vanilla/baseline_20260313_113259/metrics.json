@@ -1,0 +1,43 @@
+{
+  "experiment_id": "baseline_20260313_113259",
+  "experiment_type": "baseline",
+  "config": {
+    "experiment_type": "baseline",
+    "model": "codellama",
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "seed": 42,
+    "top_k": 5,
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "prompt_variant": "default",
+    "enable_caching": true,
+    "num_workers": 1,
+    "batch_size": 1
+  },
+  "total_files_analyzed": 6,
+  "successful_analyses": 6,
+  "failed_analyses": 0,
+  "total_detections": 1,
+  "precision": 0.0,
+  "recall": 0.0,
+  "f1_score": 0.0,
+  "accuracy": 0.0,
+  "per_smell_metrics": {},
+  "avg_analysis_time_ms": 18522.894740104675,
+  "min_analysis_time_ms": 15366.924047470093,
+  "max_analysis_time_ms": 23602.46777534485,
+  "total_tokens": 0,
+  "avg_tokens_per_analysis": 0.0,
+  "cache_hit_rate": 0.0,
+  "hallucination_rate": 0.0,
+  "json_parse_success_rate": 0.95,
+  "validation_failure_rate": 0.0,
+  "resource_profile": {
+    "duration_seconds": 111.15000915527344,
+    "max_memory_mb": 539.953125,
+    "avg_memory_mb": 486.4908288043478,
+    "avg_cpu_percent": 1.8429347826086957,
+    "max_cpu_percent": 16.9
+  },
+  "timestamp": "2026-03-13T11:34:51.137183"
+}
