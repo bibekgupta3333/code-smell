@@ -8,7 +8,7 @@
 ollama==0.6.1                      # Local LLM client for Ollama
 langchain==1.2.10                  # LLM orchestration framework
 langchain-community==0.4.1         # Community integrations
-langchain-core==1.2.17             # Core LangChain abstractions
+langchain-core==1.2.22             # Core LangChain abstractions
 langgraph==1.0.10                  # Workflow state machine (Architecture Section 6)
 langsmith==0.7.11                  # LangChain debugging/tracing (optional)
 
