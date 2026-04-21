@@ -124,6 +124,10 @@ async function handleAnalysisSubmit(e) {
             document.getElementById('results-display').style.display = 'none';
             document.getElementById('error-display').style.display = 'none';
 
+            // Reset agent graph to initial state
+            resetAgentGraph();
+            updateAgentGraph('queued');
+
             // Switch to results tab
             const resultsTab = new bootstrap.Tab(document.getElementById('results-tab'));
             resultsTab.show();
@@ -197,7 +201,76 @@ function updateProgressBar(percentage, status) {
     };
 
     progressStep.textContent = steps[status] || status;
+    updateAgentGraph(status);
 }
+
+// ─── Agent Transition Graph ──────────────────────────────────────────────────
+// Maps API status strings to the ordered list of graph node ids.
+const AGENT_NODE_ORDER = [
+    'gnode-start',
+    'gnode-parse',
+    'gnode-model',
+    'gnode-chunk',
+    'gnode-rag',
+    'gnode-detect',
+    'gnode-validate',
+    'gnode-aggregate',
+    'gnode-end',
+];
+
+const STATUS_TO_ACTIVE_NODE = {
+    'queued':        'gnode-start',
+    'parsing':       'gnode-parse',
+    'model_selection': 'gnode-model',
+    'chunking':      'gnode-chunk',
+    'rag_retrieval': 'gnode-rag',
+    'inference':     'gnode-detect',
+    'validation':    'gnode-validate',
+    'aggregating':   'gnode-aggregate',
+    'completed':     'gnode-end',
+    'failed':        null,   // keep current state, mark error
+};
+
+function updateAgentGraph(status) {
+    const isFailed = status === 'failed';
+    const activeId = STATUS_TO_ACTIVE_NODE[status];
+    const activeIdx = AGENT_NODE_ORDER.indexOf(activeId);
+
+    AGENT_NODE_ORDER.forEach((id, idx) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        el.classList.remove('state-pending', 'state-active', 'state-done', 'state-error');
+
+        if (isFailed) {
+            // Mark all nodes up to and including current as error, rest pending
+            if (activeIdx < 0 || idx <= activeIdx) {
+                el.classList.add('state-error');
+            } else {
+                el.classList.add('state-pending');
+            }
+        } else if (activeIdx < 0) {
+            // Unknown status – leave pending
+            el.classList.add('state-pending');
+        } else if (idx < activeIdx) {
+            el.classList.add('state-done');
+        } else if (idx === activeIdx) {
+            el.classList.add('state-active');
+        } else {
+            el.classList.add('state-pending');
+        }
+    });
+}
+
+function resetAgentGraph() {
+    AGENT_NODE_ORDER.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.classList.remove('state-pending', 'state-active', 'state-done', 'state-error');
+        }
+    });
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 // Fetch analysis results
 async function fetchAnalysisResults(analysisId) {
@@ -295,7 +368,7 @@ function displayResults(result) {
 // Create finding item element
 function createFindingItem(finding) {
     const severityKey = (finding.severity || 'low').toLowerCase();
-    const locationText = typeof finding.location === 'object'
+    const locationText = finding.location !== null && typeof finding.location === 'object'
         ? (finding.location.line ? `Line ${finding.location.line}` : 'Unknown')
         : finding.location;
     const title = finding.smell_type || finding.name || 'Finding';

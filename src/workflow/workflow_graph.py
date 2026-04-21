@@ -143,15 +143,20 @@ async def select_model_node(state: AnalysisState) -> AnalysisState:
             available_models = ["llama3:8b", "mistral:7b", "codellama:13b"]
             state.available_models = available_models
 
-        # Agentic model selection based on code characteristics
-        selected_model = _select_best_model(
-            code_size=state.code_metrics.total_lines if state.code_metrics else 0,
-            language=str(state.language) if state.language else "python",
-            available_models=available_models
-        )
+        # If the user explicitly requested a model, honour it and skip agentic selection
+        if state.model:
+            state.model_reasoning = f"User-specified model: {state.model}"
+            logger.info("Using user-specified model: %s", state.model)  # noqa: G201
+        else:
+            # Agentic model selection based on code characteristics
+            selected_model = _select_best_model(
+                code_size=state.code_metrics.total_lines if state.code_metrics else 0,
+                language=str(state.language) if state.language else "python",
+                available_models=available_models
+            )
 
-        state.model = selected_model
-        state.model_reasoning = f"Selected {selected_model} for code size {state.code_metrics.total_lines if state.code_metrics else 0} lines ({state.language})"
+            state.model = selected_model
+            state.model_reasoning = f"Selected {selected_model} for code size {state.code_metrics.total_lines if state.code_metrics else 0} lines ({state.language})"
 
         logger.info("Model selected: %s (%s)", state.model, state.model_reasoning)  # noqa: G201
         state.workflow_step = "chunk_code"

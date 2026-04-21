@@ -281,6 +281,60 @@
                                 </div>
 
                                 <div id="progress-section" class="result-shell" style="display: none;">
+                                    <div class="agent-graph-container">
+                                        <div class="agent-graph-header">
+                                            <p class="section-eyebrow mb-0">LangGraph Multi-Agent Workflow</p>
+                                            <span class="section-tag">Live transition</span>
+                                        </div>
+                                        <div class="agent-graph" id="agent-graph">
+                                            <div class="agent-node" id="gnode-start" title="Workflow entry point">
+                                                <div class="agent-node-icon"><i class="bi bi-play-circle-fill"></i></div>
+                                                <div class="agent-node-label">START</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-parse" title="Parse code syntax and extract metrics">
+                                                <div class="agent-node-icon"><i class="bi bi-braces"></i></div>
+                                                <div class="agent-node-label">Parse Code</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-model" title="Agentic LLM model selection based on code characteristics">
+                                                <div class="agent-node-icon"><i class="bi bi-cpu"></i></div>
+                                                <div class="agent-node-label">Select Model</div>
+                                                <div class="agent-node-sub">Agentic</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-chunk" title="Split large code into chunks for processing">
+                                                <div class="agent-node-icon"><i class="bi bi-layout-split"></i></div>
+                                                <div class="agent-node-label">Chunk Code</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-rag" title="Retrieve relevant examples from ChromaDB vector store">
+                                                <div class="agent-node-icon"><i class="bi bi-database-gear"></i></div>
+                                                <div class="agent-node-label">RAG Retrieval</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-detect" title="Detect code smells using selected LLM">
+                                                <div class="agent-node-icon"><i class="bi bi-bug"></i></div>
+                                                <div class="agent-node-label">Detect Smells</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-validate" title="Validate findings and filter false positives">
+                                                <div class="agent-node-icon"><i class="bi bi-shield-check"></i></div>
+                                                <div class="agent-node-label">Validate</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-aggregate" title="Aggregate and score final results">
+                                                <div class="agent-node-icon"><i class="bi bi-collection"></i></div>
+                                                <div class="agent-node-label">Aggregate</div>
+                                            </div>
+                                            <div class="agent-edge">›</div>
+                                            <div class="agent-node" id="gnode-end" title="Workflow complete">
+                                                <div class="agent-node-icon"><i class="bi bi-flag-fill"></i></div>
+                                                <div class="agent-node-label">END</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="progress-panel">
                                         <div class="progress-meta">
                                             <div>
