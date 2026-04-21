@@ -229,14 +229,15 @@ function displayResults(result) {
 
     const maxSeverity = findings.length > 0
         ? findings.reduce((max, f) => {
-            const severityValue = { 'high': 3, 'medium': 2, 'low': 1 }[f.severity] || 0;
-            return severityValue > ({'high': 3, 'medium': 2, 'low': 1}[max] || 0) ? f.severity : max;
-        }, findings[0].severity)
+            const severity = (f.severity || '').toLowerCase();
+            const severityValue = { 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 }[severity] || 0;
+            return severityValue > ({ 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 }[max] || 0) ? severity : max;
+        }, (findings[0].severity || '').toLowerCase())
         : 'N/A';
 
     document.getElementById('max-severity').textContent = maxSeverity.charAt(0).toUpperCase() + maxSeverity.slice(1);
 
-    const duration = result.duration || 0;
+    const duration = result.analysis_time_ms ? result.analysis_time_ms / 1000 : 0;
     document.getElementById('analysis-time').textContent = duration.toFixed(2) + 's';
 
     // Display AI metrics (Model used, F1 score, etc.)
@@ -293,27 +294,36 @@ function displayResults(result) {
 
 // Create finding item element
 function createFindingItem(finding) {
+    const severityKey = (finding.severity || 'low').toLowerCase();
+    const locationText = typeof finding.location === 'object'
+        ? (finding.location.line ? `Line ${finding.location.line}` : 'Unknown')
+        : finding.location;
+    const title = finding.smell_type || finding.name || 'Finding';
+    const explanation = finding.explanation || finding.description || '';
+    const suggestion = finding.suggested_refactoring || finding.refactoring || finding.suggestion || '';
+
     const item = document.createElement('div');
-    item.className = `finding-item ${finding.severity}`;
+    item.className = `finding-item ${severityKey}`;
 
     const severityColors = {
+        'critical': { bg: '#fecaca', text: '#7f1d1d', label: 'CRITICAL' },
         'high': { bg: '#fee2e2', text: '#991b1b', label: 'HIGH' },
         'medium': { bg: '#fef3c7', text: '#92400e', label: 'MEDIUM' },
         'low': { bg: '#cffafe', text: '#164e63', label: 'LOW' }
     };
 
-    const severity = severityColors[finding.severity] || severityColors['low'];
+    const severity = severityColors[severityKey] || severityColors['low'];
 
     item.innerHTML = `
         <div class="finding-header">
-            <div class="finding-title">${escapeHtml(finding.name || 'Finding')}</div>
-            <span class="finding-severity ${finding.severity}" style="background-color: ${severity.bg}; color: ${severity.text};">
+            <div class="finding-title">${escapeHtml(title)}</div>
+            <span class="finding-severity ${severityKey}" style="background-color: ${severity.bg}; color: ${severity.text};">
                 ${severity.label}
             </span>
         </div>
-        ${finding.location ? `<div class="finding-location"><strong>Line:</strong> ${finding.location}</div>` : ''}
-        ${finding.description ? `<div class="finding-explanation">${escapeHtml(finding.description)}</div>` : ''}
-        ${finding.suggestion ? `<div class="finding-suggestion"><strong>💡 Suggestion:</strong> ${escapeHtml(finding.suggestion)}</div>` : ''}
+        ${locationText ? `<div class="finding-location"><strong>Location:</strong> ${escapeHtml(locationText)}</div>` : ''}
+        ${explanation ? `<div class="finding-explanation">${escapeHtml(explanation)}</div>` : ''}
+        ${suggestion ? `<div class="finding-suggestion"><strong>💡 Suggestion:</strong> ${escapeHtml(suggestion)}</div>` : ''}
     `;
 
     return item;

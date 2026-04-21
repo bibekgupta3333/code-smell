@@ -12,11 +12,16 @@ Benefits:
 
 import asyncio
 import logging
+import re
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from time import time
 
-from langchain_community.chat_models import ChatOllama
+try:
+    from langchain_ollama import ChatOllama
+except ImportError:
+    from langchain_community.chat_models import ChatOllama
+
 from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import tool
 from langgraph.prebuilt import create_react_agent
@@ -348,7 +353,7 @@ Identify code smells. For each smell found:
 1. Use classify_severity_level to determine severity
 2. Use extract_refactoring_suggestions to recommend fixes
 
-Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "...", "explanation": "...", "refactoring": "...", "confidence": 0.0}}]"""
+Output JSON format: [{{"type": "Long Method", "location": "line 12-45", "severity": "HIGH", "explanation": "...", "refactoring": "...", "confidence": 0.85}}]"""
 
             # Log LLM request
             log_llm_request(
@@ -453,43 +458,109 @@ Output JSON format: [{{"smell_type": "...", "location": "...", "severity": "..."
             # Try structured parsing
             result = self.response_parser.parse(response)
 
+            if not result.code_smells and result.confidence == 0.0:
+                raise ValueError(result.notes or result.summary)
+
             for smell in result.code_smells:
+                normalized_explanation = smell.explanation.strip()
+                if len(normalized_explanation.strip('. ')) < 10:
+                    continue
+
                 finding = CodeSmellFinding(
                     smell_type=smell.type,
                     location=smell.location,
                     severity=SeverityLevel(smell.severity.value),
-                    explanation=smell.explanation,
+                    explanation=normalized_explanation,
                     refactoring=smell.refactoring,
                     confidence=result.confidence,
                     agent_name=self.agent_name,
                     timestamp=datetime.now().isoformat(),
                 )
                 findings.append(finding)
+
+            if not findings and any(
+                keyword in response.lower()
+                for keyword in [
+                    "long method",
+                    "god class",
+                    "large class",
+                    "feature envy",
+                    "data clumps",
+                    "long parameter list",
+                    "duplicate code",
+                ]
+            ):
+                raise ValueError("Structured parse produced no usable findings")
         except Exception as e:
             logger.warning(f"Parse error, using fallback: {e}")
-            # Fallback: extract basic findings from freeform response
-            response_lower = response.lower()
+            findings = self._build_fallback_findings(response, original_code)
 
-            identified_smells = {
-                "long method": ("long method", "method>50 lines", 0.6),
-                "god class": ("god class", "class>20 methods", 0.6),
-                "feature envy": ("feature envy", "accessing external data", 0.5),
-                "data clumps": ("data clumps", "grouped data", 0.5),
-            }
+        return findings
 
-            for keyword, (smell_type, location, confidence) in identified_smells.items():
-                if keyword in response_lower:
-                    findings.append(CodeSmellFinding(
-                        smell_type=smell_type,
-                        location=location,
-                        severity=SeverityLevel.MEDIUM,
-                        explanation=f"Detected by LLM analysis: {response[:200]}",
-                        refactoring="Review and refactor",
-                        confidence=confidence,
-                        agent_name=self.agent_name,
-                        timestamp=datetime.now().isoformat(),
-                    ))
-                    break
+    def _build_fallback_findings(
+        self,
+        response: str,
+        original_code: str,
+    ) -> List[CodeSmellFinding]:
+        """Build heuristic findings when structured parsing fails."""
+        findings: List[CodeSmellFinding] = []
+        response_lower = response.lower()
+        non_empty_lines = [line for line in original_code.splitlines() if line.strip()]
+        line_count = len(non_empty_lines)
+        line_location = f"line 1-{line_count}" if line_count > 1 else "line 1"
+
+        identified_smells = {
+            "long method": ("Long Method", line_location, 0.6),
+            "god class": ("God Class", line_location, 0.6),
+            "large class": ("Large Class", line_location, 0.58),
+            "feature envy": ("Feature Envy", line_location, 0.55),
+            "data clumps": ("Data Clumps", line_location, 0.55),
+            "long parameter list": ("Long Parameter List", line_location, 0.6),
+            "duplicate code": ("Duplicate Code", line_location, 0.55),
+        }
+
+        for keyword, (smell_type, location, confidence) in identified_smells.items():
+            if keyword in response_lower:
+                findings.append(CodeSmellFinding(
+                    smell_type=smell_type,
+                    location=location,
+                    severity=SeverityLevel.MEDIUM,
+                    explanation=f"Detected from freeform LLM response: {response[:200]}",
+                    refactoring="Review and refactor",
+                    confidence=confidence,
+                    agent_name=self.agent_name,
+                    timestamp=datetime.now().isoformat(),
+                ))
+
+        if findings:
+            return findings
+
+        signature_match = re.search(r"def\s+\w+\((.*?)\)", original_code, re.DOTALL)
+        if signature_match:
+            params = [param.strip() for param in signature_match.group(1).split(",") if param.strip() and param.strip() != "self"]
+            if len(params) >= 6:
+                findings.append(CodeSmellFinding(
+                    smell_type="Long Parameter List",
+                    location="line 1",
+                    severity=SeverityLevel.MEDIUM,
+                    explanation=f"Function accepts {len(params)} parameters, which suggests excessive coupling.",
+                    refactoring="Introduce a parameter object or group related arguments.",
+                    confidence=0.58,
+                    agent_name=self.agent_name,
+                    timestamp=datetime.now().isoformat(),
+                ))
+
+        if line_count >= 15:
+            findings.append(CodeSmellFinding(
+                smell_type="Long Method",
+                location=line_location,
+                severity=SeverityLevel.MEDIUM,
+                explanation=f"Method spans {line_count} non-empty lines and may need decomposition.",
+                refactoring="Break the method into smaller focused helpers.",
+                confidence=0.56,
+                agent_name=self.agent_name,
+                timestamp=datetime.now().isoformat(),
+            ))
 
         return findings
 

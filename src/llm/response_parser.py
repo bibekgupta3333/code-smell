@@ -8,7 +8,7 @@ Architecture: Handles response validation as per Architecture Section 10.1
 import json
 import logging
 import re
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Tuple, Union
 from dataclasses import dataclass
 from enum import Enum
 
@@ -160,9 +160,9 @@ class ResponseParser:
             logger.error(f"Validation error: {e}")
             return self._create_error_result(response)
 
-    def _extract_json(self, response: str) -> Optional[Dict[str, Any]]:
+    def _extract_json(self, response: str) -> Optional[Union[Dict[str, Any], List[Any]]]:
         """
-        Extract JSON object from response.
+        Extract JSON object or array from response.
 
         Args:
             response: Raw response text
@@ -230,7 +230,7 @@ class ResponseParser:
 
     def _validate_and_extract(
         self,
-        json_obj: Dict[str, Any],
+        json_obj: Union[Dict[str, Any], List[Any]],
         raw_response: str,
     ) -> AnalysisResult:
         """
@@ -246,14 +246,32 @@ class ResponseParser:
         Raises:
             ValueError: If validation fails (in strict mode)
         """
-        # Extract code smells
-        code_smells_data = json_obj.get("code_smells", [])
-        if not isinstance(code_smells_data, list):
-            msg = f"code_smells must be a list, got {type(code_smells_data)}"
-            if self.strict_mode:
-                raise ValueError(msg)
-            logger.warning(msg)
-            code_smells_data = []
+        # Handle case where LLM returns a list directly instead of an object
+        if isinstance(json_obj, list):
+            code_smells_data = json_obj
+            # For list format, we won't have other fields
+            summary = None
+            is_valid_code = True
+            notes = None
+        else:
+            # Extract code smells from object format
+            code_smells_data = (
+                json_obj.get("code_smells")
+                or json_obj.get("findings")
+                or json_obj.get("smells")
+                or []
+            )
+            if not isinstance(code_smells_data, list):
+                msg = f"code_smells must be a list, got {type(code_smells_data)}"
+                if self.strict_mode:
+                    raise ValueError(msg)
+                logger.warning(msg)
+                code_smells_data = []
+
+            # Extract other fields from object
+            summary = json_obj.get("summary")
+            is_valid_code = json_obj.get("is_valid_code", True)
+            notes = json_obj.get("notes")
 
         code_smells = []
         for smell_data in code_smells_data:
@@ -264,13 +282,12 @@ class ResponseParser:
                 logger.warning(f"Skipping invalid smell: {e}")
                 continue
 
-        # Extract other fields
-        summary = json_obj.get("summary", f"Found {len(code_smells)} code smell(s)")
-        is_valid_code = json_obj.get("is_valid_code", True)
-        notes = json_obj.get("notes")
+        # Set default summary if not provided
+        if summary is None:
+            summary = f"Found {len(code_smells)} code smell(s)"
 
         # Calculate confidence
-        confidence = self._calculate_confidence(json_obj, code_smells)
+        confidence = self._calculate_confidence(json_obj if isinstance(json_obj, dict) else {}, code_smells)
 
         return AnalysisResult(
             code_smells=code_smells,
@@ -294,11 +311,16 @@ class ResponseParser:
         Raises:
             ValueError: If required fields are missing
         """
-        if not data:
+        if not isinstance(data, dict) or not data:
             raise ValueError("Empty code smell data")
 
         # Validate required fields
-        smell_type = data.get("type", "").strip()
+        smell_type = str(
+            data.get("type")
+            or data.get("smell_type")
+            or data.get("name")
+            or ""
+        ).strip()
         if not smell_type:
             raise ValueError("Missing or empty 'type' field")
 
@@ -314,11 +336,29 @@ class ResponseParser:
 
         matched_type = matched_type or smell_type
 
-        location = data.get("location", "Unknown").strip()
+        raw_location = data.get("location", "Unknown")
+        if isinstance(raw_location, dict):
+            start_line = raw_location.get("line") or raw_location.get("start_line")
+            end_line = raw_location.get("end_line")
+
+            if start_line and end_line and start_line != end_line:
+                location = f"line {start_line}-{end_line}"
+            elif start_line:
+                location = f"line {start_line}"
+            else:
+                location = "Unknown"
+        else:
+            location = str(raw_location).strip()
+
         if not location:
             raise ValueError("Missing or empty 'location' field")
 
-        explanation = data.get("explanation", "").strip()
+        explanation = str(
+            data.get("explanation")
+            or data.get("description")
+            or data.get("reason")
+            or ""
+        ).strip()
         if not explanation:
             raise ValueError("Missing or empty 'explanation' field")
 
@@ -330,9 +370,13 @@ class ResponseParser:
             logger.warning(f"Invalid severity '{severity_str}', using LOW")
             severity = Severity.LOW
 
-        refactoring = data.get("refactoring")
+        refactoring = (
+            data.get("refactoring")
+            or data.get("suggested_refactoring")
+            or data.get("suggestion")
+        )
         if refactoring:
-            refactoring = refactoring.strip()
+            refactoring = str(refactoring).strip()
 
         return CodeSmell(
             type=matched_type,

@@ -49,7 +49,7 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Shutting down Code Smell Detection API")
 
     try:
-        await cleanup_dependencies()
+        cleanup_dependencies()
         logger.info("✅ Cleanup complete, API shutdown successfully")
     except Exception as e:
         logger.error(f"Error during cleanup: {str(e)}", exc_info=True)

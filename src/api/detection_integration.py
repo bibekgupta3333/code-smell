@@ -7,6 +7,7 @@ This module provides the integration between the API and the LangGraph workflow.
 
 import json
 import logging
+import re
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from collections import defaultdict
@@ -21,6 +22,19 @@ logger = logging.getLogger(__name__)
 # Ground truth cache
 _ground_truth_cache = None
 _ground_truth_by_smell = None
+
+
+def extract_line_number(location: object) -> int:
+    """Extract a best-effort line number from a finding location."""
+    if isinstance(location, dict):
+        line = location.get("line") or location.get("start_line")
+        return int(line) if isinstance(line, int) or (isinstance(line, str) and line.isdigit()) else 0
+
+    if not location:
+        return 0
+
+    match = re.search(r"(\d+)", str(location))
+    return int(match.group(1)) if match else 0
 
 
 def load_ground_truth_from_file(test_data_path: str = "data/processed/test.json") -> Dict:
@@ -213,8 +227,8 @@ async def run_code_smell_detection_with_scoring(
             "findings": [
                 {
                     "smell_type": f.smell_type,
-                    "location": {"line": f.location.line if hasattr(f, 'location') else 0},
-                    "severity": f.severity.value if hasattr(f.severity, 'value') else str(f.severity),
+                    "location": {"line": extract_line_number(getattr(f, "location", None))},
+                    "severity": (f.severity.value if hasattr(f.severity, 'value') else str(f.severity)).lower(),
                     "confidence": f.confidence,
                     "explanation": f.explanation,
                     "refactoring": f.refactoring,
@@ -240,7 +254,6 @@ async def run_code_smell_detection_with_scoring(
             "model_used": model_used,
             "model_reasoning": model_reasoning,
             "workflow_metadata": workflow_result.get("metadata", {}),
-            "success": True,
         }
 
     except Exception as e:
