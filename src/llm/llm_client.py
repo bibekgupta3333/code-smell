@@ -9,6 +9,7 @@ import asyncio
 import json
 import logging
 import time
+import subprocess
 from pathlib import Path
 from typing import Optional, AsyncGenerator, Any, Dict, List
 from dataclasses import dataclass, asdict
@@ -154,6 +155,70 @@ class OllamaClient:
         except Exception as e:
             logger.error(f"Failed to list models: {e}")
             return []
+
+    def get_available_models(self) -> List[str]:
+        """
+        Get available models from Ollama using 'ollama ls' command.
+
+        This method uses the CLI command 'ollama ls' to retrieve all available models.
+        Falls back to API if command fails, then falls back to defaults.
+
+        Returns:
+            List of model names available in Ollama
+        """
+        # Try 1: Use ollama ls command (most reliable)
+        try:
+            result = subprocess.run(
+                ["ollama", "ls"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
+
+            if result.returncode == 0 and result.stdout:
+                # Parse ollama ls output
+                # Format: NAME        ID              SIZE      MODIFIED
+                # llama3:8b   1234567890ab    4.7GB     2 days ago
+                lines = result.stdout.strip().split('\n')
+                model_names = []
+
+                for line in lines[1:]:  # Skip header row
+                    if line.strip():
+                        parts = line.split()
+                        if parts:
+                            model_name = parts[0]
+                            if model_name and ':' in model_name:
+                                model_names.append(model_name)
+
+                if model_names:
+                    logger.info(f"Available models (ollama ls): {model_names}")
+                    return model_names
+                else:
+                    logger.warning("No valid models parsed from 'ollama ls' output")
+            else:
+                logger.warning(f"'ollama ls' command failed: {result.stderr}")
+
+        except FileNotFoundError:
+            logger.warning("'ollama' command not found in PATH")
+        except subprocess.TimeoutExpired:
+            logger.warning("'ollama ls' command timed out")
+        except Exception as e:
+            logger.warning(f"Error running 'ollama ls': {e}")
+
+        # Try 2: Use Ollama API client
+        try:
+            models_response = self.client.list()
+            if models_response and "models" in models_response:
+                model_names = [model["name"] for model in models_response["models"]]
+                if model_names:
+                    logger.info(f"Available models (Ollama API): {model_names}")
+                    return model_names
+        except Exception as e:
+            logger.warning(f"Failed to list models from Ollama API: {e}")
+
+        # Fallback 3: Return default models
+        logger.warning("Using fallback default models")
+        return ["llama3:8b", "mistral:7b", "codellama:13b"]
 
     def _get_cache_path(self, prompt_hash: str) -> Path:
         """

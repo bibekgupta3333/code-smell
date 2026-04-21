@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Smell Detection API - Analysis Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/static/style-modern.css" rel="stylesheet">
+    <link href="/static/research.css" rel="stylesheet">
+</head>
+<body>
+    <div class="ambient ambient-left"></div>
+    <div class="ambient ambient-right"></div>
+    <div class="mesh-overlay"></div>
+
+    <nav class="navbar navbar-dark sticky-top">
+        <div class="container-fluid nav-shell">
+            <a class="navbar-brand" href="/">
+                <span class="brand-mark"><i class="bi bi-bug"></i></span>
+                <span class="brand-copy">
+                    <span class="brand-title">Code Smell Detector</span>
+                    <span class="brand-subtitle">Inference cockpit</span>
+                </span>
+            </a>
+            <div class="nav-meta">
+                <a class="ghost-link" href="/docs" target="_blank" rel="noreferrer">Open API docs</a>
+                <span id="health-badge" class="badge status-pill bg-success">
+                    <i class="bi bi-circle-fill"></i> Healthy
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container-fluid main-container">
+        <section class="hero-panel">
+            <div class="hero-copy">
+                <p class="eyebrow">Modern review surface</p>
+                <h1>Analyze code smells in a focused interface built for inference.</h1>
+                <p class="hero-description">
+                    Submit snippets, monitor runtime signals, and inspect findings in a single workspace designed for quick iteration.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary btn-lg" href="#analysis-form">Start analysis</a>
+                    <a class="btn btn-ghost btn-lg" href="/docs" target="_blank" rel="noreferrer">Explore endpoints</a>
+                </div>
+                <div class="hero-chips">
+                    <span class="hero-chip">FastAPI</span>
+                    <span class="hero-chip">Async queue</span>
+                    <span class="hero-chip">Inference + RAG</span>
+                    <span class="hero-chip">Real-time progress</span>
+                </div>
+            </div>
+
+            <div class="hero-aside">
+                <div class="signal-board">
+                    <p class="signal-label">Session flow</p>
+                    <div class="signal-route">
+                        <span>submit</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span>infer</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span>validate</span>
+                        <i class="bi bi-arrow-right"></i>
+                        <span>review</span>
+                    </div>
+                    <div class="signal-grid">
+                        <article>
+                            <span>Mode</span>
+                            <strong>Interactive</strong>
+                        </article>
+                        <article>
+                            <span>Focus</span>
+                            <strong>Smell detection</strong>
+                        </article>
+                        <article>
+                            <span>Output</span>
+                            <strong>Findings + fixes</strong>
+                        </article>
+                        <article>
+                            <span>Latency</span>
+                            <strong>Live updates</strong>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row workspace-grid">
+            <aside class="col-xl-4 col-lg-5 sidebar">
+                <div class="card side-card">
+                    <div class="card-header side-header">
+                        <div>
+                            <p class="section-eyebrow">Live telemetry</p>
+                            <h2>System pulse</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="status-info" class="status-stack">
+                            <div class="status-item">
+                                <span>Uptime</span>
+                                <span id="uptime">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Active analyses</span>
+                                <span id="active-analyses">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Completed</span>
+                                <span id="completed-analyses">0</span>
+                            </div>
+                            <div class="status-item">
+                                <span>Cache footprint</span>
+                                <span id="cache-size">0 MB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card side-card">
+                    <div class="card-header side-header">
+                        <div>
+                            <p class="section-eyebrow">Dependencies</p>
+                            <h2>Services</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="services-health" class="services-list">
+                            <div class="service-item">
+                                <span id="service-ollama" class="service-badge bg-secondary"></span>
+                                <div>
+                                    <strong>Ollama</strong>
+                                    <small>Inference engine</small>
+                                </div>
+                            </div>
+                            <div class="service-item">
+                                <span id="service-chromadb" class="service-badge bg-secondary"></span>
+                                <div>
+                                    <strong>ChromaDB</strong>
+                                    <small>Vector context store</small>
+                                </div>
+                            </div>
+                            <div class="service-item">
+                                <span id="service-database" class="service-badge bg-secondary"></span>
+                                <div>
+                                    <strong>Database</strong>
+                                    <small>Analysis persistence</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card side-card">
+                    <div class="card-header side-header">
+                        <div>
+                            <p class="section-eyebrow">Operator notes</p>
+                            <h2>Run protocol</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="protocol-list">
+                            <li>Paste a single snippet or one focused file for the cleanest findings.</li>
+                            <li>Use RAG when you want broader context before the model classifies the code.</li>
+                            <li>Use <span class="mono">Ctrl+Enter</span> or <span class="mono">Cmd+Enter</span> to submit quickly.</li>
+                        </ul>
+                    </div>
+                </div>
+            </aside>
+
+            <section class="col-xl-8 col-lg-7">
+                <div id="submit-section" class="card workspace-card">
+                    <div class="card-header workspace-header">
+                        <div class="workspace-heading">
+                            <p class="section-eyebrow">Inference workspace</p>
+                            <h2>Run a new inspection</h2>
+                            <p class="workspace-description">
+                                Tune the request, paste a snippet, and push it through the analysis pipeline.
+                            </p>
+                        </div>
+                        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="submit-tab" data-bs-toggle="tab" href="#submit" role="tab">
+                                    <i class="bi bi-upload"></i> Submit Code
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="results-tab" data-bs-toggle="tab" href="#results" role="tab">
+                                    <i class="bi bi-activity"></i> Results Console
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body workspace-body">
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="submit" role="tabpanel">
+                                <form id="analysis-form" class="analysis-form">
+                                    <div class="form-grid">
+                                        <div class="control-column">
+                                            <div class="input-shell">
+                                                <label for="language" class="form-label">Programming language</label>
+                                                <select id="language" class="form-select" required>
+                                                    <option value="">Select language...</option>
+                                                    <option value="java">Java</option>
+                                                    <option value="python">Python</option>
+                                                    <option value="javascript">JavaScript</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="input-shell">
+                                                <label for="file-name" class="form-label">File label</label>
+                                                <input type="text" id="file-name" class="form-control" placeholder="e.g., PaymentService.java">
+                                            </div>
+
+                                            <div class="input-shell toggle-shell">
+                                                <div class="toggle-copy">
+                                                    <label class="form-label" for="include-rag">Context enrichment</label>
+                                                    <p>Include retrieval context for richer smell explanations.</p>
+                                                </div>
+                                                <div class="form-check modern-check">
+                                                    <input type="checkbox" id="include-rag" class="form-check-input" checked>
+                                                    <label class="form-check-label" for="include-rag">Enable RAG</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="input-shell">
+                                                <label for="model" class="form-label">LLM Model Selection</label>
+                                                <div class="model-selection-group">
+                                                    <select id="model" class="form-select">
+                                                        <option value="">Auto-select (agent decides)</option>
+                                                    </select>
+                                                    <small class="form-text text-muted d-block mt-2" id="model-info">
+                                                        Loading available models...
+                                                    </small>
+                                                </div>
+                                            </div>
+
+                                            <div class="input-shell">
+                                                <label for="timeout" class="form-label">Timeout window</label>
+                                                <input type="number" id="timeout" class="form-control" value="300" min="30" max="600">
+                                            </div>
+
+                                            <div class="hint-panel">
+                                                <p class="hint-title">Model intelligence</p>
+                                                <p>Leave blank to let the agent choose the best model based on your code size and language. Or select a specific model.</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="editor-column">
+                                            <div class="editor-shell">
+                                                <div class="editor-toolbar">
+                                                    <div>
+                                                        <p class="editor-label">Snippet canvas</p>
+                                                        <span class="editor-subtitle">Paste the code you want inspected.</span>
+                                                    </div>
+                                                    <span class="character-pill" id="char-count">0 characters</span>
+                                                </div>
+                                                <textarea id="code" class="form-control code-editor" rows="16" placeholder="Paste your code here..." required></textarea>
+                                            </div>
+
+                                            <div class="action-row">
+                                                <p class="action-note">Designed for quick inference loops and small-to-medium snippets.</p>
+                                                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                                                    <i class="bi bi-stars"></i> Analyze Code
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <div class="tab-pane fade" id="results" role="tabpanel">
+                                <div id="no-results" class="empty-state">
+                                    <div class="empty-icon"><i class="bi bi-radar"></i></div>
+                                    <h3>No analysis running</h3>
+                                    <p>Submit a snippet to open the results console and follow progress live.</p>
+                                </div>
+
+                                <div id="progress-section" class="result-shell" style="display: none;">
+                                    <div class="progress-panel">
+                                        <div class="progress-meta">
+                                            <div>
+                                                <p class="progress-label">Analysis progress</p>
+                                                <small id="progress-step" class="progress-step">Queued...</small>
+                                            </div>
+                                            <strong id="progress-percent" class="progress-number">0%</strong>
+                                        </div>
+                                        <div class="progress">
+                                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="results-display" class="result-shell" style="display: none;">
+                                    <div class="alert alert-success">
+                                        <i class="bi bi-check-circle"></i> Analysis complete. Review the findings below.
+                                    </div>
+
+                                    <div class="row g-3 metric-row">
+                                        <div class="col-md-4">
+                                            <div class="metric-card">
+                                                <div class="metric-label">Code smells</div>
+                                                <div class="metric-value" id="findings-count">0</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="metric-card accent-card">
+                                                <div class="metric-label">Max severity</div>
+                                                <div class="metric-value" id="max-severity">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="metric-card neutral-card">
+                                                <div class="metric-label">Analysis time</div>
+                                                <div class="metric-value" id="analysis-time">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3 metric-row" id="ai-metrics-row">
+                                        <div class="col-md-4">
+                                            <div class="metric-card">
+                                                <div class="metric-label">Model Used</div>
+                                                <div class="metric-value" id="model-used">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="metric-card">
+                                                <div class="metric-label">F1 Score</div>
+                                                <div class="metric-value" id="f1-score">--</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="metric-card">
+                                                <div class="metric-label">Precision / Recall</div>
+                                                <div class="metric-value" id="precision-recall">--</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-grid" id="model-reasoning-row" style="display: none;">
+                                        <div class="findings-container section-panel">
+                                            <div class="section-title-row">
+                                                <h6>Model Selection Reasoning</h6>
+                                                <span class="section-tag">Agentic Decision</span>
+                                            </div>
+                                            <div id="model-reasoning-text" class="alert alert-info">
+                                                <p id="model-reasoning-content"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="result-grid">
+                                        <div class="findings-container section-panel">
+                                            <div class="section-title-row">
+                                                <h6>Detected issues</h6>
+                                                <span class="section-tag">Model findings</span>
+                                            </div>
+                                            <div id="findings-list"></div>
+                                        </div>
+
+                                        <div class="metrics-container section-panel">
+                                            <div class="section-title-row">
+                                                <h6>Code metrics</h6>
+                                                <span class="section-tag">Signal snapshot</span>
+                                            </div>
+                                            <div class="row g-3" id="metrics-list"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="error-display" class="result-shell" style="display: none;">
+                                    <div class="alert alert-danger" role="alert">
+                                        <h6 class="alert-heading">
+                                            <i class="bi bi-exclamation-triangle"></i> Analysis failed
+                                        </h6>
+                                        <p id="error-message"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card history-card">
+                    <div class="card-header side-header">
+                        <div>
+                            <p class="section-eyebrow">Recent activity</p>
+                            <h2>Analysis history</h2>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="recent-analyses" class="table-responsive">
+                            <table class="table table-sm table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Language</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analyses-table-body">
+                                    <tr>
+                                        <td colspan="4" class="text-muted text-center">No analyses yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Research Dashboard Section (RQ1-RQ4) -->
+        <section id="research-dashboard" class="research-section mt-5 mb-5">
+            <div class="research-container">
+                <!-- Research Header -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <p class="eyebrow">Empirical evaluation</p>
+                        <h2>Research Experiment Dashboard</h2>
+                        <p class="text-muted">
+                            Run systematic experiments to evaluate LLM-based code smell detection against research questions RQ1-RQ4.
+                            Analyze accuracy, RAG effectiveness, per-smell performance, and computational requirements.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- RQ Navigation Tabs -->
+                <ul class="nav nav-tabs research-nav mb-3" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="rq-all-tab" data-bs-toggle="tab" href="#rq-all" role="tab">
+                            <i class="bi bi-diagram-3"></i> All Experiments
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="rq1-tab" data-bs-toggle="tab" href="#rq1" role="tab">
+                            <i class="bi bi-bar-chart"></i> RQ1: Accuracy
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="rq2-tab" data-bs-toggle="tab" href="#rq2" role="tab">
+                            <i class="bi bi-graph-up"></i> RQ2: RAG Impact
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="rq3-tab" data-bs-toggle="tab" href="#rq3" role="tab">
+                            <i class="bi bi-bug"></i> RQ3: Per-Smell
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="rq4-tab" data-bs-toggle="tab" href="#rq4" role="tab">
+                            <i class="bi bi-speedometer"></i> RQ4: Performance
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content research-tab-content">
+                    <!-- All Experiments Tab -->
+                    <div class="tab-pane fade show active" id="rq-all" role="tabpanel">
+                        <!-- Experiment Controls -->
+                        <div class="experiments-section">
+                            <h4 class="mb-3">
+                                <i class="bi bi-play-circle"></i> Start New Experiment
+                            </h4>
+                            <div class="experiment-controls">
+                                <button class="experiment-btn" data-start-experiment="baseline">
+                                    <i class="bi bi-bar-chart"></i>
+                                    <strong>RQ1: Baseline</strong>
+                                    <span class="rq-label">LLM vs Static Tools</span>
+                                </button>
+                                <button class="experiment-btn" data-start-experiment="rag">
+                                    <i class="bi bi-graph-up"></i>
+                                    <strong>RQ2: RAG</strong>
+                                    <span class="rq-label">RAG Effectiveness</span>
+                                </button>
+                                <button class="experiment-btn" data-start-experiment="ablation">
+                                    <i class="bi bi-bug"></i>
+                                    <strong>RQ3: Ablation</strong>
+                                    <span class="rq-label">Per-Smell Analysis</span>
+                                </button>
+                                <button class="experiment-btn" data-start-experiment="performance">
+                                    <i class="bi bi-speedometer"></i>
+                                    <strong>RQ4: Performance</strong>
+                                    <span class="rq-label">Resource Requirements</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Experiments List -->
+                        <div class="experiments-section">
+                            <div class="experiments-header">
+                                <h3>Experiment History</h3>
+                                <button class="refresh-btn" onclick="loadExperimentsList()">
+                                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="experiments-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Experiment ID</th>
+                                            <th>Type</th>
+                                            <th>Status</th>
+                                            <th>Progress</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="experiments-tbody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">No experiments yet. Start one above.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Experiment Status Panel -->
+                        <div class="experiment-status-panel" id="experiment-status-panel">
+                            <p class="text-muted">Select an experiment to view its status and results.</p>
+                        </div>
+
+                        <!-- Experiment Results Panel -->
+                        <div class="experiment-results-panel" id="experiment-results-panel">
+                            <p class="text-muted">Results will appear here when an experiment completes.</p>
+                        </div>
+                    </div>
+
+                    <!-- RQ1 Tab -->
+                    <div class="tab-pane fade" id="rq1" role="tabpanel">
+                        <div class="experiments-section">
+                            <h4 class="mb-2">RQ1: LLM vs Static Tools Accuracy</h4>
+                            <p class="text-muted mb-3">
+                                How accurately do locally-deployed open-source language models detect code smells
+                                compared to established static analysis tools (SonarQube, PMD, Checkstyle, SpotBugs, IntelliJ)?
+                            </p>
+                            <button class="btn btn-primary" data-start-experiment="baseline">
+                                <i class="bi bi-play-circle"></i> Run RQ1 Baseline Experiment
+                            </button>
+                            <button class="btn btn-secondary ms-2" id="btn-load-rq1">
+                                <i class="bi bi-arrow-repeat"></i> Load Summary
+                            </button>
+                        </div>
+                        <div id="rq-summary-panel"></div>
+                    </div>
+
+                    <!-- RQ2 Tab -->
+                    <div class="tab-pane fade" id="rq2" role="tabpanel">
+                        <div class="experiments-section">
+                            <h4 class="mb-2">RQ2: RAG Effectiveness</h4>
+                            <p class="text-muted mb-3">
+                                Does retrieval-augmented generation improve detection accuracy compared to vanilla prompting approaches?
+                                Quantifies accuracy improvement and false positive reduction.
+                            </p>
+                            <button class="btn btn-primary" data-start-experiment="rag">
+                                <i class="bi bi-play-circle"></i> Run RQ2 RAG Experiment
+                            </button>
+                            <button class="btn btn-secondary ms-2" id="btn-load-rq2">
+                                <i class="bi bi-arrow-repeat"></i> Load Summary
+                            </button>
+                        </div>
+                        <div id="rq-summary-panel"></div>
+                    </div>
+
+                    <!-- RQ3 Tab -->
+                    <div class="tab-pane fade" id="rq3" role="tabpanel">
+                        <div class="experiments-section">
+                            <h4 class="mb-2">RQ3: Per-Smell-Type Performance</h4>
+                            <p class="text-muted mb-3">
+                                Which specific code smell types exhibit highest and lowest detection accuracy?
+                                Analyzes model strengths and error patterns across smell types.
+                            </p>
+                            <button class="btn btn-primary" data-start-experiment="ablation">
+                                <i class="bi bi-play-circle"></i> Run RQ3 Ablation Study
+                            </button>
+                            <button class="btn btn-secondary ms-2" id="btn-load-rq3">
+                                <i class="bi bi-arrow-repeat"></i> Load Summary
+                            </button>
+                        </div>
+                        <div id="rq-summary-panel"></div>
+                    </div>
+
+                    <!-- RQ4 Tab -->
+                    <div class="tab-pane fade" id="rq4" role="tabpanel">
+                        <div class="experiments-section">
+                            <h4 class="mb-2">RQ4: Computational Requirements</h4>
+                            <p class="text-muted mb-3">
+                                What are the computational resource requirements and latency characteristics of local LLM deployment?
+                                Measures inference time, memory, CPU/GPU utilization, and throughput.
+                            </p>
+                            <button class="btn btn-primary" data-start-experiment="performance">
+                                <i class="bi bi-play-circle"></i> Run RQ4 Performance Analysis
+                            </button>
+                            <button class="btn btn-secondary ms-2" id="btn-load-rq4">
+                                <i class="bi bi-arrow-repeat"></i> Load Summary
+                            </button>
+                        </div>
+                        <div id="rq-summary-panel"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-tone="info">
+            <div class="toast-header">
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-message">
+                Message
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/app.js"></script>
+    <script src="/static/research.js"></script>
+</body>
+</html>

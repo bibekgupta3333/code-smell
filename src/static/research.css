@@ -1,0 +1,523 @@
+/**
+ * Research Dashboard Styles
+ * Modern styling for RQ1-RQ4 experiment management interface
+ */
+
+/* ============================================================================
+   Research Dashboard Container
+   ============================================================================ */
+
+#research-dashboard {
+  padding: 2rem 0;
+}
+
+.research-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ============================================================================
+   Experiment Controls
+   ============================================================================ */
+
+.experiment-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.experiment-btn {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 19, 35, 0.4);
+  background: linear-gradient(135deg, rgba(11, 19, 35, 0.6), rgba(20, 35, 60, 0.4));
+  color: #e5eefc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-align: left;
+}
+
+.experiment-btn:hover {
+  background: linear-gradient(135deg, rgba(11, 19, 35, 0.8), rgba(20, 35, 60, 0.6));
+  border-color: #00d9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 217, 255, 0.1);
+}
+
+.experiment-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.experiment-btn i {
+  margin-right: 0.5rem;
+  color: #00d9ff;
+}
+
+.experiment-btn .rq-label {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+
+/* ============================================================================
+   Experiments List
+   ============================================================================ */
+
+.experiments-section {
+  background: rgba(11, 19, 35, 0.5);
+  border: 1px solid rgba(11, 19, 35, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.experiments-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.experiments-header h3 {
+  margin: 0;
+  color: #e5eefc;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.refresh-btn {
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  color: #00d9ff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  background: rgba(0, 217, 255, 0.2);
+  border-color: #00d9ff;
+}
+
+.experiments-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.experiments-table thead th {
+  background: rgba(0, 217, 255, 0.05);
+  color: #00d9ff;
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.experiments-table tbody tr {
+  border-bottom: 1px solid rgba(11, 19, 35, 0.3);
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.experiments-table tbody tr:hover {
+  background: rgba(0, 217, 255, 0.05);
+}
+
+.experiments-table td {
+  padding: 0.75rem;
+  color: #a8c5e0;
+}
+
+.exp-id {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.85rem;
+  color: #00d9ff;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-queued {
+  background: rgba(158, 134, 255, 0.2);
+  color: #9e86ff;
+}
+
+.status-initializing {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+}
+
+.status-running {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.status-analyzing {
+  background: rgba(29, 185, 202, 0.2);
+  color: #1db9ca;
+}
+
+.status-completed {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+}
+
+.status-failed {
+  background: rgba(244, 67, 54, 0.2);
+  color: #f44336;
+}
+
+.status-cancelled {
+  background: rgba(158, 134, 255, 0.2);
+  color: #9e86ff;
+}
+
+/* ============================================================================
+   Experiment Status Panel
+   ============================================================================ */
+
+.experiment-status-panel {
+  background: rgba(11, 19, 35, 0.5);
+  border: 1px solid rgba(11, 19, 35, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.status-detail h3 {
+  margin-top: 0;
+  color: #00d9ff;
+  font-size: 1.2rem;
+}
+
+.exp-id-display {
+  margin: 1rem 0;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 217, 255, 0.05);
+  border-left: 3px solid #00d9ff;
+  border-radius: 4px;
+}
+
+.exp-id-display code {
+  color: #00d9ff;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.85rem;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.status-grid article {
+  background: rgba(0, 217, 255, 0.05);
+  border: 1px solid rgba(0, 217, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.status-grid span {
+  display: block;
+  font-size: 0.85rem;
+  color: #a8c5e0;
+  margin-bottom: 0.25rem;
+}
+
+.status-grid strong {
+  color: #e5eefc;
+  font-size: 1.1rem;
+}
+
+/* ============================================================================
+   Results Container
+   ============================================================================ */
+
+.experiment-results-panel {
+  background: rgba(11, 19, 35, 0.5);
+  border: 1px solid rgba(11, 19, 35, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.results-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* ============================================================================
+   RQ Results Sections
+   ============================================================================ */
+
+.rq-results-section {
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: rgba(0, 217, 255, 0.03);
+}
+
+.rq-results-section h4 {
+  color: #00d9ff;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.rq-results-section h4 i {
+  margin-right: 0.5rem;
+}
+
+.rq-description {
+  color: #a8c5e0;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+/* ============================================================================
+   Metrics Grid
+   ============================================================================ */
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.metric-card {
+  background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 200, 220, 0.05));
+  border: 1px solid rgba(0, 217, 255, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.metric-card.highlight {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(76, 175, 80, 0.05));
+  border-color: rgba(76, 175, 80, 0.2);
+}
+
+.metric-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #a8c5e0;
+  margin-bottom: 0.5rem;
+}
+
+.metric-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00d9ff;
+}
+
+.metric-card.highlight .metric-value {
+  color: #4caf50;
+}
+
+/* ============================================================================
+   Comparison Table
+   ============================================================================ */
+
+.comparison-table {
+  margin-top: 1rem;
+}
+
+.comparison-table h5 {
+  color: #e5eefc;
+  margin-bottom: 0.75rem;
+}
+
+.comparison-table .table {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.comparison-table .table thead th {
+  background: rgba(0, 217, 255, 0.05);
+  border-color: rgba(0, 217, 255, 0.1);
+  color: #00d9ff;
+  font-weight: 600;
+}
+
+.comparison-table .table tbody tr {
+  border-color: rgba(11, 19, 35, 0.3);
+}
+
+.comparison-table .table tbody td {
+  color: #a8c5e0;
+}
+
+.comparison-table .table tbody strong {
+  color: #e5eefc;
+}
+
+/* ============================================================================
+   Error Analysis
+   ============================================================================ */
+
+.error-analysis {
+  background: rgba(244, 67, 54, 0.05);
+  border: 1px solid rgba(244, 67, 54, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.error-analysis h5 {
+  color: #e5eefc;
+  margin-top: 0;
+}
+
+.error-analysis p {
+  color: #a8c5e0;
+  margin-bottom: 0.5rem;
+}
+
+.error-analysis ul {
+  list-style: none;
+  padding-left: 1rem;
+}
+
+.error-analysis li {
+  color: #a8c5e0;
+  padding: 0.25rem 0;
+}
+
+.error-analysis li:before {
+  content: "→ ";
+  color: #f44336;
+  margin-right: 0.5rem;
+}
+
+/* ============================================================================
+   Latency Breakdown
+   ============================================================================ */
+
+.latency-breakdown {
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.latency-breakdown h5 {
+  color: #ffc107;
+  margin-top: 0;
+}
+
+.latency-breakdown .table {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+
+.latency-breakdown .table td {
+  color: #a8c5e0;
+  padding: 0.5rem;
+}
+
+.latency-breakdown .table strong {
+  color: #ffc107;
+}
+
+/* ============================================================================
+   Resource Details
+   ============================================================================ */
+
+.resource-details {
+  background: rgba(29, 185, 202, 0.05);
+  border: 1px solid rgba(29, 185, 202, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.resource-details h5 {
+  color: #1db9ca;
+  margin-top: 0;
+}
+
+.resource-details p {
+  color: #a8c5e0;
+  margin-bottom: 0;
+}
+
+.resource-details strong {
+  color: #e5eefc;
+}
+
+/* ============================================================================
+   Insights
+   ============================================================================ */
+
+.insight {
+  background: rgba(0, 217, 255, 0.1);
+  border-left: 3px solid #00d9ff;
+  padding: 1rem;
+  border-radius: 4px;
+  color: #a8c5e0;
+  margin-top: 1rem;
+}
+
+.insight strong {
+  color: #00d9ff;
+}
+
+/* ============================================================================
+   Responsive Design
+   ============================================================================ */
+
+@media (max-width: 1199px) {
+  .experiment-controls {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .experiment-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .experiments-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .experiments-table {
+    font-size: 0.85rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rq-results-section {
+    padding: 1rem;
+  }
+}

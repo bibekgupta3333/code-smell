@@ -2,7 +2,8 @@
 	run-detector run-workflow run-coordinator run-database run-all \
 	baseline-install baseline-install-verify baseline-java baseline-python baseline-js baseline-run baseline-report baseline-verify \
 	llm-baseline-run llm-rag-run llm-ablation-run \
-	inference-baseline inference-rag inference-quick inference-results
+	inference-baseline inference-rag inference-quick inference-results \
+	api-dev api-start api-prod api-test api-docs
 
 # Python environment
 PYTHON := python3
@@ -65,6 +66,16 @@ help:
 	@echo ""
 	@echo "  Results:"
 	@echo "  make inference-results            - Show latest results & metrics"
+	@echo ""
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "  FastAPI REST API                   src/api_server.py"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo ""
+	@echo "  make api-dev                 - Start API in development mode (auto-reload)"
+	@echo "  make api-start                - Start API server (production)"
+	@echo "  make api-prod                 - Start API with multiple workers"
+	@echo "  make api-test                 - Test API endpoints"
+	@echo "  make api-docs                 - Open API documentation in browser"
 	@echo ""
 	@echo "Cleanup:"
 	@echo "  make clean             - Remove cache and temporary files"
@@ -185,6 +196,52 @@ print('✓ benchmark_utils OK'); \
 from src.utils.result_exporter import to_latex_table, to_csv, plot_f1_comparison; \
 print('✓ result_exporter OK'); \
 print('✅ Baseline modules verified')"
+
+# ============================================================================
+# FastAPI API Commands
+# ============================================================================
+
+api-dev:
+	@echo "🚀 Starting FastAPI Server (Development Mode)"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "Server: http://localhost:8000"
+	@echo "Docs:   http://localhost:8000/docs (Swagger UI)"
+	@echo "ReDoc:  http://localhost:8000/redoc"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo ""
+	@$(VENV_ACTIVATE) uvicorn src.api_server:app --reload --port 8000 --host 0.0.0.0 --log-level info
+
+api-start:
+	@echo "🚀 Starting FastAPI Server (Production Mode)"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "Server: http://localhost:8000"
+	@echo "Docs:   http://localhost:8000/docs"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo ""
+	@$(VENV_ACTIVATE) uvicorn src.api_server:app --port 8000 --host 0.0.0.0 --log-level info
+
+api-prod:
+	@echo "🚀 Starting FastAPI Server (Production with 4 Workers)"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "Server: http://localhost:8000"
+	@echo "Workers: 4"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo ""
+	@$(VENV_ACTIVATE) uvicorn src.api_server:app --port 8000 --host 0.0.0.0 --workers 4
+
+api-test:
+	@echo "🧪 Testing API Endpoints"
+	@echo "═══════════════════════════════════════════════════════════════"
+	@echo "Testing: Health Check Endpoint"
+	@echo ""
+	@curl -s http://localhost:8000/ | python3 -m json.tool || echo "❌ API not running. Start with: make api-dev"
+	@echo ""
+	@echo "Testing: Swagger UI"
+	@echo "Open: http://localhost:8000/docs"
+
+api-docs:
+	@echo "📖 Opening API Documentation"
+	@open http://localhost:8000/docs 2>/dev/null || xdg-open http://localhost:8000/docs 2>/dev/null || echo "Open http://localhost:8000/docs in your browser"
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
