@@ -13,7 +13,7 @@ Benefits:
 import asyncio
 import logging
 import re
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from datetime import datetime
 from time import time
 
@@ -33,6 +33,32 @@ from src.rag.rag_retriever import RAGRetriever
 from src.utils.common import CodeSmellFinding, SeverityLevel, parse_smell_severity
 from src.utils.logger import log_agent_event, log_detection_result, log_llm_request, log_llm_response
 from config import DEFAULT_MODEL
+
+# Import enhanced metric functions for all 10 smell types
+from src.analysis.code_smell_detector_enhanced import (
+    _compute_cyclomatic_complexity,
+    _compute_max_nesting_depth,
+    _find_duplicate_blocks,
+    _count_magic_numbers,
+    _find_unused_variables,
+    _analyze_naming_consistency,
+    _detect_risky_operations,
+    _detect_long_parameter_list,
+    _detect_switch_statements,
+    _detect_empty_catch,
+    _detect_message_chains,
+    _detect_middle_man,
+    _detect_commented_out_code,
+    _detect_primitive_obsession,
+    _detect_data_class,
+    _detect_lazy_class,
+    _detect_feature_envy,
+)
+from src.utils.smell_catalog import (
+    CANONICAL_SMELLS,
+    build_prompt_catalog_block,
+    normalize_smell_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -333,27 +359,39 @@ class CodeSmellDetector:
                 self.tools_invoked_count += 1
 
             # Step 3: LLM-based smell detection with context
-            smell_filter = f"Focus on: {', '.join(smell_types)}" if smell_types else "Analyze all code smell types"
+            smell_filter = f"Focus on: {', '.join(smell_types)}" if smell_types else "Analyze ALL smell types in the catalog below"
 
-            llm_input = f"""Deep Agent Analysis Task: Detect Code Smells
+            llm_input = f"""You are a senior static-analysis reviewer (SonarQube / PMD / Fowler's catalog).
+Analyze the code and detect EVERY applicable code smell from the catalog below.
 
-Code Analysis Results:
+SMELL CATALOG (use these EXACT names in the "type" field):
+{build_prompt_catalog_block()}
+
+{smell_filter}
+
+Code Structure:
 {structure_analysis}
 
 {f'Similar Patterns Context:{chr(10)}{rag_context}' if rag_context else ''}
 
 Code to Analyze:
-```python
-{code[:2000]}
+```
+{code[:3000]}
 ```
 
-{smell_filter}
+INSTRUCTIONS:
+- Inspect the code against EACH catalog entry; do not limit yourself to a few obvious ones.
+- Use the EXACT canonical name from the catalog for "type" (not paraphrased).
+- Report every instance you find (multiple of the same type are allowed with different locations).
+- Include a specific, measurable justification (LOC, complexity number, nesting depth, param count, duplicate ratio, etc.) in "explanation".
+- Severity: CRITICAL | HIGH | MEDIUM | LOW.
+- Confidence: 0.0-1.0 based on how strong the metric/structural signal is.
 
-Identify code smells. For each smell found:
-1. Use classify_severity_level to determine severity
-2. Use extract_refactoring_suggestions to recommend fixes
+Return ONLY a JSON array with objects of this shape:
+[{{"type":"<canonical name>","location":"line <start>-<end>","severity":"HIGH","explanation":"<metric-backed reason>","refactoring":"<concrete fix>","confidence":0.82}}]
 
-Output JSON format: [{{"type": "Long Method", "location": "line 12-45", "severity": "HIGH", "explanation": "...", "refactoring": "...", "confidence": 0.85}}]"""
+If no smells apply, return [].
+"""
 
             # Log LLM request
             log_llm_request(
@@ -391,6 +429,8 @@ Output JSON format: [{{"type": "Long Method", "location": "line 12-45", "severit
             for raw_finding in findings_raw:
                 # Use Deep Agent tools to enhance classification
                 if raw_finding.smell_type:
+                    # Canonicalize smell label (belt-and-braces with parser)
+                    raw_finding.smell_type = normalize_smell_type(raw_finding.smell_type) or raw_finding.smell_type
                     severity_detail = await asyncio.to_thread(
                         _classify_severity_impl,
                         raw_finding.smell_type,
@@ -479,16 +519,7 @@ Output JSON format: [{{"type": "Long Method", "location": "line 12-45", "severit
                 findings.append(finding)
 
             if not findings and any(
-                keyword in response.lower()
-                for keyword in [
-                    "long method",
-                    "god class",
-                    "large class",
-                    "feature envy",
-                    "data clumps",
-                    "long parameter list",
-                    "duplicate code",
-                ]
+                smell.lower() in response.lower() for smell in CANONICAL_SMELLS
             ):
                 raise ValueError("Structured parse produced no usable findings")
         except Exception as e:
@@ -502,65 +533,302 @@ Output JSON format: [{{"type": "Long Method", "location": "line 12-45", "severit
         response: str,
         original_code: str,
     ) -> List[CodeSmellFinding]:
-        """Build heuristic findings when structured parsing fails."""
+        """Build comprehensive heuristic findings when structured parsing fails.
+
+        Uses metric-based detection aligned with the canonical SonarQube-style
+        catalog (see ``src.utils.smell_catalog``). Deduplicated by (smell_type, location).
+        """
         findings: List[CodeSmellFinding] = []
+        seen: set = set()
         response_lower = response.lower()
         non_empty_lines = [line for line in original_code.splitlines() if line.strip()]
         line_count = len(non_empty_lines)
         line_location = f"line 1-{line_count}" if line_count > 1 else "line 1"
+        now = datetime.now().isoformat()
 
-        identified_smells = {
-            "long method": ("Long Method", line_location, 0.6),
-            "god class": ("God Class", line_location, 0.6),
-            "large class": ("Large Class", line_location, 0.58),
-            "feature envy": ("Feature Envy", line_location, 0.55),
-            "data clumps": ("Data Clumps", line_location, 0.55),
-            "long parameter list": ("Long Parameter List", line_location, 0.6),
-            "duplicate code": ("Duplicate Code", line_location, 0.55),
-        }
-
-        for keyword, (smell_type, location, confidence) in identified_smells.items():
-            if keyword in response_lower:
-                findings.append(CodeSmellFinding(
-                    smell_type=smell_type,
-                    location=location,
-                    severity=SeverityLevel.MEDIUM,
-                    explanation=f"Detected from freeform LLM response: {response[:200]}",
-                    refactoring="Review and refactor",
-                    confidence=confidence,
-                    agent_name=self.agent_name,
-                    timestamp=datetime.now().isoformat(),
-                ))
-
-        if findings:
-            return findings
-
-        signature_match = re.search(r"def\s+\w+\((.*?)\)", original_code, re.DOTALL)
-        if signature_match:
-            params = [param.strip() for param in signature_match.group(1).split(",") if param.strip() and param.strip() != "self"]
-            if len(params) >= 6:
-                findings.append(CodeSmellFinding(
-                    smell_type="Long Parameter List",
-                    location="line 1",
-                    severity=SeverityLevel.MEDIUM,
-                    explanation=f"Function accepts {len(params)} parameters, which suggests excessive coupling.",
-                    refactoring="Introduce a parameter object or group related arguments.",
-                    confidence=0.58,
-                    agent_name=self.agent_name,
-                    timestamp=datetime.now().isoformat(),
-                ))
-
-        if line_count >= 15:
+        def _emit(smell_type: str, location: str, severity: SeverityLevel, explanation: str, refactoring: str, confidence: float) -> None:
+            canonical = normalize_smell_type(smell_type) or smell_type
+            key = (canonical, location)
+            if key in seen:
+                return
+            seen.add(key)
             findings.append(CodeSmellFinding(
-                smell_type="Long Method",
-                location=line_location,
-                severity=SeverityLevel.MEDIUM,
-                explanation=f"Method spans {line_count} non-empty lines and may need decomposition.",
-                refactoring="Break the method into smaller focused helpers.",
-                confidence=0.56,
+                smell_type=canonical,
+                location=location,
+                severity=severity,
+                explanation=explanation,
+                refactoring=refactoring,
+                confidence=confidence,
                 agent_name=self.agent_name,
-                timestamp=datetime.now().isoformat(),
+                timestamp=now,
             ))
+
+        # --- Stage 1: keyword-based pickup of any smell the LLM mentioned ---
+        # Iterate over canonical catalog so LLM-mentioned smells are captured
+        # even when JSON parsing failed.
+        for canonical in CANONICAL_SMELLS:
+            if canonical.lower() in response_lower:
+                _emit(
+                    canonical,
+                    line_location,
+                    SeverityLevel.MEDIUM,
+                    f"LLM identified '{canonical}' in analysis output.",
+                    "Review the LLM reasoning and refactor per catalog guidance.",
+                    0.60,
+                )
+
+        # --- Stage 2: metric-based heuristics for every catalog entry we can check ---
+
+        # Long Method
+        if line_count >= 50:
+            severity = SeverityLevel.CRITICAL if line_count > 100 else SeverityLevel.HIGH if line_count > 70 else SeverityLevel.MEDIUM
+            _emit(
+                "Long Method",
+                line_location,
+                severity,
+                f"Method spans {line_count} non-empty lines - exceeds recommended size.",
+                "Extract into smaller helper functions with single responsibilities.",
+                0.70 if line_count > 100 else 0.58,
+            )
+
+        # Deep Nesting
+        max_nesting = _compute_max_nesting_depth(original_code)
+        if max_nesting > 4:
+            _emit(
+                "Deep Nesting",
+                line_location,
+                SeverityLevel.HIGH if max_nesting > 6 else SeverityLevel.MEDIUM,
+                f"Maximum nesting depth is {max_nesting} levels - hurts readability/testability.",
+                "Use early returns, guard clauses, or extract nested logic to helpers.",
+                0.72,
+            )
+
+        # Duplicate Code
+        duplicates = _find_duplicate_blocks(original_code)
+        if duplicates:
+            avg_sim = sum(sim for _, sim in duplicates) / len(duplicates)
+            _emit(
+                "Duplicate Code",
+                line_location,
+                SeverityLevel.HIGH,
+                f"Found {len(duplicates)} duplicate blocks with {avg_sim*100:.0f}% avg similarity.",
+                "Extract shared logic into utility functions or base classes.",
+                0.72 if avg_sim > 0.90 else 0.62,
+            )
+
+        # High Cyclomatic Complexity
+        complexity = _compute_cyclomatic_complexity(original_code)
+        if complexity > 10:
+            _emit(
+                "High Cyclomatic Complexity",
+                line_location,
+                SeverityLevel.HIGH if complexity > 15 else SeverityLevel.MEDIUM,
+                f"Cyclomatic complexity ~{complexity} - too many decision paths.",
+                "Decompose branches, use polymorphism, or lookup tables.",
+                0.68,
+            )
+
+        # Long Parameter List + Data Clumps
+        long_params = _detect_long_parameter_list(original_code, threshold=5)
+        if long_params:
+            for name, count in long_params[:5]:
+                _emit(
+                    "Long Parameter List",
+                    line_location,
+                    SeverityLevel.MEDIUM if count < 7 else SeverityLevel.HIGH,
+                    f"Function '{name}' has {count} parameters.",
+                    "Introduce a parameter object / dataclass.",
+                    0.66,
+                )
+            if len(long_params) >= 2:
+                _emit(
+                    "Data Clumps",
+                    line_location,
+                    SeverityLevel.MEDIUM,
+                    f"{len(long_params)} functions share large parameter lists - likely repeated data groups.",
+                    "Group related parameters into a dedicated type/dataclass.",
+                    0.60,
+                )
+
+        # Magic Numbers
+        magic_nums = _count_magic_numbers(original_code)
+        if len(magic_nums) >= 3:
+            _emit(
+                "Magic Numbers",
+                line_location,
+                SeverityLevel.LOW,
+                f"Found {len(magic_nums)} hard-coded numeric/string literals without semantic meaning.",
+                "Replace with named constants (e.g., MAX_RETRIES, DEFAULT_TIMEOUT).",
+                0.58,
+            )
+
+        # Dead Code (unused variables)
+        unused = _find_unused_variables(original_code)
+        if unused:
+            _emit(
+                "Dead Code",
+                line_location,
+                SeverityLevel.MEDIUM,
+                f"Found {len(unused)} potentially unused identifiers: {', '.join(unused[:3])}{'...' if len(unused) > 3 else ''}",
+                "Remove unused variables/imports and unreachable branches.",
+                0.55,
+            )
+
+        # Inconsistent Naming
+        naming = _analyze_naming_consistency(original_code)
+        if naming["inconsistency_score"] > 0.6 and naming["single_letter"] > 2:
+            _emit(
+                "Inconsistent Naming",
+                line_location,
+                SeverityLevel.LOW,
+                (
+                    f"Mixed conventions (snake_case={naming['snake_case']}, "
+                    f"camelCase={naming['camel_case']}, single-letter={naming['single_letter']})."
+                ),
+                "Standardize on one convention; replace single-letter vars with descriptive names.",
+                0.52,
+            )
+
+        # Missing Error Handling
+        risky_ops = _detect_risky_operations(original_code)
+        if risky_ops:
+            _emit(
+                "Missing Error Handling",
+                line_location,
+                SeverityLevel.HIGH,
+                f"Risky operations without error handling: {', '.join(risky_ops)}.",
+                "Wrap risky I/O/network/parsing calls in try/except with recovery.",
+                0.70,
+            )
+
+        # Empty Catch Block
+        empty_catches = _detect_empty_catch(original_code)
+        if empty_catches:
+            _emit(
+                "Empty Catch Block",
+                line_location,
+                SeverityLevel.HIGH,
+                f"Detected {empty_catches} empty exception handlers - errors are silently swallowed.",
+                "Log the exception and/or re-raise; never pass silently.",
+                0.75,
+            )
+
+        # Switch Statements
+        switches = _detect_switch_statements(original_code, min_branches=4)
+        if switches:
+            _emit(
+                "Switch Statements",
+                line_location,
+                SeverityLevel.MEDIUM,
+                f"Large switch/elif chain with {max(switches)} branches detected.",
+                "Replace type-code switch with polymorphism or strategy map.",
+                0.60,
+            )
+
+        # Message Chains
+        chains = _detect_message_chains(original_code, min_chain=4)
+        if chains:
+            _emit(
+                "Message Chains",
+                line_location,
+                SeverityLevel.MEDIUM,
+                f"Detected {chains} long dotted call chains (a.b().c().d()...).",
+                "Apply 'Hide Delegate' or expose a direct method on the intermediate object.",
+                0.58,
+            )
+
+        # Middle Man
+        middle_man = _detect_middle_man(original_code)
+        if middle_man >= 3:
+            _emit(
+                "Middle Man",
+                line_location,
+                SeverityLevel.LOW,
+                f"Detected {middle_man} methods that only delegate to another object.",
+                "Remove the middle man or inline the delegation.",
+                0.55,
+            )
+
+        # Commented-out Code (falls under 'Comments' category)
+        commented = _detect_commented_out_code(original_code)
+        if commented >= 3:
+            _emit(
+                "Comments",
+                line_location,
+                SeverityLevel.LOW,
+                f"Detected {commented} lines of commented-out code.",
+                "Delete dead commented code - rely on version control for history.",
+                0.60,
+            )
+
+        # Primitive Obsession
+        primitives = _detect_primitive_obsession(original_code)
+        if primitives >= 10:
+            _emit(
+                "Primitive Obsession",
+                line_location,
+                SeverityLevel.LOW,
+                f"High use of primitive types ({primitives} primitive parameters/fields).",
+                "Introduce value objects / dataclasses for repeated primitive groups.",
+                0.50,
+            )
+
+        # Data Class
+        data_classes = _detect_data_class(original_code)
+        for cls_name in data_classes[:5]:
+            _emit(
+                "Data Class",
+                line_location,
+                SeverityLevel.LOW,
+                f"Class '{cls_name}' exposes only fields/getters/setters without behavior.",
+                "Move behavior that uses this data into the class itself.",
+                0.55,
+            )
+
+        # Lazy Class
+        lazy = _detect_lazy_class(original_code)
+        for cls_name in lazy[:5]:
+            _emit(
+                "Lazy Class",
+                line_location,
+                SeverityLevel.LOW,
+                f"Class '{cls_name}' has a trivial body - may not earn its keep.",
+                "Inline into callers or merge with a related class.",
+                0.50,
+            )
+
+        # Feature Envy
+        envy = _detect_feature_envy(original_code, threshold=4)
+        if envy:
+            _emit(
+                "Feature Envy",
+                line_location,
+                SeverityLevel.MEDIUM,
+                f"{envy} method(s) access another object's data more than their own.",
+                "Move the method to the class it envies (Move Method refactoring).",
+                0.58,
+            )
+
+        # God Class / Large Class
+        method_count = len(re.findall(r"def\s+\w+\s*\(", original_code))
+        if method_count > 15 and line_count > 300:
+            _emit(
+                "God Class",
+                line_location,
+                SeverityLevel.HIGH,
+                f"Class/module has {method_count} methods and {line_count} LOC - violates SRP.",
+                "Decompose into multiple focused classes along responsibility lines.",
+                0.66,
+            )
+        elif line_count > 200 and method_count > 10:
+            _emit(
+                "Large Class",
+                line_location,
+                SeverityLevel.MEDIUM,
+                f"Class/module has {method_count} methods and {line_count} LOC - getting unwieldy.",
+                "Extract cohesive groups of methods into collaborator classes.",
+                0.58,
+            )
 
         return findings
 

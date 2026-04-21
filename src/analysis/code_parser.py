@@ -66,13 +66,13 @@ class CodeParser:
     - Structure analysis
     """
 
-    # Language detection patterns
+    # Language detection patterns (order matters - check specific languages first)
     LANGUAGE_PATTERNS = {
-        ProgrammingLanguage.PYTHON: [r'def\s+\w+\s*\(', r'import\s+\w+', r'class\s+\w+'],
         ProgrammingLanguage.JAVA: [r'public\s+class\s+\w+', r'public\s+static\s+void', r'import\s+[^;]+;'],
-        ProgrammingLanguage.JAVASCRIPT: [r'function\s+\w+\s*\(', r'const\s+\w+\s*=', r'import\s+'],
         ProgrammingLanguage.CSHARP: [r'public\s+class\s+\w+', r'public\s+void\s+\w+', r'using\s+\w+'],
         ProgrammingLanguage.TYPESCRIPT: [r'(interface|type)\s+\w+', r'function\s+\w+\s*\(', r'import\s+'],
+        ProgrammingLanguage.JAVASCRIPT: [r'function\s+\w+\s*\(', r'const\s+\w+\s*=', r'import\s+'],
+        ProgrammingLanguage.PYTHON: [r'def\s+\w+\s*\(', r'import\s+\w+', r'from\s+.+\s+import'],
     }
 
     def __init__(self):
@@ -98,13 +98,16 @@ class CodeParser:
                 if re.search(pattern, code, re.IGNORECASE):
                     return language
 
-        # Check for specific keywords
-        if re.search(r'\b(def|import|class)\b', code):
-            return ProgrammingLanguage.PYTHON
-        elif re.search(r'\b(public|private|class|void)\b', code):
+        # Fallback: check specific keywords (more specific languages first)
+        # Java/C#: public/private/protected + void/class together indicates OOP language
+        if re.search(r'\b(public|private|protected)\b', code) and re.search(r'\b(void|static|class)\b', code):
             return ProgrammingLanguage.JAVA
+        # JavaScript: function keyword or const/let/var (strong indicators)
         elif re.search(r'\b(function|const|let|var)\b', code):
             return ProgrammingLanguage.JAVASCRIPT
+        # Python: def or from...import (very specific to Python)
+        elif re.search(r'(^|\s)(def|async\s+def|from\s+.+\s+import|import\s+)', code, re.MULTILINE):
+            return ProgrammingLanguage.PYTHON
 
         return ProgrammingLanguage.UNKNOWN
 
@@ -300,7 +303,8 @@ class CodeParser:
         """Split Python code into functions."""
         try:
             tree = ast.parse(code)
-        except ValueError:
+        except (SyntaxError, ValueError):
+            # Return whole code if parsing fails (e.g., invalid Python or non-Python language)
             return [("full_code", code, 1, len(code.split('\n')))]
 
         lines = code.split('\n')

@@ -146,7 +146,10 @@ CODE_CHUNKING = {
 # Supported programming languages
 SUPPORTED_LANGUAGES = ["java", "python", "javascript", "cpp"]
 
-# Code smell types (Production code smells - Gap #12)
+# Code smell types (Production code smells - SonarQube + Fowler catalog)
+# NOTE: The authoritative catalog lives in src/utils/smell_catalog.py.
+# This list is re-exported here for backward compatibility with downstream
+# modules (data loader, evaluator, result exporter).
 CODE_SMELL_TYPES = [
     # Bloaters
     "Long Method",
@@ -155,11 +158,11 @@ CODE_SMELL_TYPES = [
     "Long Parameter List",
     "Primitive Obsession",
     "Data Clumps",
-    # Couplers
-    "Feature Envy",
-    "Inappropriate Intimacy",
-    "Message Chains",
-    "Middle Man",
+    # OO Abusers
+    "Switch Statements",
+    "Refused Bequest",
+    "Temporary Field",
+    "Alternative Classes with Different Interfaces",
     # Change Preventers
     "Divergent Change",
     "Shotgun Surgery",
@@ -170,10 +173,19 @@ CODE_SMELL_TYPES = [
     "Data Class",
     "Dead Code",
     "Speculative Generality",
-    # Object-Oriented Abusers
-    "Switch Statements",
-    "Refused Bequest",
-    "Temporary Field",
+    "Comments",
+    # Couplers
+    "Feature Envy",
+    "Inappropriate Intimacy",
+    "Message Chains",
+    "Middle Man",
+    # Complexity & Quality (SonarQube-style)
+    "High Cyclomatic Complexity",
+    "Deep Nesting",
+    "Magic Numbers",
+    "Inconsistent Naming",
+    "Missing Error Handling",
+    "Empty Catch Block",
 ]
 
 # ============================================================================

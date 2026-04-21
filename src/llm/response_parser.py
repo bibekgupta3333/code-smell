@@ -12,6 +12,8 @@ from typing import Optional, List, Dict, Any, Tuple, Union
 from dataclasses import dataclass
 from enum import Enum
 
+from src.utils.smell_catalog import CANONICAL_SMELLS, normalize_smell_type
+
 logger = logging.getLogger(__name__)
 
 
@@ -93,26 +95,8 @@ class ResponseParser:
         >>> print(result.code_smells)
     """
 
-    # Valid smell types
-    VALID_SMELL_TYPES = {
-        "Long Method",
-        "God Class",
-        "Large Class",
-        "Long Parameter List",
-        "Primitive Obsession",
-        "Feature Envy",
-        "Inappropriate Intimacy",
-        "Message Chains",
-        "Divergent Change",
-        "Shotgun Surgery",
-        "Duplicate Code",
-        "Lazy Class",
-        "Data Class",
-        "Dead Code",
-        "Switch Statements",
-        "Refused Bequest",
-        "Parallel Inheritance Hierarchies",
-    }
+    # Valid smell types (SonarQube-aligned canonical catalog)
+    VALID_SMELL_TYPES = set(CANONICAL_SMELLS)
 
     def __init__(self, strict_mode: bool = False):
         """
@@ -324,12 +308,8 @@ class ResponseParser:
         if not smell_type:
             raise ValueError("Missing or empty 'type' field")
 
-        # Try to match to valid type (case-insensitive)
-        matched_type = None
-        for valid_type in self.VALID_SMELL_TYPES:
-            if valid_type.lower() == smell_type.lower():
-                matched_type = valid_type
-                break
+        # Normalize to canonical catalog (handles aliases, plurals, variants)
+        matched_type = normalize_smell_type(smell_type)
 
         if matched_type is None and self.strict_mode:
             raise ValueError(f"Unknown code smell type: {smell_type}")
