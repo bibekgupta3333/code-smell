@@ -12,6 +12,7 @@ from datetime import datetime
 
 from src.utils.common import CodeSmellFinding, SeverityLevel
 from src.utils.logger import log_agent_event
+from src.utils.smell_catalog import CANONICAL_SMELLS, is_smell_category
 
 logger = logging.getLogger(__name__)
 
@@ -102,11 +103,21 @@ class QualityValidator:
                 validated.append(validated_finding)
             else:
                 self.false_positives_filtered += 1
-                logger.warning(
-                    "Filtered likely false positive: %s at %s",  # noqa: G201
-                    finding.smell_type,
-                    finding.location
-                )
+                # Category labels and non-canonical types were already logged
+                # at DEBUG/WARNING by `_validate_finding`; downgrade this
+                # follow-up to DEBUG to avoid double-logging at WARNING level.
+                if is_smell_category(finding.smell_type) or finding.smell_type not in set(CANONICAL_SMELLS):
+                    logger.debug(
+                        "Dropped non-canonical finding: %s at %s",
+                        finding.smell_type,
+                        finding.location,
+                    )
+                else:
+                    logger.info(
+                        "Filtered likely false positive: %s at %s",
+                        finding.smell_type,
+                        finding.location,
+                    )
 
         self.validations_performed += 1
         if validated:
@@ -137,34 +148,25 @@ class QualityValidator:
         Returns:
             (is_valid, confidence_adjustment)
         """
-        # Basic validation: check if smell type is known
-        known_types = set(self.validation_rules.keys()) | {
-            "Data Clumps",
-            "Shotgun Surgery",
-            "Parallel Inheritance",
-            "Parallel Inheritance Hierarchies",
-            "Lazy Class",
-            "Large Class",
-            "Long Parameter List",
-            "Speculative Generality",
-            "Temporary Field",
-            "Message Chains",
-            "Middle Man",
-            "Alternative Classes",
-            "Data Class",
-            "Data Classes",
-            "Comments",
-            "Duplicate Code",
-            "Switch Statements",
-            "Primitive Obsession",
-            "Inappropriate Intimacy",
-            "Divergent Change",
-            "Refused Bequest",
-            "Dead Code",
-        }
+        # Basic validation: check if smell type is known.
+        # M3: CANONICAL_SMELLS is the single source of truth. Unioning with
+        # validation_rules.keys() let custom rule entries silently extend the
+        # accepted taxonomy and drift from the catalog used by metrics/ground
+        # truth. If a new smell is needed, add it to src/utils/smell_catalog.py.
+        known_types = set(CANONICAL_SMELLS)
 
         if finding.smell_type not in known_types:
-            logger.warning("Unknown smell type: %s", finding.smell_type)  # noqa: G201
+            # Category headers ("Change Preventers", "Dispensables", ...) are
+            # a common LLM confusion — the model picks the section label from
+            # the prompt instead of a specific smell. Drop these quietly at
+            # DEBUG; they are not errors and don't need WARNING-level logs.
+            if is_smell_category(finding.smell_type):
+                logger.debug(
+                    "Dropping category-level label returned as smell_type: %s",
+                    finding.smell_type,
+                )
+            else:
+                logger.warning("Unknown smell type: %s", finding.smell_type)  # noqa: G201
             return False, 0.0
 
         # Apply smell-specific validation rules

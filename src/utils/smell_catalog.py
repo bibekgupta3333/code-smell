@@ -15,23 +15,23 @@ from typing import Dict, List, Optional
 
 
 # ============================================================================
-# Canonical Smell Catalog (28 types)
+# Canonical Smell Catalog (35 types)
 # ============================================================================
 # Grouped for LLM prompt clarity; flat list exposed as CANONICAL_SMELLS.
 SMELL_CATALOG: Dict[str, List[str]] = {
-    "Bloaters": [
+    "Size-Related Smells": [
         "Long Method",
         "God Class",
         "Large Class",
         "Long Parameter List",
         "Primitive Obsession",
-        "Data Clumps",
     ],
-    "OO Abusers": [
-        "Switch Statements",
+    "Object-Oriented Design Smells": [
+        "Duplicate Code",
+        "Feature Envy",
+        "Inappropriate Intimacy",
         "Refused Bequest",
-        "Temporary Field",
-        "Alternative Classes with Different Interfaces",
+        "Speculative Generality",
     ],
     "Change Preventers": [
         "Divergent Change",
@@ -39,26 +39,38 @@ SMELL_CATALOG: Dict[str, List[str]] = {
         "Parallel Inheritance Hierarchies",
     ],
     "Dispensables": [
-        "Duplicate Code",
-        "Lazy Class",
-        "Data Class",
         "Dead Code",
-        "Speculative Generality",
+        "Lazy Class",
+        "Data Clumps",
         "Comments",
     ],
-    "Couplers": [
-        "Feature Envy",
-        "Inappropriate Intimacy",
+    "Coupling & Dependency Smells": [
         "Message Chains",
         "Middle Man",
+        "Inappropriate Coupling",
     ],
-    "Complexity & Quality (SonarQube-style)": [
-        "High Cyclomatic Complexity",
-        "Deep Nesting",
+    "Naming & Readability Smells": [
+        "Poor Naming",
         "Magic Numbers",
         "Inconsistent Naming",
-        "Missing Error Handling",
+        "Inconsistent Style",
+    ],
+    "Control Flow Smells": [
+        "Deep Nesting",
+        "Switch Statements",
+        "Flag Arguments",
+    ],
+    "Exception Handling Smells": [
         "Empty Catch Block",
+        "Generic Exceptions",
+        "Hidden Errors",
+    ],
+    "Legacy Categories": [
+        "Temporary Field",
+        "Alternative Classes with Different Interfaces",
+        "Data Class",
+        "High Cyclomatic Complexity",
+        "Missing Error Handling",
     ],
 }
 
@@ -67,8 +79,22 @@ CANONICAL_SMELLS: List[str] = [
     smell for group in SMELL_CATALOG.values() for smell in group
 ]
 
+# Category header names. LLMs occasionally return these (e.g. "Change
+# Preventers", "Dispensables") as the smell_type instead of a specific smell.
+# Callers can use this set to filter such responses without treating them as
+# errors or spurious "unknown smell" warnings.
+SMELL_CATEGORIES: set = set(SMELL_CATALOG.keys())
+
 # Lowercased lookup for fast canonicalization
 _CANONICAL_LOWER: Dict[str, str] = {s.lower(): s for s in CANONICAL_SMELLS}
+_CATEGORY_LOWER: set = {c.lower() for c in SMELL_CATEGORIES}
+
+
+def is_smell_category(label: Optional[str]) -> bool:
+    """Return True if `label` is a category header rather than a specific smell."""
+    if not label:
+        return False
+    return label.strip().lower() in _CATEGORY_LOWER
 
 
 # ============================================================================
@@ -115,8 +141,14 @@ SMELL_ALIASES: Dict[str, str] = {
     # Naming
     "naming convention": "Inconsistent Naming",
     "inconsistent naming convention": "Inconsistent Naming",
-    "poor naming": "Inconsistent Naming",
-    "unclear names": "Inconsistent Naming",
+    "poor naming": "Poor Naming",
+    "unclear names": "Poor Naming",
+    "bad naming": "Poor Naming",
+    "confusing names": "Poor Naming",
+    "inconsistent style": "Inconsistent Style",
+    "inconsistent formatting": "Inconsistent Style",
+    "mixed formatting": "Inconsistent Style",
+    "code style": "Inconsistent Style",
     # Error Handling
     "missing exception handling": "Missing Error Handling",
     "no error handling": "Missing Error Handling",
@@ -125,6 +157,18 @@ SMELL_ALIASES: Dict[str, str] = {
     "empty catch": "Empty Catch Block",
     "swallowed exception": "Empty Catch Block",
     "empty except": "Empty Catch Block",
+    "exception swallowing": "Empty Catch Block",
+    # Generic Exceptions
+    "catching all exceptions": "Generic Exceptions",
+    "broad exception": "Generic Exceptions",
+    "catch exception": "Generic Exceptions",
+    "catching generic exception": "Generic Exceptions",
+    # Hidden Errors
+    "hidden errors": "Hidden Errors",
+    "error hiding": "Hidden Errors",
+    "swallowed errors": "Hidden Errors",
+    "silently ignored": "Hidden Errors",
+    "silent failure": "Hidden Errors",
     # Switch Statements
     "switch statement": "Switch Statements",
     "large switch": "Switch Statements",
@@ -136,6 +180,16 @@ SMELL_ALIASES: Dict[str, str] = {
     "train wreck": "Message Chains",
     # Middle Man
     "middleman": "Middle Man",
+    # Inappropriate Coupling
+    "inappropriate coupling": "Inappropriate Coupling",
+    "improper coupling": "Inappropriate Coupling",
+    "unrelated coupling": "Inappropriate Coupling",
+    "tight coupling": "Inappropriate Coupling",
+    # Flag Arguments
+    "flag argument": "Flag Arguments",
+    "boolean flag": "Flag Arguments",
+    "flag parameter": "Flag Arguments",
+    "boolean parameter": "Flag Arguments",
     # Comments
     "comment smell": "Comments",
     "commented-out code": "Comments",
@@ -182,29 +236,35 @@ SMELL_DEFINITIONS: Dict[str, str] = {
     "Long Parameter List": "Function signature with 5+ parameters (suggests poor abstraction).",
     "Primitive Obsession": "Overuse of primitives (str/int/dict) instead of dedicated types.",
     "Data Clumps": "Same group of 3+ variables/parameters appearing repeatedly together.",
-    "Switch Statements": "Large switch/if-elif chains over type codes (replace with polymorphism).",
+    "Duplicate Code": "Two or more blocks of code that are identical or near-identical (>85% similar).",
+    "Feature Envy": "Method that uses another class's data more than its own.",
+    "Inappropriate Intimacy": "Classes that know too much about each other's internals.",
     "Refused Bequest": "Subclass that rejects or empties inherited behavior.",
-    "Temporary Field": "Instance field only used under certain conditions.",
-    "Alternative Classes with Different Interfaces": "Two classes doing the same thing with different APIs.",
+    "Speculative Generality": "Unused abstractions added 'just in case'.",
     "Divergent Change": "One class changes for many unrelated reasons.",
     "Shotgun Surgery": "One change forces edits across many classes.",
     "Parallel Inheritance Hierarchies": "Every subclass of A requires a subclass of B.",
-    "Duplicate Code": "Two or more blocks of code that are identical or near-identical (>85% similar).",
+    "Dead Code": "Unused variables, functions, imports, or unreachable statements.",
     "Lazy Class": "Class that doesn't do enough to justify its existence.",
     "Data Class": "Class with fields/getters/setters and no behavior.",
-    "Dead Code": "Unused variables, functions, imports, or unreachable statements.",
-    "Speculative Generality": "Unused abstractions added 'just in case'.",
     "Comments": "Comments that mask bad code or commented-out code left in place.",
-    "Feature Envy": "Method that uses another class's data more than its own.",
-    "Inappropriate Intimacy": "Classes that know too much about each other's internals.",
     "Message Chains": "Long chain of calls like a.b().c().d().e().",
     "Middle Man": "Class that only delegates to another class.",
-    "High Cyclomatic Complexity": "Method with >10-15 decision points (if/else/for/while/case).",
-    "Deep Nesting": "Nesting depth greater than 3-4 levels.",
+    "Inappropriate Coupling": "Unrelated modules or classes tightly linked with dependencies.",
+    "Poor Naming": "Unclear, single-letter, or ambiguous variable/function/class names.",
     "Magic Numbers": "Unexplained numeric or string literals without named constants.",
-    "Inconsistent Naming": "Mixed naming conventions or unclear/single-letter identifiers.",
-    "Missing Error Handling": "Risky operations (I/O, network, parsing) without try/except.",
+    "Inconsistent Naming": "Mixed naming conventions (camelCase vs snake_case) or unclear identifiers.",
+    "Inconsistent Style": "Mixed formatting, indentation, or code style conventions.",
+    "Deep Nesting": "Nesting depth greater than 3-4 levels (if/else/for/while/try).",
+    "Switch Statements": "Large switch/if-elif chains over type codes (replace with polymorphism).",
+    "Flag Arguments": "Function parameters that are boolean flags controlling behavior paths.",
     "Empty Catch Block": "Exception handlers that swallow errors without logging/rethrowing.",
+    "Generic Exceptions": "Catching broad exceptions like 'Exception' or 'Throwable' instead of specific types.",
+    "Hidden Errors": "Exceptions or errors that are silently ignored or swallowed without visible handling.",
+    "High Cyclomatic Complexity": "Method with >10-15 decision points (if/else/for/while/case).",
+    "Missing Error Handling": "Risky operations (I/O, network, parsing) without try/except.",
+    "Temporary Field": "Instance field only used under certain conditions.",
+    "Alternative Classes with Different Interfaces": "Two classes doing the same thing with different APIs.",
 }
 
 

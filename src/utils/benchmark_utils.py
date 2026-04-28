@@ -38,6 +38,7 @@ except ImportError:
     HAS_PSUTIL = False
 
 from config import (
+    BOOTSTRAP_ITERATIONS,
     CODE_SMELL_TYPES,
     METRICS_DIR,
     PERFORMANCE_DIR,
@@ -271,18 +272,21 @@ def cohens_d(scores_a: List[float], scores_b: List[float]) -> Dict[str, Any]:
 def bootstrap_confidence_interval(
     scores: List[float],
     confidence: float = 0.95,
-    n_bootstrap: int = 1000,
+    n_bootstrap: int = None,
 ) -> Dict[str, float]:
     """Bootstrap 95% confidence interval for a metric.
 
     Args:
         scores: Sample scores.
         confidence: Confidence level (default 0.95).
-        n_bootstrap: Number of bootstrap iterations.
+        n_bootstrap: Number of bootstrap iterations (default from BOOTSTRAP_ITERATIONS config).
 
     Returns:
         Dict with mean, ci_low, ci_high.
     """
+    if n_bootstrap is None:
+        n_bootstrap = BOOTSTRAP_ITERATIONS
+
     scores_arr = np.array(scores)
     boot_means = np.array([
         np.mean(np.random.choice(scores_arr, size=len(scores_arr), replace=True))

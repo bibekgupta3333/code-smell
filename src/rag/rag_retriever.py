@@ -79,8 +79,14 @@ class RAGRetriever:
         """
         start_time = datetime.now()
 
-        # Create cache key
-        cache_key = f"{code[:50]}_{smell_type}_{top_k}"
+        # H6: Key the retrieval cache on a SHA256 digest of the full code
+        # rather than its first 50 chars — otherwise any two snippets that
+        # share an identical prefix (imports, boilerplate) collide and get
+        # each other's examples, silently poisoning retrieval accuracy.
+        import hashlib
+
+        code_hash = hashlib.sha256(code.encode("utf-8")).hexdigest()[:16]
+        cache_key = f"{code_hash}_{smell_type}_{top_k}"
 
         # Check cache
         if use_cache and cache_key in self.retrieval_cache:

@@ -288,6 +288,106 @@ def _detect_feature_envy(code: str, threshold: int = 4) -> int:
     return envy_count
 
 
+def _detect_inappropriate_coupling(code: str) -> List[str]:
+    """Detect inappropriate coupling - unrelated modules with tight dependencies."""
+    coupling_instances = []
+    # Look for imports of unrelated modules or cross-domain dependencies
+    imports = re.findall(r"from\s+(\S+)\s+import|import\s+(\S+)", code)
+    imported_modules = [m[0] or m[1] for m in imports]
+
+    # Simple heuristic: flag if many different module domains are mixed
+    domains = set()
+    for mod in imported_modules:
+        parts = mod.split('.')
+        if len(parts) > 1:
+            domains.add(parts[0])
+
+    if len(domains) > 5:
+        coupling_instances.append(f"High coupling detected: {len(domains)} different domains imported")
+
+    return coupling_instances
+
+
+def _detect_poor_naming(code: str) -> int:
+    """Detect poor naming conventions - single letters, unclear names."""
+    poor_count = 0
+    # Count single-letter variables (excluding common loop vars i, j, k, x, y, z)
+    common_singles = {'i', 'j', 'k', 'x', 'y', 'z', 'n', 'm', 'l', 'e', 'f', 'v', 'a', 'b', 'c', 'r', 's', 't'}
+    single_letter_vars = re.findall(r'\b[a-z]\b(?!\s*=\s*lambda)', code)
+    poor_singles = [v for v in single_letter_vars if v not in common_singles]
+    poor_count += len(poor_singles)
+
+    # Count abbreviations that are unclear (3-4 chars, all lowercase, underscore-separated)
+    abbreviations = re.findall(r'\b[a-z]{2,4}_[a-z]{2,4}\b', code)
+    poor_count += len(abbreviations) // 3  # Count as 1 per 3 abbreviations
+
+    return poor_count
+
+
+def _detect_inconsistent_style(code: str) -> Dict[str, int]:
+    """Detect inconsistent code style - mixed conventions."""
+    style_stats = {
+        "snake_case": len(re.findall(r'\b[a-z]+_[a-z_]*[a-z]\b', code)),
+        "camelCase": len(re.findall(r'\b[a-z]+[A-Z][a-zA-Z]*\b', code)),
+        "spaces_for_indent": len(re.findall(r'^\s{2,}(?!\s)', code, re.MULTILINE)),
+        "tabs_for_indent": len(re.findall(r'^\t', code, re.MULTILINE)),
+    }
+    return style_stats
+
+
+def _detect_flag_arguments(code: str) -> List[str]:
+    """Detect flag arguments - boolean parameters that control behavior."""
+    flag_functions = []
+    # Find functions with boolean parameters
+    func_pattern = r"def\s+(\w+)\s*\(([^)]*)\)\s*:"
+    for match in re.finditer(func_pattern, code):
+        func_name = match.group(1)
+        params = match.group(2)
+        # Count boolean-like parameters (bool type hints, or parameter names with "is_", "has_", "should_", "flag")
+        bool_params = re.findall(r":\s*bool\b", params)
+        flag_keywords = re.findall(r"\b(?:is_|has_|should_|flag_|use_|enable_|disable_|allow_|require_)\w+", params)
+
+        if bool_params or flag_keywords:
+            param_count = len(bool_params) + len(flag_keywords)
+            if param_count > 0:
+                flag_functions.append(f"{func_name}: {param_count} flag parameters")
+
+    return flag_functions
+
+
+def _detect_generic_exceptions(code: str) -> int:
+    """Detect generic exception catching - catching Exception or Throwable."""
+    generic_count = 0
+    # Find bare except, except Exception, except Throwable, except Error
+    generic_patterns = [
+        r"except\s*:",  # bare except
+        r"except\s+(?:Exception|Throwable|Error|BaseException)\s*",
+    ]
+    for pattern in generic_patterns:
+        matches = re.findall(pattern, code)
+        generic_count += len(matches)
+    return generic_count
+
+
+def _detect_hidden_errors(code: str) -> int:
+    """Detect hidden errors - exceptions silently swallowed or ignored."""
+    hidden_count = 0
+    # Find try/except blocks followed by pass or just logging
+    patterns = [
+        r"except\s+\w+\s*:\s*pass",  # except followed immediately by pass
+        r"except\s+\w+\s*:\s*(?:continue|return\s*$)",  # except with early exit
+    ]
+    for pattern in patterns:
+        matches = re.findall(pattern, code, re.MULTILINE)
+        hidden_count += len(matches)
+
+    # Also check for broad logging that doesn't re-raise
+    silent_logging = len(re.findall(r"except.*?:\s*(?:logger\.|print\(|logging\.)", code, re.DOTALL))
+    hidden_count += silent_logging
+
+    return hidden_count
+
+
 # ============================================================================
 # Helper Functions (Non-Decorated)
 # ============================================================================
@@ -489,7 +589,7 @@ Code Structure:
 
 Code:
 ```
-{code[:3000]}
+{code[:15000]}
 ```
 
 For EACH detected smell:

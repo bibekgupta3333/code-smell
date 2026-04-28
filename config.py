@@ -143,49 +143,76 @@ CODE_CHUNKING = {
     "preserve_structure": True,     # Respect function boundaries
 }
 
+# ============================================================================
+# ANALYSIS THRESHOLDS & MAGIC NUMBERS
+# ============================================================================
+# Extracted from hardcoded values to improve maintainability
+
+# Model selection scoring (workflow_graph.py)
+MODEL_SELECTION_SCORE = {
+    "codellama": 100,               # Best for code-specific tasks
+    "llama3": 85,                   # General purpose with good performance
+    "mistral": 75,                  # Lightweight but capable
+}
+
+# Analysis timeouts (API routes)
+API_ANALYSIS_TIMEOUT_SECONDS = 300  # 5 minutes timeout for full analysis
+
+# Bootstrap/sampling configuration (benchmark_utils.py)
+BOOTSTRAP_ITERATIONS = 1000         # Iterations for confidence intervals
+
 # Supported programming languages
 SUPPORTED_LANGUAGES = ["java", "python", "javascript", "cpp"]
 
-# Code smell types (Production code smells - SonarQube + Fowler catalog)
+# Code smell types (Production code smells - SonarQube + Fowler + Extended catalog)
 # NOTE: The authoritative catalog lives in src/utils/smell_catalog.py.
 # This list is re-exported here for backward compatibility with downstream
 # modules (data loader, evaluator, result exporter).
 CODE_SMELL_TYPES = [
-    # Bloaters
+    # Size-Related Smells
     "Long Method",
     "God Class",
     "Large Class",
     "Long Parameter List",
     "Primitive Obsession",
-    "Data Clumps",
-    # OO Abusers
-    "Switch Statements",
+    # Object-Oriented Design Smells
+    "Duplicate Code",
+    "Feature Envy",
+    "Inappropriate Intimacy",
     "Refused Bequest",
-    "Temporary Field",
-    "Alternative Classes with Different Interfaces",
+    "Speculative Generality",
     # Change Preventers
     "Divergent Change",
     "Shotgun Surgery",
     "Parallel Inheritance Hierarchies",
     # Dispensables
-    "Duplicate Code",
-    "Lazy Class",
-    "Data Class",
     "Dead Code",
-    "Speculative Generality",
+    "Lazy Class",
+    "Data Clumps",
     "Comments",
-    # Couplers
-    "Feature Envy",
-    "Inappropriate Intimacy",
+    # Coupling & Dependency Smells
     "Message Chains",
     "Middle Man",
-    # Complexity & Quality (SonarQube-style)
-    "High Cyclomatic Complexity",
-    "Deep Nesting",
+    "Inappropriate Coupling",
+    # Naming & Readability Smells
+    "Poor Naming",
     "Magic Numbers",
     "Inconsistent Naming",
-    "Missing Error Handling",
+    "Inconsistent Style",
+    # Control Flow Smells
+    "Deep Nesting",
+    "Switch Statements",
+    "Flag Arguments",
+    # Exception Handling Smells
     "Empty Catch Block",
+    "Generic Exceptions",
+    "Hidden Errors",
+    # Legacy Categories
+    "Temporary Field",
+    "Alternative Classes with Different Interfaces",
+    "Data Class",
+    "High Cyclomatic Complexity",
+    "Missing Error Handling",
 ]
 
 # ============================================================================

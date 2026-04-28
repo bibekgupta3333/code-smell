@@ -18,9 +18,18 @@ from datetime import datetime
 from time import time
 
 try:
+    # L1: langchain_ollama is the primary, supported path. The
+    # langchain_community fallback stays in place for environments where the
+    # dedicated package isn't installed (older images, minimal CI containers),
+    # but we log which path we took so a silent drift is visible in logs.
     from langchain_ollama import ChatOllama
+    _CHAT_OLLAMA_SOURCE = "langchain_ollama"
 except ImportError:
-    from langchain_community.chat_models import ChatOllama
+    from langchain_community.chat_models import ChatOllama  # type: ignore[assignment]
+    _CHAT_OLLAMA_SOURCE = "langchain_community"
+    logging.getLogger(__name__).warning(
+        "langchain_ollama not installed; falling back to langchain_community.chat_models.ChatOllama"
+    )
 
 from langchain_core.prompts import PromptTemplate
 from langchain_core.tools import tool
@@ -34,7 +43,7 @@ from src.utils.common import CodeSmellFinding, SeverityLevel, parse_smell_severi
 from src.utils.logger import log_agent_event, log_detection_result, log_llm_request, log_llm_response
 from config import DEFAULT_MODEL
 
-# Import enhanced metric functions for all 10 smell types
+# Import enhanced metric functions for all code smell types
 from src.analysis.code_smell_detector_enhanced import (
     _compute_cyclomatic_complexity,
     _compute_max_nesting_depth,
@@ -53,6 +62,12 @@ from src.analysis.code_smell_detector_enhanced import (
     _detect_data_class,
     _detect_lazy_class,
     _detect_feature_envy,
+    _detect_inappropriate_coupling,
+    _detect_poor_naming,
+    _detect_inconsistent_style,
+    _detect_flag_arguments,
+    _detect_generic_exceptions,
+    _detect_hidden_errors,
 )
 from src.utils.smell_catalog import (
     CANONICAL_SMELLS,
@@ -376,13 +391,15 @@ Code Structure:
 
 Code to Analyze:
 ```
-{code[:3000]}
+{code[:15000]}
 ```
 
 INSTRUCTIONS:
+- Analyze the ENTIRE code above, not just the beginning. Consider every function, class, and module-level statement.
 - Inspect the code against EACH catalog entry; do not limit yourself to a few obvious ones.
 - Use the EXACT canonical name from the catalog for "type" (not paraphrased).
 - Report every instance you find (multiple of the same type are allowed with different locations).
+- Look for cross-cutting smells: Duplicate Code across functions, Feature Envy between classes, Data Clumps across signatures, Shotgun Surgery, etc.
 - Include a specific, measurable justification (LOC, complexity number, nesting depth, param count, duplicate ratio, etc.) in "explanation".
 - Severity: CRITICAL | HIGH | MEDIUM | LOW.
 - Confidence: 0.0-1.0 based on how strong the metric/structural signal is.
@@ -528,6 +545,361 @@ If no smells apply, return [].
 
         return findings
 
+    def _emit_finding(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        smell_type: str,
+        location: str,
+        severity: SeverityLevel,
+        explanation: str,
+        refactoring: str,
+        confidence: float,
+        now: str
+    ) -> None:
+        """Helper to emit deduplicated findings."""
+        canonical = normalize_smell_type(smell_type) or smell_type
+        key = (canonical, location)
+        if key in seen:
+            return
+        seen.add(key)
+        findings.append(CodeSmellFinding(
+            smell_type=canonical,
+            location=location,
+            severity=severity,
+            explanation=explanation,
+            refactoring=refactoring,
+            confidence=confidence,
+            agent_name=self.agent_name,
+            timestamp=now,
+        ))
+
+    def _check_keyword_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        response: str,
+        line_location: str,
+        now: str
+    ) -> None:
+        """Stage 1: Detect smells mentioned in LLM response."""
+        response_lower = response.lower()
+        for canonical in CANONICAL_SMELLS:
+            if canonical.lower() in response_lower:
+                self._emit_finding(
+                    findings, seen, canonical, line_location,
+                    SeverityLevel.MEDIUM,
+                    f"LLM identified '{canonical}' in analysis output.",
+                    "Review the LLM reasoning and refactor per catalog guidance.",
+                    0.60, now
+                )
+
+    def _check_size_and_structure_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        original_code: str,
+        line_location: str,
+        line_count: int,
+        now: str
+    ) -> None:
+        """Check size-related and structural smells: Long Method, Deep Nesting, Duplicate Code, Complexity."""
+        # Long Method
+        if line_count >= 50:
+            severity = SeverityLevel.CRITICAL if line_count > 100 else SeverityLevel.HIGH if line_count > 70 else SeverityLevel.MEDIUM
+            self._emit_finding(
+                findings, seen, "Long Method", line_location, severity,
+                f"Method spans {line_count} non-empty lines - exceeds recommended size.",
+                "Extract into smaller helper functions with single responsibilities.",
+                0.70 if line_count > 100 else 0.58, now
+            )
+
+        # Deep Nesting
+        max_nesting = _compute_max_nesting_depth(original_code)
+        if max_nesting > 4:
+            self._emit_finding(
+                findings, seen, "Deep Nesting", line_location,
+                SeverityLevel.HIGH if max_nesting > 6 else SeverityLevel.MEDIUM,
+                f"Maximum nesting depth is {max_nesting} levels - hurts readability/testability.",
+                "Use early returns, guard clauses, or extract nested logic to helpers.",
+                0.72, now
+            )
+
+        # Duplicate Code
+        duplicates = _find_duplicate_blocks(original_code)
+        if duplicates:
+            avg_sim = sum(sim for _, sim in duplicates) / len(duplicates)
+            self._emit_finding(
+                findings, seen, "Duplicate Code", line_location, SeverityLevel.HIGH,
+                f"Found {len(duplicates)} duplicate blocks with {avg_sim*100:.0f}% avg similarity.",
+                "Extract shared logic into utility functions or base classes.",
+                0.72 if avg_sim > 0.90 else 0.62, now
+            )
+
+        # High Cyclomatic Complexity
+        complexity = _compute_cyclomatic_complexity(original_code)
+        if complexity > 10:
+            self._emit_finding(
+                findings, seen, "High Cyclomatic Complexity", line_location,
+                SeverityLevel.HIGH if complexity > 15 else SeverityLevel.MEDIUM,
+                f"Cyclomatic complexity ~{complexity} - too many decision paths.",
+                "Decompose branches, use polymorphism, or lookup tables.",
+                0.68, now
+            )
+
+    def _check_parameter_and_data_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        original_code: str,
+        line_location: str,
+        now: str
+    ) -> None:
+        """Check parameter/data smells: Long Params, Data Clumps, Magic Numbers, Primitives."""
+        # Long Parameter List + Data Clumps
+        long_params = _detect_long_parameter_list(original_code, threshold=5)
+        if long_params:
+            for name, count in long_params[:5]:
+                self._emit_finding(
+                    findings, seen, "Long Parameter List", line_location,
+                    SeverityLevel.MEDIUM if count < 7 else SeverityLevel.HIGH,
+                    f"Function '{name}' has {count} parameters.",
+                    "Introduce a parameter object / dataclass.", 0.66, now
+                )
+            if len(long_params) >= 2:
+                self._emit_finding(
+                    findings, seen, "Data Clumps", line_location, SeverityLevel.MEDIUM,
+                    f"{len(long_params)} functions share large parameter lists - likely repeated data groups.",
+                    "Group related parameters into a dedicated type/dataclass.", 0.60, now
+                )
+
+        # Magic Numbers
+        magic_nums = _count_magic_numbers(original_code)
+        if len(magic_nums) >= 3:
+            self._emit_finding(
+                findings, seen, "Magic Numbers", line_location, SeverityLevel.LOW,
+                f"Found {len(magic_nums)} hard-coded numeric/string literals without semantic meaning.",
+                "Replace with named constants (e.g., MAX_RETRIES, DEFAULT_TIMEOUT).", 0.58, now
+            )
+
+        # Primitive Obsession
+        primitives = _detect_primitive_obsession(original_code)
+        if primitives >= 10:
+            self._emit_finding(
+                findings, seen, "Primitive Obsession", line_location, SeverityLevel.LOW,
+                f"High use of primitive types ({primitives} primitive parameters/fields).",
+                "Introduce value objects / dataclasses for repeated primitive groups.", 0.50, now
+            )
+
+    def _check_code_quality_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        original_code: str,
+        line_location: str,
+        now: str
+    ) -> None:
+        """Check code quality smells: Dead Code, Naming, Error Handling, Empty Catch, Comments."""
+        # Dead Code (unused variables)
+        unused = _find_unused_variables(original_code)
+        if unused:
+            self._emit_finding(
+                findings, seen, "Dead Code", line_location, SeverityLevel.MEDIUM,
+                f"Found {len(unused)} potentially unused identifiers: {', '.join(unused[:3])}{'...' if len(unused) > 3 else ''}",
+                "Remove unused variables/imports and unreachable branches.", 0.55, now
+            )
+
+        # Inconsistent Naming
+        naming = _analyze_naming_consistency(original_code)
+        if naming["inconsistency_score"] > 0.6 and naming["single_letter"] > 2:
+            self._emit_finding(
+                findings, seen, "Inconsistent Naming", line_location, SeverityLevel.LOW,
+                f"Mixed conventions (snake_case={naming['snake_case']}, camelCase={naming['camel_case']}, single-letter={naming['single_letter']}).",
+                "Standardize on one convention; replace single-letter vars with descriptive names.",
+                0.52, now
+            )
+
+        # Missing Error Handling
+        risky_ops = _detect_risky_operations(original_code)
+        if risky_ops:
+            self._emit_finding(
+                findings, seen, "Missing Error Handling", line_location, SeverityLevel.HIGH,
+                f"Risky operations without error handling: {', '.join(risky_ops)}.",
+                "Wrap risky I/O/network/parsing calls in try/except with recovery.", 0.70, now
+            )
+
+        # Empty Catch Block
+        empty_catches = _detect_empty_catch(original_code)
+        if empty_catches:
+            self._emit_finding(
+                findings, seen, "Empty Catch Block", line_location, SeverityLevel.HIGH,
+                f"Detected {empty_catches} empty exception handlers - errors are silently swallowed.",
+                "Log the exception and/or re-raise; never pass silently.", 0.75, now
+            )
+
+        # Commented-out Code
+        commented = _detect_commented_out_code(original_code)
+        if commented >= 3:
+            self._emit_finding(
+                findings, seen, "Comments", line_location, SeverityLevel.LOW,
+                f"Detected {commented} lines of commented-out code.",
+                "Delete dead commented code - rely on version control for history.", 0.60, now
+            )
+
+    def _check_design_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        original_code: str,
+        line_location: str,
+        line_count: int,
+        now: str
+    ) -> None:
+        """Check design smells: Switches, Message Chains, Middle Man, Classes (God/Large/Data/Lazy), Feature Envy."""
+        # Switch Statements
+        switches = _detect_switch_statements(original_code, min_branches=4)
+        if switches:
+            self._emit_finding(
+                findings, seen, "Switch Statements", line_location, SeverityLevel.MEDIUM,
+                f"Large switch/elif chain with {max(switches)} branches detected.",
+                "Replace type-code switch with polymorphism or strategy map.", 0.60, now
+            )
+
+        # Message Chains
+        chains = _detect_message_chains(original_code, min_chain=4)
+        if chains:
+            self._emit_finding(
+                findings, seen, "Message Chains", line_location, SeverityLevel.MEDIUM,
+                f"Detected {chains} long dotted call chains (a.b().c().d()...).",
+                "Apply 'Hide Delegate' or expose a direct method on the intermediate object.",
+                0.58, now
+            )
+
+        # Middle Man
+        middle_man = _detect_middle_man(original_code)
+        if middle_man >= 3:
+            self._emit_finding(
+                findings, seen, "Middle Man", line_location, SeverityLevel.LOW,
+                f"Detected {middle_man} methods that only delegate to another object.",
+                "Remove the middle man or inline the delegation.", 0.55, now
+            )
+
+        # Data Class
+        data_classes = _detect_data_class(original_code)
+        for cls_name in data_classes[:5]:
+            self._emit_finding(
+                findings, seen, "Data Class", line_location, SeverityLevel.LOW,
+                f"Class '{cls_name}' exposes only fields/getters/setters without behavior.",
+                "Move behavior that uses this data into the class itself.", 0.55, now
+            )
+
+        # Lazy Class
+        lazy = _detect_lazy_class(original_code)
+        for cls_name in lazy[:5]:
+            self._emit_finding(
+                findings, seen, "Lazy Class", line_location, SeverityLevel.LOW,
+                f"Class '{cls_name}' has a trivial body - may not earn its keep.",
+                "Inline into callers or merge with a related class.", 0.50, now
+            )
+
+        # Feature Envy
+        envy = _detect_feature_envy(original_code, threshold=4)
+        if envy:
+            self._emit_finding(
+                findings, seen, "Feature Envy", line_location, SeverityLevel.MEDIUM,
+                f"{envy} method(s) access another object's data more than their own.",
+                "Move the method to the class it envies (Move Method refactoring).", 0.58, now
+            )
+
+        # God Class / Large Class
+        method_count = len(re.findall(r"def\s+\w+\s*\(", original_code))
+        if method_count > 15 and line_count > 300:
+            self._emit_finding(
+                findings, seen, "God Class", line_location, SeverityLevel.HIGH,
+                f"Class/module has {method_count} methods and {line_count} LOC - violates SRP.",
+                "Decompose into multiple focused classes along responsibility lines.", 0.66, now
+            )
+        elif line_count > 200 and method_count > 10:
+            self._emit_finding(
+                findings, seen, "Large Class", line_location, SeverityLevel.MEDIUM,
+                f"Class/module has {method_count} methods and {line_count} LOC - getting unwieldy.",
+                "Extract cohesive groups of methods into collaborator classes.", 0.58, now
+            )
+
+    def _check_extended_smells(
+        self,
+        findings: List[CodeSmellFinding],
+        seen: set,
+        original_code: str,
+        line_location: str,
+        now: str
+    ) -> None:
+        """Check extended smell types: Poor Naming, Inconsistent Style, Inappropriate Coupling, Flag Arguments, Generic/Hidden Exceptions."""
+
+        # Poor Naming
+        poor_naming = _detect_poor_naming(original_code)
+        if poor_naming >= 3:
+            self._emit_finding(
+                findings, seen, "Poor Naming", line_location, SeverityLevel.LOW,
+                f"Detected {poor_naming} instances of unclear naming (single letters, abbreviations).",
+                "Use descriptive names that reveal intent (variable, function, and class names).", 0.55, now
+            )
+
+        # Inconsistent Style
+        style_stats = _detect_inconsistent_style(original_code)
+        conventions_used = sum(1 for count in [style_stats["snake_case"], style_stats["camelCase"]] if count > 0)
+        indent_types = sum(1 for count in [style_stats["spaces_for_indent"], style_stats["tabs_for_indent"]] if count > 0)
+
+        if conventions_used > 1:
+            self._emit_finding(
+                findings, seen, "Inconsistent Style", line_location, SeverityLevel.LOW,
+                f"Mixed naming conventions: snake_case ({style_stats['snake_case']}), camelCase ({style_stats['camelCase']}).",
+                "Enforce one consistent naming convention across the codebase (PEP 8 for Python, etc).", 0.52, now
+            )
+
+        if indent_types > 1:
+            self._emit_finding(
+                findings, seen, "Inconsistent Style", line_location, SeverityLevel.LOW,
+                f"Mixed indentation: spaces ({style_stats['spaces_for_indent']}), tabs ({style_stats['tabs_for_indent']}).",
+                "Use consistent indentation (4 spaces recommended for Python).", 0.60, now
+            )
+
+        # Inappropriate Coupling
+        coupling = _detect_inappropriate_coupling(original_code)
+        if coupling:
+            self._emit_finding(
+                findings, seen, "Inappropriate Coupling", line_location, SeverityLevel.MEDIUM,
+                f"{', '.join(coupling)} - indicates unrelated modules are tightly linked.",
+                "Reduce cross-domain dependencies; use dependency injection or service locators.", 0.58, now
+            )
+
+        # Flag Arguments
+        flag_args = _detect_flag_arguments(original_code)
+        if flag_args:
+            self._emit_finding(
+                findings, seen, "Flag Arguments", line_location, SeverityLevel.MEDIUM,
+                f"Detected {len(flag_args)} function(s) with flag arguments: {', '.join(flag_args[:2])}",
+                "Split into separate methods or use polymorphism instead of flag parameters.", 0.62, now
+            )
+
+        # Generic Exceptions
+        generic_exc = _detect_generic_exceptions(original_code)
+        if generic_exc >= 1:
+            self._emit_finding(
+                findings, seen, "Generic Exceptions", line_location, SeverityLevel.HIGH,
+                f"Found {generic_exc} broad exception handlers - catching Exception, Throwable, or bare except.",
+                "Catch specific exception types; add proper logging and recovery strategies.", 0.70, now
+            )
+
+        # Hidden Errors
+        hidden_errs = _detect_hidden_errors(original_code)
+        if hidden_errs >= 1:
+            self._emit_finding(
+                findings, seen, "Hidden Errors", line_location, SeverityLevel.HIGH,
+                f"Found {hidden_errs} cases of silently swallowed errors (pass, early returns).",
+                "Log errors, re-raise when appropriate, or implement proper recovery logic.", 0.68, now
+            )
+
     def _build_fallback_findings(
         self,
         response: str,
@@ -535,302 +907,28 @@ If no smells apply, return [].
     ) -> List[CodeSmellFinding]:
         """Build comprehensive heuristic findings when structured parsing fails.
 
-        Uses metric-based detection aligned with the canonical SonarQube-style
-        catalog (see ``src.utils.smell_catalog``). Deduplicated by (smell_type, location).
+        Delegates to stage-specific helper methods for better organization.
+        Uses metric-based detection aligned with the canonical SonarQube + extended catalog.
         """
         findings: List[CodeSmellFinding] = []
         seen: set = set()
-        response_lower = response.lower()
         non_empty_lines = [line for line in original_code.splitlines() if line.strip()]
         line_count = len(non_empty_lines)
         line_location = f"line 1-{line_count}" if line_count > 1 else "line 1"
         now = datetime.now().isoformat()
 
-        def _emit(smell_type: str, location: str, severity: SeverityLevel, explanation: str, refactoring: str, confidence: float) -> None:
-            canonical = normalize_smell_type(smell_type) or smell_type
-            key = (canonical, location)
-            if key in seen:
-                return
-            seen.add(key)
-            findings.append(CodeSmellFinding(
-                smell_type=canonical,
-                location=location,
-                severity=severity,
-                explanation=explanation,
-                refactoring=refactoring,
-                confidence=confidence,
-                agent_name=self.agent_name,
-                timestamp=now,
-            ))
+        # Stage 1: Keyword-based detection
+        self._check_keyword_smells(findings, seen, response, line_location, now)
 
-        # --- Stage 1: keyword-based pickup of any smell the LLM mentioned ---
-        # Iterate over canonical catalog so LLM-mentioned smells are captured
-        # even when JSON parsing failed.
-        for canonical in CANONICAL_SMELLS:
-            if canonical.lower() in response_lower:
-                _emit(
-                    canonical,
-                    line_location,
-                    SeverityLevel.MEDIUM,
-                    f"LLM identified '{canonical}' in analysis output.",
-                    "Review the LLM reasoning and refactor per catalog guidance.",
-                    0.60,
-                )
-
-        # --- Stage 2: metric-based heuristics for every catalog entry we can check ---
-
-        # Long Method
-        if line_count >= 50:
-            severity = SeverityLevel.CRITICAL if line_count > 100 else SeverityLevel.HIGH if line_count > 70 else SeverityLevel.MEDIUM
-            _emit(
-                "Long Method",
-                line_location,
-                severity,
-                f"Method spans {line_count} non-empty lines - exceeds recommended size.",
-                "Extract into smaller helper functions with single responsibilities.",
-                0.70 if line_count > 100 else 0.58,
-            )
-
-        # Deep Nesting
-        max_nesting = _compute_max_nesting_depth(original_code)
-        if max_nesting > 4:
-            _emit(
-                "Deep Nesting",
-                line_location,
-                SeverityLevel.HIGH if max_nesting > 6 else SeverityLevel.MEDIUM,
-                f"Maximum nesting depth is {max_nesting} levels - hurts readability/testability.",
-                "Use early returns, guard clauses, or extract nested logic to helpers.",
-                0.72,
-            )
-
-        # Duplicate Code
-        duplicates = _find_duplicate_blocks(original_code)
-        if duplicates:
-            avg_sim = sum(sim for _, sim in duplicates) / len(duplicates)
-            _emit(
-                "Duplicate Code",
-                line_location,
-                SeverityLevel.HIGH,
-                f"Found {len(duplicates)} duplicate blocks with {avg_sim*100:.0f}% avg similarity.",
-                "Extract shared logic into utility functions or base classes.",
-                0.72 if avg_sim > 0.90 else 0.62,
-            )
-
-        # High Cyclomatic Complexity
-        complexity = _compute_cyclomatic_complexity(original_code)
-        if complexity > 10:
-            _emit(
-                "High Cyclomatic Complexity",
-                line_location,
-                SeverityLevel.HIGH if complexity > 15 else SeverityLevel.MEDIUM,
-                f"Cyclomatic complexity ~{complexity} - too many decision paths.",
-                "Decompose branches, use polymorphism, or lookup tables.",
-                0.68,
-            )
-
-        # Long Parameter List + Data Clumps
-        long_params = _detect_long_parameter_list(original_code, threshold=5)
-        if long_params:
-            for name, count in long_params[:5]:
-                _emit(
-                    "Long Parameter List",
-                    line_location,
-                    SeverityLevel.MEDIUM if count < 7 else SeverityLevel.HIGH,
-                    f"Function '{name}' has {count} parameters.",
-                    "Introduce a parameter object / dataclass.",
-                    0.66,
-                )
-            if len(long_params) >= 2:
-                _emit(
-                    "Data Clumps",
-                    line_location,
-                    SeverityLevel.MEDIUM,
-                    f"{len(long_params)} functions share large parameter lists - likely repeated data groups.",
-                    "Group related parameters into a dedicated type/dataclass.",
-                    0.60,
-                )
-
-        # Magic Numbers
-        magic_nums = _count_magic_numbers(original_code)
-        if len(magic_nums) >= 3:
-            _emit(
-                "Magic Numbers",
-                line_location,
-                SeverityLevel.LOW,
-                f"Found {len(magic_nums)} hard-coded numeric/string literals without semantic meaning.",
-                "Replace with named constants (e.g., MAX_RETRIES, DEFAULT_TIMEOUT).",
-                0.58,
-            )
-
-        # Dead Code (unused variables)
-        unused = _find_unused_variables(original_code)
-        if unused:
-            _emit(
-                "Dead Code",
-                line_location,
-                SeverityLevel.MEDIUM,
-                f"Found {len(unused)} potentially unused identifiers: {', '.join(unused[:3])}{'...' if len(unused) > 3 else ''}",
-                "Remove unused variables/imports and unreachable branches.",
-                0.55,
-            )
-
-        # Inconsistent Naming
-        naming = _analyze_naming_consistency(original_code)
-        if naming["inconsistency_score"] > 0.6 and naming["single_letter"] > 2:
-            _emit(
-                "Inconsistent Naming",
-                line_location,
-                SeverityLevel.LOW,
-                (
-                    f"Mixed conventions (snake_case={naming['snake_case']}, "
-                    f"camelCase={naming['camel_case']}, single-letter={naming['single_letter']})."
-                ),
-                "Standardize on one convention; replace single-letter vars with descriptive names.",
-                0.52,
-            )
-
-        # Missing Error Handling
-        risky_ops = _detect_risky_operations(original_code)
-        if risky_ops:
-            _emit(
-                "Missing Error Handling",
-                line_location,
-                SeverityLevel.HIGH,
-                f"Risky operations without error handling: {', '.join(risky_ops)}.",
-                "Wrap risky I/O/network/parsing calls in try/except with recovery.",
-                0.70,
-            )
-
-        # Empty Catch Block
-        empty_catches = _detect_empty_catch(original_code)
-        if empty_catches:
-            _emit(
-                "Empty Catch Block",
-                line_location,
-                SeverityLevel.HIGH,
-                f"Detected {empty_catches} empty exception handlers - errors are silently swallowed.",
-                "Log the exception and/or re-raise; never pass silently.",
-                0.75,
-            )
-
-        # Switch Statements
-        switches = _detect_switch_statements(original_code, min_branches=4)
-        if switches:
-            _emit(
-                "Switch Statements",
-                line_location,
-                SeverityLevel.MEDIUM,
-                f"Large switch/elif chain with {max(switches)} branches detected.",
-                "Replace type-code switch with polymorphism or strategy map.",
-                0.60,
-            )
-
-        # Message Chains
-        chains = _detect_message_chains(original_code, min_chain=4)
-        if chains:
-            _emit(
-                "Message Chains",
-                line_location,
-                SeverityLevel.MEDIUM,
-                f"Detected {chains} long dotted call chains (a.b().c().d()...).",
-                "Apply 'Hide Delegate' or expose a direct method on the intermediate object.",
-                0.58,
-            )
-
-        # Middle Man
-        middle_man = _detect_middle_man(original_code)
-        if middle_man >= 3:
-            _emit(
-                "Middle Man",
-                line_location,
-                SeverityLevel.LOW,
-                f"Detected {middle_man} methods that only delegate to another object.",
-                "Remove the middle man or inline the delegation.",
-                0.55,
-            )
-
-        # Commented-out Code (falls under 'Comments' category)
-        commented = _detect_commented_out_code(original_code)
-        if commented >= 3:
-            _emit(
-                "Comments",
-                line_location,
-                SeverityLevel.LOW,
-                f"Detected {commented} lines of commented-out code.",
-                "Delete dead commented code - rely on version control for history.",
-                0.60,
-            )
-
-        # Primitive Obsession
-        primitives = _detect_primitive_obsession(original_code)
-        if primitives >= 10:
-            _emit(
-                "Primitive Obsession",
-                line_location,
-                SeverityLevel.LOW,
-                f"High use of primitive types ({primitives} primitive parameters/fields).",
-                "Introduce value objects / dataclasses for repeated primitive groups.",
-                0.50,
-            )
-
-        # Data Class
-        data_classes = _detect_data_class(original_code)
-        for cls_name in data_classes[:5]:
-            _emit(
-                "Data Class",
-                line_location,
-                SeverityLevel.LOW,
-                f"Class '{cls_name}' exposes only fields/getters/setters without behavior.",
-                "Move behavior that uses this data into the class itself.",
-                0.55,
-            )
-
-        # Lazy Class
-        lazy = _detect_lazy_class(original_code)
-        for cls_name in lazy[:5]:
-            _emit(
-                "Lazy Class",
-                line_location,
-                SeverityLevel.LOW,
-                f"Class '{cls_name}' has a trivial body - may not earn its keep.",
-                "Inline into callers or merge with a related class.",
-                0.50,
-            )
-
-        # Feature Envy
-        envy = _detect_feature_envy(original_code, threshold=4)
-        if envy:
-            _emit(
-                "Feature Envy",
-                line_location,
-                SeverityLevel.MEDIUM,
-                f"{envy} method(s) access another object's data more than their own.",
-                "Move the method to the class it envies (Move Method refactoring).",
-                0.58,
-            )
-
-        # God Class / Large Class
-        method_count = len(re.findall(r"def\s+\w+\s*\(", original_code))
-        if method_count > 15 and line_count > 300:
-            _emit(
-                "God Class",
-                line_location,
-                SeverityLevel.HIGH,
-                f"Class/module has {method_count} methods and {line_count} LOC - violates SRP.",
-                "Decompose into multiple focused classes along responsibility lines.",
-                0.66,
-            )
-        elif line_count > 200 and method_count > 10:
-            _emit(
-                "Large Class",
-                line_location,
-                SeverityLevel.MEDIUM,
-                f"Class/module has {method_count} methods and {line_count} LOC - getting unwieldy.",
-                "Extract cohesive groups of methods into collaborator classes.",
-                0.58,
-            )
+        # Stage 2: Metric-based checks organized by category
+        self._check_size_and_structure_smells(findings, seen, original_code, line_location, line_count, now)
+        self._check_parameter_and_data_smells(findings, seen, original_code, line_location, now)
+        self._check_code_quality_smells(findings, seen, original_code, line_location, now)
+        self._check_design_smells(findings, seen, original_code, line_location, line_count, now)
+        self._check_extended_smells(findings, seen, original_code, line_location, now)
 
         return findings
+
 
     def get_stats(self) -> Dict[str, Any]:
         """Get Deep Agent detector statistics.

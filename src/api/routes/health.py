@@ -32,19 +32,19 @@ def _check_ollama_availability() -> bool:
 
 
 def _check_chromadb_availability() -> bool:
-    """Check if ChromaDB is available."""
+    """Check if ChromaDB is available by opening the real vector store."""
     try:
-        # Try to import and instantiate ChromaDB client
-        from src.rag.rag_manager import RAGManager
+        from src.rag.vector_store import VectorStore
 
-        rag = RAGManager()
-        # If instantiation succeeds, ChromaDB is available
+        vs = VectorStore()
+        # Lightweight op: returns collection stats without running a query.
+        vs.get_stats()
         return True
-    except (ImportError, ModuleNotFoundError):
-        # RAG manager not available - this is optional
+    except (ImportError, ModuleNotFoundError) as e:
+        logger.debug(f"ChromaDB dependencies unavailable: {e}")
         return False
     except Exception as e:
-        logger.debug(f"ChromaDB health check failed (optional): {str(e)}")
+        logger.warning(f"ChromaDB health check failed: {e}")
         return False
 
 

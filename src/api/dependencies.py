@@ -8,7 +8,9 @@ from typing import Generator, Optional
 from functools import lru_cache
 
 from src.api.config import config
-from src.api.validators import RequestValidator, RateLimiter
+from src.api.validators import RequestValidator
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================================
@@ -26,17 +28,9 @@ def get_logger(name: str) -> logging.Logger:
         Configured logger instance
     """
     logger = logging.getLogger(name)
-
-    # Configure if not already configured
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(getattr(logging, config.LOG_LEVEL, logging.INFO))
-
+    # Set level so messages propagate to the root handler configured in api_server.py.
+    # Do NOT add per-logger handlers here to avoid duplicate output.
+    logger.setLevel(getattr(logging, config.LOG_LEVEL, logging.INFO))
     return logger
 
 
@@ -57,17 +51,7 @@ def get_request_validator() -> RequestValidator:
     return RequestValidator()
 
 
-@lru_cache(maxsize=1)
-def get_rate_limiter() -> RateLimiter:
-    """
-    Get rate limiter singleton.
 
-    Returns:
-        RateLimiter instance
-    """
-    logger = get_logger(__name__)
-    logger.info("Initializing rate limiter")
-    return RateLimiter()
 
 
 @lru_cache(maxsize=1)
@@ -99,17 +83,17 @@ def get_workflow_graph():
     Get workflow graph singleton.
 
     Returns:
-        WorkflowGraph instance or None if not available
+        WorkflowExecutor instance or None if not available
     """
     try:
-        from src.workflow.workflow_graph import WorkflowGraph
+        from src.workflow.workflow_graph import WorkflowExecutor
 
         logger = get_logger(__name__)
-        logger.info("Initializing workflow graph")
-        return WorkflowGraph()
+        logger.info("Initializing workflow executor")
+        return WorkflowExecutor()
     except (ImportError, AttributeError) as e:
         logger = get_logger(__name__)
-        logger.debug(f"WorkflowGraph not available (optional): {str(e)}")
+        logger.debug(f"WorkflowExecutor not available (optional): {str(e)}")
         return None
 
 
@@ -125,14 +109,19 @@ def get_rag_manager():
         ImportError: If RAG module not available
     """
     try:
-        from src.rag.rag_manager import RAGManager
+        # Fix: There is no src.rag.rag_manager module — it was removed during
+        # an earlier refactor. The concrete RAG surface is `VectorStore`
+        # (ChromaDB-backed) plus `RAGRetriever`. Callers of
+        # `get_rag_manager()` only need a handle that exposes a working
+        # vector store, so return the VectorStore singleton directly.
+        from src.rag.vector_store import VectorStore
 
-        logger = get_logger(__name__)
-        logger.info("Initializing RAG manager")
-        return RAGManager()
+        logger_instance = get_logger(__name__)
+        logger_instance.info("Initializing RAG vector store")
+        return VectorStore()
     except ImportError as e:
-        logger = get_logger(__name__)
-        logger.warning(f"RAG manager not available: {str(e)}")
+        logger_instance = get_logger(__name__)
+        logger_instance.warning("RAG vector store not available: %s", e)
         return None
 
 
@@ -142,17 +131,17 @@ def get_detector():
     Get code smell detector singleton.
 
     Returns:
-        Detector instance or None if not available
+        CodeSmellDetector instance or None if not available
     """
     try:
-        from src.core.detector import Detector
+        from src.analysis.code_smell_detector import CodeSmellDetector
 
         logger = get_logger(__name__)
         logger.info("Initializing code smell detector")
-        return Detector()
+        return CodeSmellDetector()
     except (ImportError, AttributeError) as e:
         logger = get_logger(__name__)
-        logger.debug(f"Detector not available (optional): {str(e)}")
+        logger.debug(f"CodeSmellDetector not available (optional): {str(e)}")
         return None
 
 
@@ -168,16 +157,6 @@ def get_request_validator_dep() -> RequestValidator:
         RequestValidator instance
     """
     return get_request_validator()
-
-
-def get_rate_limiter_dep() -> RateLimiter:
-    """
-    FastAPI dependency for rate limiter.
-
-    Returns:
-        RateLimiter instance
-    """
-    return get_rate_limiter()
 
 
 def get_logger_dep() -> logging.Logger:
@@ -201,11 +180,19 @@ def get_database_session() -> Generator:
         Can be used with Depends() in FastAPI routes
     """
     db_manager = get_database_manager()
-    session = db_manager.get_session()
+    session = None
     try:
+        session = db_manager.get_session()
         yield session
     finally:
-        session.close()
+        # M1: get_session() may raise (e.g. DB unreachable at request time)
+        # before we bind `session`. Guarding prevents an AttributeError from
+        # masking the real exception that FastAPI would otherwise surface.
+        if session is not None:
+            try:
+                session.close()
+            except Exception as e:  # noqa: BLE001 - cleanup must not raise
+                logger.warning("DB session close failed: %s", e)
 
 
 def get_workflow_graph_dep():
@@ -254,7 +241,6 @@ def initialize_dependencies() -> dict:
 
     status = {
         "validator": False,
-        "rate_limiter": False,
         "database": False,
         "workflow_graph": False,
         "rag_manager": False,
@@ -267,13 +253,6 @@ def initialize_dependencies() -> dict:
         logger.info("✓ Request validator initialized")
     except Exception as e:
         logger.error(f"✗ Failed to initialize request validator: {str(e)}")
-
-    try:
-        get_rate_limiter()
-        status["rate_limiter"] = True
-        logger.info("✓ Rate limiter initialized")
-    except Exception as e:
-        logger.error(f"✗ Failed to initialize rate limiter: {str(e)}")
 
     try:
         get_database_manager()

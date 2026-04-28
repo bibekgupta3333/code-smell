@@ -289,6 +289,19 @@ class DatabaseManager:
         Session = sessionmaker(bind=self.engine, expire_on_commit=False)
         self.session_maker = scoped_session(Session)
 
+        # Initialize specialized repositories (split God class responsibilities)
+        from src.database.repositories import (
+            AgentRepository, RequestRepository, ActionRepository, ProcessRepository,
+            ExperimentRepository, AnalysisRepository, GroundTruthRepository
+        )
+        self.agents = AgentRepository(self.session_maker)
+        self.requests = RequestRepository(self.session_maker)
+        self.actions = ActionRepository(self.session_maker)
+        self.processes = ProcessRepository(self.session_maker)
+        self.experiments = ExperimentRepository(self.session_maker)
+        self.findings = AnalysisRepository(self.session_maker)
+        self.ground_truth = GroundTruthRepository(self.session_maker)
+
         logger.info("Database initialized at %s", self.db_path)  # noqa: G201
 
     def get_session(self):

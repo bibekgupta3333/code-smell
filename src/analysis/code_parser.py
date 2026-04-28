@@ -79,17 +79,99 @@ class CodeParser:
         """Initialize code parser."""
         self.logger = logging.getLogger(__name__)
 
+    def preprocess_code(self, code: str) -> str:
+        """
+        Clean terminal artifacts, prompts, and metadata from code submission.
+
+        Removes:
+        - Terminal prompt characters (➜, $, %, #)
+        - Shell commands and command output
+        - Git status indicators (git:(main), ✗, ✓)
+        - Paths and directory indicators
+        - ANSI color codes
+        - Common shell output patterns
+
+        Args:
+            code: Raw code possibly contaminated with terminal artifacts
+
+        Returns:
+            Cleaned code ready for parsing
+        """
+        if not code:
+            return code
+
+        lines = code.split('\n')
+        cleaned_lines = []
+
+        for line in lines:
+            # Skip empty lines (preserve them for formatting)
+            if not line.strip():
+                cleaned_lines.append(line)
+                continue
+
+            # Detect and skip terminal prompt lines
+            # Pattern: prompt chars + optional path + optional git status + command
+            # Examples:
+            #   ➜  code-smell git:(main) ✗  cat test.py
+            #   $ python script.py
+            #   (.venv) ~/projects/code-smell:
+            # Note: Match ONLY virtual env markers (parentheses containing env names, not arbitrary code)
+            if re.search(r'(^[➜$%#]|git:\(|✗|✓|\(\.?v?env\S*\)\s|~?/[^ ]*:$)', line):
+                # This line contains shell decorators; check if it's a command or just prompt
+                if re.search(r'\b(git|cat|ls|cd|mkdir|rm|python|npm|yarn|pip|echo|grep)\b', line):
+                    # Shell command detected, skip it
+                    continue
+                # If it ends with a colon or prompt marker with no code, skip it
+                if re.search(r'(:\s*$|[➜$%#]\s*$)', line):
+                    continue
+
+            cleaned = line
+
+            # Remove leading terminal prompt patterns
+            # First, remove any leading prompt marker + space
+            cleaned = re.sub(r'^[➜$%#]+\s*', '', cleaned)
+            # Then remove any directory/git info that precedes actual code
+            # Pattern: directory-name optional-git-status spaces optional-command-verb
+            cleaned = re.sub(r'^[^\s]*\s+git:\([^)]+\)\s+[✗✓]?\s*', '', cleaned)
+            cleaned = re.sub(r'^(\(.+?\)\s+)?~?/[^\s]*\s+', '', cleaned)  # Virtual env + path
+            cleaned = re.sub(r'^\x1b\[[0-9;]*m', '', cleaned)  # ANSI color codes at start
+            cleaned = re.sub(r'\x1b\[[0-9;]*m$', '', cleaned)  # Trailing ANSI codes
+
+            # Skip lines that still look like shell output/commands, not code
+            stripped = cleaned.strip()
+
+            # Skip remaining shell command indicators
+            if stripped.startswith(('git ', 'npm ', 'yarn ', 'python ', 'python3 ', 'pip ',
+                                   'ls ', 'cd ', 'mkdir ', 'rm ', 'cat ', 'echo ', 'grep ')):
+                continue
+
+            # Skip pure logging/output lines (not code comments)
+            if re.match(r'^(INFO|DEBUG|ERROR|WARNING):\s+\[', stripped):
+                continue
+
+            # Skip path-only lines
+            if stripped in ('code-smell', '.venv', 'src', 'tests', 'Makefile') or \
+               (stripped.startswith(('./', '~/', '/')) and not stripped.count(' ') > 1):
+                continue
+
+            cleaned_lines.append(cleaned)
+
+        return '\n'.join(cleaned_lines)
+
     def detect_language(self, code: str) -> ProgrammingLanguage:
         """
         Detect programming language from code.
 
         Args:
-            code: Source code
+            code: Source code (may contain terminal artifacts)
 
         Returns:
             Detected language
         """
-        if not code or not code.strip():
+        # Preprocess to remove terminal prompts and artifacts
+        cleaned_code = self.preprocess_code(code)
+
+        if not cleaned_code or not cleaned_code.strip():
             return ProgrammingLanguage.UNKNOWN
 
         # Check for language-specific patterns
@@ -116,13 +198,16 @@ class CodeParser:
         Validate Python code syntax.
 
         Args:
-            code: Python source code
+            code: Python source code (may contain terminal artifacts)
 
         Returns:
             (is_valid, error_message)
         """
+        # Preprocess to remove terminal prompts and artifacts
+        cleaned_code = self.preprocess_code(code)
+
         try:
-            ast.parse(code)
+            ast.parse(cleaned_code)
             return True, None
         except SyntaxError as e:
             error_msg = "Syntax error at line %d: %s"
@@ -191,12 +276,15 @@ class CodeParser:
         Extract code metrics.
 
         Args:
-            code: Source code
+            code: Source code (may contain terminal artifacts)
 
         Returns:
             CodeMetrics
         """
-        lines = code.split('\n')
+        # Preprocess to remove terminal prompts and artifacts
+        cleaned_code = self.preprocess_code(code)
+
+        lines = cleaned_code.split('\n')
         total_lines = len(lines)
 
         # Count code and comment lines

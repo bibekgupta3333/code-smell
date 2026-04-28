@@ -113,31 +113,50 @@ class OllamaClient:
 
         logger.info(f"Ollama client initialized: {base_url}")
 
-    async def verify_connection(self) -> bool:
+    async def verify_connection(self, retries: int = 3, backoff_s: float = 1.0) -> bool:
         """
         Verify Ollama server is running and accessible.
+
+        M2: The API process often boots faster than Ollama when both start
+        under docker-compose / systemd, so a single probe returns a spurious
+        "unhealthy". Retry a small number of times with linear backoff before
+        giving up.
+
+        Args:
+            retries: Total attempts (>=1). Default 3.
+            backoff_s: Base delay in seconds between attempts. Default 1.0.
 
         Returns:
             True if connection successful, False otherwise
         """
-        try:
-            # Try to list available models
-            models = self.client.list()
-            if models and "models" in models:
-                self._connection_verified = True
-                logger.info(f"✓ Ollama connection verified. Available models: {len(models['models'])}")
-                return True
-            else:
-                msg = "No models available in Ollama"
-                logger.error(msg)
-                self._last_error = msg
-                return False
-        except Exception as e:
-            msg = f"Connection to Ollama failed: {e}"
-            logger.error(msg)
-            self._last_error = msg
-            self._connection_verified = False
-            return False
+        attempts = max(1, retries)
+        last_error: Optional[str] = None
+
+        for attempt in range(1, attempts + 1):
+            try:
+                # Try to list available models
+                models = self.client.list()
+                if models and "models" in models:
+                    self._connection_verified = True
+                    self._last_error = None
+                    logger.info(
+                        "✓ Ollama connection verified on attempt %d/%d. Available models: %d",
+                        attempt, attempts, len(models["models"]),
+                    )
+                    return True
+                last_error = "No models available in Ollama"
+                logger.warning("Ollama probe %d/%d: %s", attempt, attempts, last_error)
+            except Exception as e:  # noqa: BLE001 - ollama raises arbitrary types
+                last_error = f"Connection to Ollama failed: {e}"
+                logger.warning("Ollama probe %d/%d failed: %s", attempt, attempts, e)
+
+            if attempt < attempts:
+                await asyncio.sleep(backoff_s * attempt)  # linear backoff
+
+        logger.error("Ollama connection not verified after %d attempts: %s", attempts, last_error)
+        self._last_error = last_error
+        self._connection_verified = False
+        return False
 
     async def list_available_models(self) -> List[str]:
         """

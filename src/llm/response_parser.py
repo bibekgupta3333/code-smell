@@ -12,7 +12,7 @@ from typing import Optional, List, Dict, Any, Tuple, Union
 from dataclasses import dataclass
 from enum import Enum
 
-from src.utils.smell_catalog import CANONICAL_SMELLS, normalize_smell_type
+from src.utils.smell_catalog import CANONICAL_SMELLS, is_smell_category, normalize_smell_type
 
 logger = logging.getLogger(__name__)
 
@@ -233,9 +233,11 @@ class ResponseParser:
         # Handle case where LLM returns a list directly instead of an object
         if isinstance(json_obj, list):
             code_smells_data = json_obj
-            # For list format, we won't have other fields
+            # M5: A bare list carries no explicit verdict, so don't assume
+            # `is_valid_code = True`. Leave it as a sentinel and derive from
+            # the (post-validation) findings list below.
             summary = None
-            is_valid_code = True
+            is_valid_code = None  # resolved after malformed-finding filter
             notes = None
         else:
             # Extract code smells from object format
@@ -257,6 +259,52 @@ class ResponseParser:
             is_valid_code = json_obj.get("is_valid_code", True)
             notes = json_obj.get("notes")
 
+        # H2: Drop malformed findings up-front. An LLM can return entries
+        # missing a location or severity and those would otherwise crash the
+        # frontend (null -> JS error) or silently produce unusable metrics.
+        # Accept both object and flat-key forms since the parser normalizes
+        # later; we only require that *some* value exists for each required key.
+        REQUIRED_ANY = {
+            "smell_type": ("smell_type", "type", "name"),
+            "location": ("location", "line", "line_number", "start_line"),
+            "severity": ("severity", "level", "impact"),
+        }
+        cleaned = []
+        for item in code_smells_data:
+            if not isinstance(item, dict):
+                logger.warning("Dropping non-dict finding: %r", item)
+                continue
+            missing = [
+                field
+                for field, aliases in REQUIRED_ANY.items()
+                if not any(
+                    item.get(alias) is not None for alias in aliases
+                )
+            ]
+            if missing:
+                logger.warning(
+                    "Dropping malformed finding (missing %s): %s",
+                    ", ".join(missing),
+                    item,
+                )
+                continue
+            # LLMs occasionally return a section header ("Change Preventers",
+            # "Dispensables", etc.) as the smell_type. These are ambiguous
+            # and can't be mapped to a specific smell, so drop them here
+            # rather than spamming the validator with warnings.
+            candidate = (
+                item.get("smell_type")
+                or item.get("type")
+                or item.get("name")
+            )
+            if is_smell_category(candidate):
+                logger.debug(
+                    "Dropping category-level finding from LLM: %s", candidate
+                )
+                continue
+            cleaned.append(item)
+        code_smells_data = cleaned
+
         code_smells = []
         for smell_data in code_smells_data:
             try:
@@ -269,6 +317,11 @@ class ResponseParser:
         # Set default summary if not provided
         if summary is None:
             summary = f"Found {len(code_smells)} code smell(s)"
+
+        # M5: If we came in through the bare-list path, derive is_valid_code
+        # from the actual (validated) findings rather than trusting a default.
+        if is_valid_code is None:
+            is_valid_code = len(code_smells) == 0
 
         # Calculate confidence
         confidence = self._calculate_confidence(json_obj if isinstance(json_obj, dict) else {}, code_smells)

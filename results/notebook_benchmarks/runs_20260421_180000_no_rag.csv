@@ -1,0 +1,29 @@
+sample_id,split,language,use_rag,f1,precision,recall,tp,fp,fn,n_predicted,n_ground_truth,exec_s,model_used,errors
+smelly_cpp_main,train,cpp,False,1.0,1.0,1.0,0,0,0,0,0,0.072904,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_cpp_Chef,train,cpp,False,0.0,0.0,0.0,0,0,16,0,16,0.056002,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_Shop,train,java,False,0.0,0.0,0.0,0,0,16,0,16,0.051571,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_python_Chef,train,python,False,0.0,0.0,0.0,0,0,25,0,25,0.05144,llama3:8b,
+smelly_python_Cashier,train,python,False,0.0,0.0,0.0,0,0,26,0,26,0.056216,llama3:8b,
+smelly_java_Chef,train,java,False,0.0,0.0,0.0,0,0,21,0,21,0.051611,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_python_Pizza,train,python,False,0.0,0.0,0.0,0,0,24,0,24,0.054971,llama3:8b,
+smelly_javascript_Drink,train,javascript,False,0.0,0.0,0.0,0,0,4,0,4,0.050239,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_Cashier,train,java,False,0.0,0.0,0.0,0,0,21,0,21,0.050904,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_javascript_Cashier,train,javascript,False,0.0,0.0,0.0,0,0,21,0,21,0.049874,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_python_Shop,train,python,False,0.0,0.0,0.0,0,0,23,0,23,0.055039,llama3:8b,
+smelly_javascript_Pizza,train,javascript,False,0.0,0.0,0.0,0,0,24,0,24,0.051873,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_main,train,java,False,1.0,1.0,1.0,0,0,0,0,0,0.050638,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_javascript_Shop,train,javascript,False,0.0,0.0,0.0,0,0,22,0,22,0.052821,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_javascript_Customer,train,javascript,False,0.0,0.0,0.0,0,0,22,0,22,0.056162,llama3:8b,Syntax error: Syntax error at line 37: unterminated string literal (detected at line 37)
+smelly_python_Drink,train,python,False,0.0,0.0,0.0,0,0,4,0,4,0.048453,llama3:8b,
+smelly_javascript_main,validation,javascript,False,1.0,1.0,1.0,0,0,0,0,0,0.050492,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_cpp_Drink,validation,cpp,False,0.0,0.0,0.0,0,0,17,0,17,0.053679,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_cpp_Customer,validation,cpp,False,0.0,0.0,0.0,0,0,17,0,17,0.056722,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_Customer,validation,java,False,0.0,0.0,0.0,0,0,22,0,22,0.052307,llama3:8b,Syntax error: Syntax error at line 37: unterminated string literal (detected at line 37)
+smelly_cpp_Shop,validation,cpp,False,0.0,0.0,0.0,0,0,14,0,14,0.050173,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_Pizza,validation,java,False,0.0,0.0,0.0,0,0,24,0,24,0.053276,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_python_Main,test,python,False,1.0,1.0,1.0,0,0,0,0,0,0.052,llama3:8b,
+smelly_python_Customer,test,python,False,0.0,0.0,0.0,0,0,26,0,26,0.070203,llama3:8b,
+smelly_cpp_Pizza,test,cpp,False,0.0,0.0,0.0,0,0,22,0,22,0.05539,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_cpp_Cashier,test,cpp,False,0.0,0.0,0.0,0,0,16,0,16,0.053402,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_javascript_Chef,test,javascript,False,0.0,0.0,0.0,0,0,21,0,21,0.055374,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax
+smelly_java_Drink,test,java,False,0.0,0.0,0.0,0,0,22,0,22,0.051694,llama3:8b,Syntax error: Syntax error at line 1: invalid syntax

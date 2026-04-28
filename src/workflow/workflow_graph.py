@@ -15,6 +15,7 @@ from datetime import datetime
 from langgraph.graph import StateGraph, START, END
 from pydantic import BaseModel
 
+from config import MODEL_SELECTION_SCORE
 from src.utils.common import CodeSmellFinding, SeverityLevel
 from src.utils.logger import log_workflow_step, log_agent_event
 from src.analysis.code_parser import CodeParser, CodeMetrics, ProgrammingLanguage
@@ -78,6 +79,44 @@ class AnalysisState(BaseModel):
 
 
 # ============================================================================
+# Progress Reporting
+# ============================================================================
+# Module-level registry mapping analysis_id → progress callback(step: str).
+# The API layer (detection_integration → analysis route) registers a callback
+# that writes the step into analysis_state[analysis_id]["workflow_step"].
+# Nodes call _publish_step(state, "<step_name>") so frontend /progress shows
+# real workflow progression instead of time-based guesses.
+
+from typing import Callable  # noqa: E402
+
+_progress_callbacks: Dict[str, Callable[[str], None]] = {}
+
+
+def register_progress_callback(analysis_id: str, callback: Callable[[str], None]) -> None:
+    """Register a progress callback for an analysis_id."""
+    if analysis_id:
+        _progress_callbacks[analysis_id] = callback
+
+
+def unregister_progress_callback(analysis_id: str) -> None:
+    """Remove a progress callback when the analysis finishes."""
+    _progress_callbacks.pop(analysis_id, None)
+
+
+def _publish_step(state: "AnalysisState", step: str) -> None:
+    """Publish the current workflow step to state + any registered callback."""
+    state.workflow_step = step
+    analysis_id = (state.metadata or {}).get("analysis_id")
+    cb = _progress_callbacks.get(analysis_id) if analysis_id else None
+    if cb is None:
+        return
+    try:
+        cb(step)
+    except Exception as e:  # noqa: BLE001 - never break the workflow on a UI concern
+        logger.debug("Progress callback failed for %s: %s", analysis_id, e)
+
+
+# ============================================================================
 # Node Functions for Workflow
 # ============================================================================
 
@@ -90,10 +129,15 @@ async def parse_code_node(state: AnalysisState) -> AnalysisState:
     Returns:
         Updated state with parsed code metrics and language
     """
+    _publish_step(state, "parsing")
     log_workflow_step("parse_code", {"file": state.file_name})
 
     try:
         parser = CodeParser()
+
+        # Preprocess code to remove terminal artifacts (prompts, shell output, etc.)
+        cleaned_code = parser.preprocess_code(state.code_snippet)
+        state.code_snippet = cleaned_code
 
         # Detect language
         state.language = parser.detect_language(state.code_snippet)
@@ -130,6 +174,7 @@ async def select_model_node(state: AnalysisState) -> AnalysisState:
         Updated state with selected model and reasoning
     """
     log_workflow_step("select_model", {"language": state.language, "code_size": state.code_metrics.total_lines if state.code_metrics else 0})
+    _publish_step(state, "model_selection")
 
     try:
         # Get available models from Ollama
@@ -188,14 +233,12 @@ def _select_best_model(code_size: int, language: str, available_models: List[str
     """
     logger.info("Agent reasoning: Selecting model for %d lines of %s code", code_size, language)  # noqa: G201
 
-    # Prioritized model preferences
-    model_priority = {
-        "codellama": 100,  # Best for code-specific tasks
-        "llama3": 85,
-        "mistral": 80,
+    # Prioritized model preferences (from config)
+    model_priority = dict(MODEL_SELECTION_SCORE)
+    model_priority.update({
         "neural-chat": 75,
         "orca-mini": 70,
-    }
+    })
 
     # Score models based on availability and priority
     scored_models = []
@@ -248,6 +291,9 @@ def _select_best_model(code_size: int, language: str, available_models: List[str
 async def chunk_code_node(state: AnalysisState) -> AnalysisState:
     """Split large code into chunks for parallel processing.
 
+    When RAG is enabled: Analyze entire code holistically with RAG context
+    When RAG is disabled: Chunk only for very large files (>1000 lines)
+
     Args:
         state: Current workflow state
 
@@ -255,24 +301,39 @@ async def chunk_code_node(state: AnalysisState) -> AnalysisState:
         Updated state with code chunks
     """
     log_workflow_step("chunk_code", {"total_lines": state.code_metrics.total_lines if state.code_metrics else 0})
+    _publish_step(state, "chunking")
 
     try:
         parser = CodeParser()
+        total_lines = state.code_metrics.total_lines if state.code_metrics else 0
 
-        # For small code, use single chunk
-        if state.code_metrics and state.code_metrics.total_lines < 100:
+        # When using RAG: Keep entire code as single chunk for holistic analysis
+        if state.use_rag:
             state.chunks = [state.code_snippet]
+            logger.info("RAG mode: Analyzing entire code (%d lines) as single chunk", total_lines)  # noqa: G201
+        # For small/medium code: use single chunk (threshold: 500 lines)
+        elif total_lines < 500:
+            state.chunks = [state.code_snippet]
+            logger.info("Code size %d lines < 500: Using single chunk", total_lines)  # noqa: G201
         else:
-            # Split into functions for larger code
+            # Split into functions only for very large code (>500 lines)
             # split_into_functions returns List[Tuple[name, code, line_start, line_end]]
             # Extract just the code snippets (second element)
             function_chunks = parser.split_into_functions(state.code_snippet)
             state.chunks = [code_snippet for _, code_snippet, _, _ in function_chunks]
+            logger.info("Large code (%d lines): Split into %d function chunks", total_lines, len(state.chunks))  # noqa: G201
 
         if not state.chunks:
             state.chunks = [state.code_snippet]
 
-        logger.info("Split code into %d chunks", len(state.chunks))  # noqa: G201
+        logger.info("Chunk configuration: %d chunks", len(state.chunks))  # noqa: G201
+
+        # Log chunk details
+        for idx, chunk in enumerate(state.chunks):
+            chunk_lines = len(chunk.split('\n'))
+            chunk_chars = len(chunk)
+            logger.info("[Chunk %d/%d] Size: %d lines, %d characters", idx + 1, len(state.chunks), chunk_lines, chunk_chars)  # noqa: G201
+
         state.workflow_step = "retrieve_context"
     except ValueError as e:  # noqa: B014
         logger.error("Error in chunk_code_node: %s", e, exc_info=True)  # noqa: G201
@@ -292,6 +353,7 @@ async def retrieve_context_node(state: AnalysisState) -> AnalysisState:
         Updated state with RAG context
     """
     log_workflow_step("retrieve_context", {"chunk_count": len(state.chunks)})
+    _publish_step(state, "rag_retrieval")
 
     try:
         retriever = RAGRetriever()
@@ -320,8 +382,66 @@ async def retrieve_context_node(state: AnalysisState) -> AnalysisState:
     return state
 
 
+async def _analyze_chunk_for_all_smells(chunk: str, chunk_idx: int, total_chunks: int,
+                                        rag_context: Dict[str, Any], model: str) -> tuple:
+    """Analyze a single chunk for ALL code smell types in parallel.
+
+    Args:
+        chunk: Code chunk to analyze
+        chunk_idx: Index of this chunk (1-based for logging)
+        total_chunks: Total number of chunks
+        rag_context: RAG context for this analysis
+        model: Model to use for analysis
+
+    Returns:
+        Tuple of (chunk_idx, findings_list)
+    """
+    chunk_lines = len(chunk.split('\n'))
+    chunk_chars = len(chunk)
+    logger.info("[Parallel Chunk %d/%d] Size: %d lines, %d chars | Starting analysis for ALL smell types...",
+                chunk_idx, total_chunks, chunk_lines, chunk_chars)  # noqa: G201
+
+    detector = CodeSmellDetector(
+        specialization=f"smell-detector-chunk-{chunk_idx}",
+        rag_retriever=RAGRetriever() if rag_context.get("count", 0) > 0 else None,
+        model=model
+    )
+
+    # Analyze for ALL canonical smell types (comprehensive coverage)
+    findings = await detector.detect_smells(
+        chunk,
+        context=rag_context,
+        smell_types=None  # None means analyze ALL types in catalog
+    )
+
+    logger.info("[Parallel Chunk %d/%d] Analysis complete: %d smells detected across all types",
+                chunk_idx, total_chunks, len(findings))  # noqa: G201
+
+    # Log smell type distribution for this chunk
+    if findings:
+        smell_types = {}
+        for finding in findings:
+            smell_type = finding.smell_type
+            smell_types[smell_type] = smell_types.get(smell_type, 0) + 1
+
+        types_summary = ", ".join([f"{stype}({cnt})" for stype, cnt in sorted(smell_types.items())])
+        logger.info("[Parallel Chunk %d/%d] Smell types detected: %s", chunk_idx, total_chunks, types_summary)  # noqa: G201
+
+    return (chunk_idx, findings)
+
+
 async def detect_smells_node(state: AnalysisState) -> AnalysisState:
     """Detect code smells in code chunks using LLM with selected model.
+
+    Analyzes all chunks in PARALLEL to ensure complete code coverage and comprehensive
+    smell type detection. When RAG is enabled, the entire code is kept as a single chunk
+    for holistic analysis.
+
+    Features:
+    - Parallel processing of multiple chunks for faster analysis
+    - Comprehensive analysis of ALL code smell types per chunk
+    - Detailed logging of smell type distribution
+    - Aggregates findings across all chunks
 
     Args:
         state: Current workflow state
@@ -329,26 +449,80 @@ async def detect_smells_node(state: AnalysisState) -> AnalysisState:
     Returns:
         Updated state with detected findings
     """
-    log_workflow_step("detect_smells", {"chunk_count": len(state.chunks), "model": state.model})
+    log_workflow_step("detect_smells", {"chunk_count": len(state.chunks), "model": state.model, "mode": "parallel"})
+    _publish_step(state, "inference")
 
     try:
-        detector = CodeSmellDetector(
-            specialization="multi-detector",
-            rag_retriever=RAGRetriever() if state.use_rag and state.rag_context.get("count", 0) > 0 else None,
-            model=state.model  # Pass selected model to detector
-        )
+        if not state.chunks:
+            logger.warning("No chunks to analyze")
+            state.workflow_step = "validate_findings"
+            return state
 
-        # Detect smells in first chunk (parallel processing would use LangGraph's Send)
-        if state.chunks:
-            findings = await detector.detect_smells(
-                state.chunks[0],
-                context=state.rag_context
+        # Create parallel analysis tasks for all chunks
+        logger.info("Starting parallel analysis of %d chunk(s) for ALL code smell types using model: %s",
+                    len(state.chunks), state.model)  # noqa: G201
+
+        analysis_tasks = []
+        for chunk_idx, chunk in enumerate(state.chunks, start=1):
+            task = _analyze_chunk_for_all_smells(
+                chunk=chunk,
+                chunk_idx=chunk_idx,
+                total_chunks=len(state.chunks),
+                rag_context=state.rag_context,
+                model=state.model
             )
+            analysis_tasks.append(task)
+
+        # Execute all chunk analyses in parallel
+        results = await asyncio.gather(*analysis_tasks, return_exceptions=True)
+
+        # Aggregate results and track coverage
+        total_findings = 0
+        smell_type_coverage = {}
+        chunk_results = {}
+
+        for result in results:
+            if isinstance(result, Exception):
+                logger.error("Error during parallel chunk analysis: %s", result, exc_info=True)  # noqa: G201
+                state.errors.append(f"Parallel detection error: {str(result)}")
+                continue
+
+            chunk_idx, findings = result
+            chunk_results[chunk_idx] = len(findings)
             state.detections.extend(findings)
-            logger.info("Detected %d code smells using %s", len(findings), state.model)  # noqa: G201
+            total_findings += len(findings)
+
+            # Track smell type coverage
+            for finding in findings:
+                smell_type = finding.smell_type
+                if smell_type not in smell_type_coverage:
+                    smell_type_coverage[smell_type] = 0
+                smell_type_coverage[smell_type] += 1
+
+        # Log comprehensive analysis summary
+        logger.info("Parallel chunk analysis summary: %d total smells detected using %s across %d chunk(s)",
+                    total_findings, state.model, len(state.chunks))  # noqa: G201
+
+        # Log coverage by chunk
+        if len(state.chunks) > 1:
+            chunk_summary = ", ".join([f"Chunk {idx}: {count} smells"
+                                      for idx, count in sorted(chunk_results.items())])
+            logger.info("Per-chunk breakdown: %s", chunk_summary)  # noqa: G201
+
+        # Log smell type coverage (which types were found)
+        if smell_type_coverage:
+            coverage_summary = ", ".join([f"{stype}({cnt})"
+                                         for stype, cnt in sorted(smell_type_coverage.items())])
+            logger.info("Smell types detected: %s", coverage_summary)  # noqa: G201
+
+        logger.info("Analysis coverage: %d unique smell types identified", len(smell_type_coverage))  # noqa: G201
+
     except ValueError as e:  # noqa: B014
         logger.error("Error in detect_smells_node: %s", e, exc_info=True)  # noqa: G201
         state.errors.append(f"Detection error: {str(e)}")
+    except Exception as e:  # noqa: B014
+        logger.error("Unexpected error in detect_smells_node: %s", e, exc_info=True)  # noqa: G201
+        state.errors.append(f"Unexpected detection error: {str(e)}")
 
     state.workflow_step = "validate_findings"
     return state
@@ -364,6 +538,7 @@ async def validate_findings_node(state: AnalysisState) -> AnalysisState:
         Updated state with validated findings
     """
     log_workflow_step("validate_findings", {"findings_count": len(state.detections)})
+    _publish_step(state, "validation")
 
     try:
         validator = QualityValidator()
@@ -394,6 +569,7 @@ async def aggregate_results_node(state: AnalysisState) -> AnalysisState:
         "validated_findings": len(state.validated_findings),
         "errors": len(state.errors)
     })
+    _publish_step(state, "aggregating")
 
     try:
         # Create DetectionResult from validated findings
@@ -518,6 +694,7 @@ class WorkflowExecutor:
         file_name: str = "code",
         model: Optional[str] = None,
         use_rag: bool = True,
+        analysis_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Execute workflow for code analysis with optional model and RAG selection.
 
@@ -526,6 +703,8 @@ class WorkflowExecutor:
             file_name: Source file name for context
             model: Optional specific LLM model to use (if None, agent will select)
             use_rag: Whether to use RAG context (default: True)
+            analysis_id: Optional API-layer identifier so each node can publish
+                progress back to the FastAPI /progress/{id} endpoint.
 
         Returns:
             Dictionary containing:
@@ -548,6 +727,8 @@ class WorkflowExecutor:
             model=model,  # Pass specified model (or None for auto-selection)
             use_rag=use_rag  # Pass RAG preference
         )
+        if analysis_id:
+            initial_state.metadata["analysis_id"] = analysis_id
 
         try:
             # Execute workflow
@@ -578,8 +759,9 @@ class WorkflowExecutor:
                     "model_used": final_state.get("model"),
                     "model_reasoning": final_state.get("model_reasoning"),
                     "available_models": final_state.get("available_models"),
-                    "use_rag": final_state.get("use_rag")
-        },
+                    "use_rag": final_state.get("use_rag"),
+                    "execution_time": (datetime.now() - initial_state.start_time).total_seconds(),
+                },
                 "errors": final_state.get("errors", [])
             }
         except ValueError as e:  # noqa: B014

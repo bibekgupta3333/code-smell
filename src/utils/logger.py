@@ -20,6 +20,14 @@ logger = logging.getLogger(__name__)
 class JSONFormatter:
     """JSON formatter for structured logging."""
 
+    # Standard logging record attributes that shouldn't be included in extra fields
+    STANDARD_ATTRS = {
+        "name", "msg", "args", "created", "filename", "funcName", "levelname",
+        "levelno", "lineno", "module", "msecs", "message", "pathname", "process",
+        "processName", "relativeCreated", "thread", "threadName", "exc_info",
+        "exc_text", "stack_info", "getMessage"
+    }
+
     @staticmethod
     def format(record: logging.LogRecord) -> str:
         """Format log record as JSON."""
@@ -30,9 +38,10 @@ class JSONFormatter:
             "message": record.getMessage(),
         }
 
-        # Add extra fields if present
-        if hasattr(record, "extra"):
-            log_data.update(record.extra)
+        # Add extra fields that were passed via the extra parameter
+        for key, value in record.__dict__.items():
+            if key not in JSONFormatter.STANDARD_ATTRS:
+                log_data[key] = value
 
         return json.dumps(log_data)
 
@@ -82,6 +91,12 @@ def setup_logging(
 
     logger.info("Logging configured, writing to %s", log_file)  # noqa: G201
 
+    # Configure third-party loggers to reduce noise
+    logging.getLogger("langgraph").setLevel(logging.WARNING)
+    logging.getLogger("langchain").setLevel(logging.WARNING)
+    logging.getLogger("langchain_core").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+
     return log_file
 
 
@@ -107,7 +122,7 @@ def log_agent_event(
     if details:
         extra_data.update(details)
 
-    logger.info(message, extra={'extra': extra_data})
+    logger.info(message, extra=extra_data)
 
 
 def log_llm_request(
@@ -131,13 +146,11 @@ def log_llm_request(
         "[%s] LLM request",  # noqa: G201
         agent_name,
         extra={
-            'extra': {
-                'agent': agent_name,
-                'model': model,
-                'prompt_length': prompt_length,
-                'prompt_preview': prompt_preview[:100],
-                'temperature': temperature,
-            }
+            'agent': agent_name,
+            'model': model,
+            'prompt_length': prompt_length,
+            'prompt_preview': prompt_preview[:100],
+            'temperature': temperature,
         },
     )
 
@@ -166,14 +179,12 @@ def log_llm_response(
         agent_name,
         "(cached)" if cached else "",
         extra={
-            'extra': {
-                'agent': agent_name,
-                'model': model,
-                'response_length': response_length,
-                'tokens_generated': tokens_generated,
-                'latency_seconds': latency_seconds,
-                'cached': cached,
-            }
+            'agent': agent_name,
+            'model': model,
+            'response_length': response_length,
+            'tokens_generated': tokens_generated,
+            'latency_seconds': latency_seconds,
+            'cached': cached,
         },
     )
 
@@ -280,9 +291,9 @@ def log_workflow_step(
         extra_data.update(details)
 
     if status == "error":
-        logger.error(message, extra={'extra': extra_data})
+        logger.error(message, extra=extra_data)
     else:
-        logger.info(message, extra={'extra': extra_data})
+        logger.info(message, extra=extra_data)
 
 
 def log_error(
@@ -314,7 +325,7 @@ def log_error(
         agent_name,
         error_type,
         error_message,
-        extra={'extra': extra_data},
+        extra=extra_data,
     )
 
 
@@ -343,7 +354,7 @@ def log_metric(
         "Metric: %s = %s",  # noqa: G201
         metric_name,
         metric_value,
-        extra={'extra': extra_data},
+        extra=extra_data,
     )
 
 

@@ -12,7 +12,7 @@ import asyncio
 import hashlib
 import logging
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Optional
 
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
@@ -31,7 +31,16 @@ from src.api.detection_integration import (
     compare_detection_approaches,
 )
 from src.database.database_manager import DatabaseManager
-from src.workflow.workflow_graph import AnalysisState
+from src.workflow.workflow_graph import (
+    AnalysisState,
+    register_progress_callback,
+    unregister_progress_callback,
+)
+from src.utils.colored_logger import (
+    log_inference_start,
+    log_inference_end,
+    log_inference_error,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +49,45 @@ router = APIRouter()
 # Global state for tracking analyses (in-memory for now)
 # In production, use Redis or database
 analysis_state: Dict[str, Dict] = {}
+
+# Async lock guarding concurrent writes to analysis_state.
+analysis_state_lock = asyncio.Lock()
+
+# Default time-to-live for finished/failed analyses before they are evicted.
+ANALYSIS_STATE_TTL = timedelta(hours=24)
+
+# How often the background cleanup loop runs.
+ANALYSIS_CLEANUP_INTERVAL_SECONDS = 3600
+
+
+async def cleanup_expired_analyses() -> int:
+    """Remove analysis_state entries whose expires_at is in the past.
+
+    Returns the number of evicted entries.
+    """
+    now = datetime.utcnow()
+    async with analysis_state_lock:
+        expired_ids = [
+            aid for aid, state in analysis_state.items()
+            if state.get("expires_at") and state["expires_at"] < now
+        ]
+        for aid in expired_ids:
+            analysis_state.pop(aid, None)
+    if expired_ids:
+        logger.info(f"🧹 Evicted {len(expired_ids)} expired analyses")
+    return len(expired_ids)
+
+
+async def analysis_state_cleanup_loop() -> None:
+    """Background task that periodically evicts expired analyses."""
+    while True:
+        try:
+            await asyncio.sleep(ANALYSIS_CLEANUP_INTERVAL_SECONDS)
+            await cleanup_expired_analyses()
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:  # noqa: BLE001 - keep loop alive
+            logger.warning(f"analysis_state cleanup loop error: {e}")
 
 
 # ============================================================================
@@ -74,12 +122,35 @@ async def run_analysis_task(
         include_rag: Whether to use RAG context
         model: Optional LLM model to use (if None, LangGraph agent auto-selects)
     """
+    start_time = datetime.utcnow()
+    code_lines = len(code.split("\n"))
+
     try:
         # Update state
-        analysis_state[analysis_id]["status"] = "processing"
-        analysis_state[analysis_id]["start_time"] = datetime.utcnow()
+        async with analysis_state_lock:
+            if analysis_id in analysis_state:
+                analysis_state[analysis_id]["status"] = "processing"
+                analysis_state[analysis_id]["start_time"] = start_time
+                analysis_state[analysis_id]["workflow_step"] = "parsing"
 
-        logger.info(f"Starting LangGraph analysis {analysis_id} (RAG={include_rag}, model={model or 'auto-select'})")
+        # Register a lightweight progress callback so each workflow node can
+        # publish its step into analysis_state[analysis_id]["workflow_step"].
+        def _record_step(step: str) -> None:
+            entry = analysis_state.get(analysis_id)
+            if entry is not None:
+                entry["workflow_step"] = step
+                logger.debug(f"Workflow step: {step}")  # Log each step
+
+        register_progress_callback(analysis_id, _record_step)
+
+        # Log inference start with color
+        log_inference_start(
+            logger,
+            analysis_id=analysis_id,
+            code_lines=code_lines,
+            use_rag=include_rag,
+            model=model or "auto-select"
+        )
 
         # ✅ CALL LANGGRAPH WORKFLOW VIA DETECTION INTEGRATION
         detection_result = await run_code_smell_detection_with_scoring(
@@ -87,6 +158,7 @@ async def run_analysis_task(
             sample_id=file_name,
             use_rag=include_rag,
             model=model,  # Pass specified model, or None for agentic auto-selection
+            analysis_id=analysis_id,
         )
 
         if not detection_result["success"]:
@@ -115,6 +187,15 @@ async def run_analysis_task(
         # ✅ USE ACTUAL MODEL RETURNED FROM WORKFLOW (including auto-selected)
         actual_model = detection_result.get("model_used", model or "llama3:8b")
         model_reasoning = detection_result.get("model_reasoning", None)
+        metrics_dict = detection_result.get("metrics", {})
+
+        analysis_time_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+        # Log metrics details
+        logger.debug(
+            f"Analysis metrics: F1={metrics_dict.get('f1')}, Mode={metrics_dict.get('evaluation_mode')}, "
+            f"Has GT={metrics_dict.get('has_ground_truth')}"
+        )
 
         result = AnalysisResultResponse(
             analysis_id=analysis_id,
@@ -122,7 +203,7 @@ async def run_analysis_task(
             language=language or "python",
             findings=findings,
             metrics=metrics,
-            analysis_time_ms=(datetime.utcnow() - analysis_state[analysis_id]["start_time"]).total_seconds() * 1000,
+            analysis_time_ms=analysis_time_ms,
             model_used=actual_model,  # ✅ From LangGraph workflow
             model_reasoning=model_reasoning,  # ✅ From agentic selection
             cache_hit=False,
@@ -130,22 +211,56 @@ async def run_analysis_task(
         )
 
         # Store results in state
-        analysis_state[analysis_id]["status"] = "completed"
-        analysis_state[analysis_id]["result"] = result
-        analysis_state[analysis_id]["metrics"] = detection_result["metrics"]
-        analysis_state[analysis_id]["ground_truth"] = detection_result["ground_truth"]
-        analysis_state[analysis_id]["model_used"] = actual_model
-        analysis_state[analysis_id]["model_reasoning"] = model_reasoning
+        async with analysis_state_lock:
+            if analysis_id in analysis_state:
+                entry = analysis_state[analysis_id]
+                entry["status"] = "completed"
+                entry["result"] = result
+                entry["metrics"] = detection_result["metrics"]
+                entry["ground_truth"] = detection_result["ground_truth"]
+                entry["model_used"] = actual_model
+                entry["model_reasoning"] = model_reasoning
+                entry["completed_at"] = datetime.utcnow()
+                entry["expires_at"] = entry["completed_at"] + ANALYSIS_STATE_TTL
 
-        logger.info(
-            f"LangGraph analysis {analysis_id} complete: {len(findings)} findings, "
-            f"F1={detection_result['metrics']['f1']:.3f}, model={actual_model}"
+        # Format F1 score safely (can be None for user snippets without ground truth)
+        f1_val = detection_result['metrics']['f1']
+        eval_mode = detection_result['metrics'].get('evaluation_mode', 'unknown')
+
+        # Log inference end with color
+        log_inference_end(
+            logger,
+            analysis_id=analysis_id,
+            findings_count=len(findings),
+            f1_score=f1_val,
+            time_ms=analysis_time_ms,
+            model=actual_model
         )
 
     except Exception as e:
-        logger.error(f"LangGraph analysis {analysis_id} failed: {str(e)}", exc_info=True)
-        analysis_state[analysis_id]["status"] = "failed"
-        analysis_state[analysis_id]["error"] = str(e)
+        import traceback
+        tb_str = traceback.format_exc()
+        analysis_time_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+        # Log inference error with color + full traceback
+        log_inference_error(
+            logger,
+            analysis_id=analysis_id,
+            error_msg=str(e),
+            time_ms=analysis_time_ms
+        )
+        logger.error("Analysis %s failed", analysis_id, exc_info=True)
+
+        async with analysis_state_lock:
+            if analysis_id in analysis_state:
+                entry = analysis_state[analysis_id]
+                entry["status"] = "failed"
+                entry["error"] = str(e)
+                entry["traceback"] = tb_str
+                entry["completed_at"] = datetime.utcnow()
+                entry["expires_at"] = entry["completed_at"] + ANALYSIS_STATE_TTL
+    finally:
+        unregister_progress_callback(analysis_id)
 
 
 # ============================================================================
@@ -199,15 +314,18 @@ async def submit_code_for_analysis(
         analysis_id = generate_analysis_id()
 
         # Initialize tracking state
-        analysis_state[analysis_id] = {
-            "status": "queued",
-            "created_at": datetime.utcnow(),
-            "code_length": len(request.code),
-            "language": request.language,
-            "file_name": request.file_name,
-            "include_rag": request.include_rag,
-            "requested_model": request.model,  # Optional model selection from request
-        }
+        now = datetime.utcnow()
+        async with analysis_state_lock:
+            analysis_state[analysis_id] = {
+                "status": "queued",
+                "created_at": now,
+                "expires_at": now + ANALYSIS_STATE_TTL,
+                "code_length": len(request.code),
+                "language": request.language,
+                "file_name": request.file_name,
+                "include_rag": request.include_rag,
+                "requested_model": request.model,  # Optional model selection from request
+            }
 
         # Add background task for analysis
         background_tasks.add_task(
@@ -266,8 +384,9 @@ async def get_analysis_results(
 
     HTTP Status:
     - 200: Results ready
-    - 202: Still processing (try again later)
-    - 404: Analysis not found or expired
+    - 404: Analysis not found or evicted
+    - 410: Results older than the retention window (24h)
+    - 425: Still processing (try again later)
     - 500: Analysis failed
     """
     try:
@@ -280,10 +399,28 @@ async def get_analysis_results(
 
         state = analysis_state[analysis_id]
 
+        # L3: Results age out after ANALYSIS_STATE_TTL. Surface expired entries
+        # as 410 Gone instead of serving stale data in the window between
+        # scheduled cleanup ticks. Entry is also evicted lazily here.
+        expires_at = state.get("expires_at")
+        if expires_at and expires_at < datetime.utcnow() and state.get("status") in ("completed", "failed"):
+            async with analysis_state_lock:
+                analysis_state.pop(analysis_id, None)
+            raise HTTPException(
+                status_code=410,
+                detail=(
+                    f"Results for analysis '{analysis_id}' have expired "
+                    "(retention window: 24h)."
+                ),
+            )
+
         # Handle different states
         if state["status"] == "queued" or state["status"] == "processing":
+            # L2: 202 Accepted is semantically reserved for the POST that
+            # *accepted* the job. Polling an unfinished job is a "too early"
+            # condition, so use 425 Too Early.
             raise HTTPException(
-                status_code=202,
+                status_code=425,
                 detail="Analysis still processing. Check /progress endpoint."
             )
 
@@ -307,16 +444,17 @@ async def get_analysis_results(
                 detail="Results not available"
             )
 
-        # ✅ ADD F1 METRICS TO RESPONSE
+        # ✅ ADD F1 METRICS TO RESPONSE (can be None when no ground truth exists)
         metrics = state.get("metrics", {})
-        result.f1_score = metrics.get("f1", 0.0)
-        result.precision = metrics.get("precision", 0.0)
-        result.recall = metrics.get("recall", 0.0)
+        result.f1_score = metrics.get("f1")  # None if no ground truth
+        result.precision = metrics.get("precision")  # Confidence proxy or None
+        result.recall = metrics.get("recall")  # None if no ground truth
         result.ground_truth_count = state.get("ground_truth", {}).get("count", 0)
 
         logger.info(
             f"Retrieved results for analysis {analysis_id}: "
-            f"F1={metrics.get('f1', 0.0):.2f}"
+            f"F1={metrics.get('f1') if metrics.get('f1') is not None else 'N/A'}, "
+            f"mode={metrics.get('evaluation_mode', 'unknown')}"
         )
         return result
 
@@ -432,20 +570,27 @@ async def get_analysis_progress(
         state = analysis_state[analysis_id]
         status = state["status"]
 
-        # Map status to progress
+        # Use the real workflow step published by each LangGraph node (if any).
+        # Fall back to coarse status only when no step has been reported yet.
+        if status == "processing":
+            status = state.get("workflow_step") or "parsing"
+
         progress_map = {
             "queued": (5, "Queued for processing"),
             "parsing": (15, "Parsing code..."),
-            "rag_retrieval": (35, "Retrieving similar examples..."),
-            "inference": (65, "Running LLM inference..."),
-            "validation": (85, "Validating results..."),
+            "model_selection": (25, "Selecting LLM model..."),
+            "chunking": (35, "Chunking code..."),
+            "rag_retrieval": (45, "Retrieving similar examples..."),
+            "inference": (70, "Running LLM inference..."),
+            "validation": (85, "Validating findings..."),
+            "aggregating": (95, "Aggregating results..."),
             "completed": (100, "Analysis complete"),
             "failed": (100, "Analysis failed"),
         }
 
         percentage, step_desc = progress_map.get(
             status,
-            (0, "Unknown status")
+            (10, "Processing...")
         )
 
         # Estimate remaining time
@@ -458,8 +603,6 @@ async def get_analysis_progress(
             # Rough estimate: assume linear progress
             total_estimated_ms = 5000 if status == "queued" else 10000
             estimated_remaining_ms = max(0, int(total_estimated_ms - elapsed_ms))
-
-        logger.info(f"Returned progress for analysis {analysis_id}: {percentage}%")
 
         return ProgressResponse(
             analysis_id=analysis_id,
@@ -490,7 +633,9 @@ async def compare_rag_impact_task(
 ) -> None:
     """Background task to compare RAG impact."""
     try:
-        analysis_state[comparison_id]["status"] = "processing"
+        async with analysis_state_lock:
+            if comparison_id in analysis_state:
+                analysis_state[comparison_id]["status"] = "processing"
         logger.info(f"Starting RAG comparison {comparison_id}")
 
         # Run comparison
@@ -501,15 +646,25 @@ async def compare_rag_impact_task(
         )
 
         # Store results
-        analysis_state[comparison_id]["status"] = "completed"
-        analysis_state[comparison_id]["result"] = comparison_result
+        async with analysis_state_lock:
+            if comparison_id in analysis_state:
+                entry = analysis_state[comparison_id]
+                entry["status"] = "completed"
+                entry["result"] = comparison_result
+                entry["completed_at"] = datetime.utcnow()
+                entry["expires_at"] = entry["completed_at"] + ANALYSIS_STATE_TTL
 
         logger.info(f"RAG comparison {comparison_id} complete")
 
     except Exception as e:
         logger.error(f"Comparison {comparison_id} failed: {e}")
-        analysis_state[comparison_id]["status"] = "failed"
-        analysis_state[comparison_id]["error"] = str(e)
+        async with analysis_state_lock:
+            if comparison_id in analysis_state:
+                entry = analysis_state[comparison_id]
+                entry["status"] = "failed"
+                entry["error"] = str(e)
+                entry["completed_at"] = datetime.utcnow()
+                entry["expires_at"] = entry["completed_at"] + ANALYSIS_STATE_TTL
 
 
 @router.post(
@@ -532,11 +687,14 @@ async def compare_rag_impact(
     Returns comparison_id for tracking and retrieving results.
     """
     comparison_id = generate_analysis_id()
-    analysis_state[comparison_id] = {
-        "status": "queued",
-        "type": "comparison",
-        "created_at": datetime.utcnow(),
-    }
+    now = datetime.utcnow()
+    async with analysis_state_lock:
+        analysis_state[comparison_id] = {
+            "status": "queued",
+            "type": "comparison",
+            "created_at": now,
+            "expires_at": now + ANALYSIS_STATE_TTL,
+        }
 
     background_tasks.add_task(
         compare_rag_impact_task,
@@ -572,13 +730,13 @@ async def delete_analysis_results(analysis_id: str) -> Dict[str, str]:
     Returns confirmation of deletion.
     """
     try:
-        if analysis_id not in analysis_state:
-            raise HTTPException(
-                status_code=404,
-                detail=f"Analysis '{analysis_id}' not found"
-            )
-
-        del analysis_state[analysis_id]
+        async with analysis_state_lock:
+            if analysis_id not in analysis_state:
+                raise HTTPException(
+                    status_code=404,
+                    detail=f"Analysis '{analysis_id}' not found"
+                )
+            analysis_state.pop(analysis_id, None)
 
         logger.info(f"Deleted analysis results: {analysis_id}")
         return {"message": f"Analysis results deleted: {analysis_id}"}
@@ -635,4 +793,86 @@ async def list_active_analyses(
         raise HTTPException(
             status_code=500,
             detail="Failed to list analyses"
+        )
+
+
+@router.get(
+    "/ground-truth/samples",
+    summary="List Available Ground Truth Samples",
+    tags=["evaluation"],
+)
+async def list_ground_truth_samples() -> Dict:
+    """
+    List all available ground truth samples for F1 score evaluation.
+
+    Use these sample names in the file_name field to enable F1 score calculation
+    instead of confidence-based assessment.
+
+    Returns:
+        - samples: List of available sample IDs
+        - total: Total number of available samples
+        - smells_per_sample: Mapping of sample_id to number of detected smells
+    """
+    try:
+        from src.api.detection_integration import load_ground_truth_from_file
+
+        ground_truth = load_ground_truth_from_file()
+
+        samples = list(ground_truth.keys())
+        smells_per_sample = {
+            sample_id: len(smells)
+            for sample_id, smells in ground_truth.items()
+        }
+
+        logger.info(f"Listed {len(samples)} ground truth samples")
+
+        return {
+            "samples": samples,
+            "total": len(samples),
+            "smells_per_sample": smells_per_sample,
+            "info": "Use any of these sample names in the file_name field to get F1 score calculation"
+        }
+
+    except Exception as e:
+        logger.error(f"Error listing ground truth samples: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to list ground truth samples"
+        )
+    """
+    List all available ground truth samples for F1 score evaluation.
+
+    Use these sample names in the file_name field to enable F1 score calculation
+    instead of confidence-based assessment.
+
+    Returns:
+        - samples: List of available sample IDs
+        - total: Total number of available samples
+        - smells_per_sample: Mapping of sample_id to number of detected smells
+    """
+    try:
+        from src.api.detection_integration import load_ground_truth_from_file
+
+        ground_truth = load_ground_truth_from_file()
+
+        samples = list(ground_truth.keys())
+        smells_per_sample = {
+            sample_id: len(smells)
+            for sample_id, smells in ground_truth.items()
+        }
+
+        logger.info(f"Listed {len(samples)} ground truth samples")
+
+        return {
+            "samples": samples,
+            "total": len(samples),
+            "smells_per_sample": smells_per_sample,
+            "info": "Use any of these sample names in the file_name field to get F1 score calculation"
+        }
+
+    except Exception as e:
+        logger.error(f"Error listing ground truth samples: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to list ground truth samples"
         )

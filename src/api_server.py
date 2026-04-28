@@ -7,6 +7,8 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from datetime import datetime
+import asyncio
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +19,10 @@ from src.api.config import config
 from src.api.dependencies import get_logger, initialize_dependencies, cleanup_dependencies
 from src.api.middleware import setup_middleware
 from src.api.exceptions import APIException
+from src.utils.logger import setup_logging
 
+# Initialize logging before anything else
+setup_logging(log_dir=Path("results/logs"), log_name="api_server")
 logger = get_logger(__name__)
 
 
@@ -30,6 +35,10 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Code Smell Detection API v%s", config.API_VERSION)
 
+    # Suppress verbose third-party loggers
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn").setLevel(logging.INFO)
+
     try:
         # Initialize all dependencies
         init_status = initialize_dependencies()
@@ -41,6 +50,12 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Initialization error: {str(e)}", exc_info=True)
         raise
 
+    # Launch background cleanup loop for in-memory analysis_state (TTL eviction).
+    from src.api.routes.analysis import analysis_state_cleanup_loop
+    from src.api.routes.comparison import comparison_cache_cleanup_loop
+    cleanup_task = asyncio.create_task(analysis_state_cleanup_loop())
+    comparison_cleanup_task = asyncio.create_task(comparison_cache_cleanup_loop())
+
     logger.info("✅ API ready to accept requests")
 
     yield
@@ -48,8 +63,19 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("🛑 Shutting down Code Smell Detection API")
 
+    cleanup_task.cancel()
+    comparison_cleanup_task.cancel()
+    for task in (cleanup_task, comparison_cleanup_task):
+        try:
+            await task
+        except (asyncio.CancelledError, Exception):
+            pass
+
     try:
-        cleanup_dependencies()
+        # cleanup_dependencies is synchronous and may do blocking I/O (closing
+        # ChromaDB clients, flushing DB sessions). Run it off the event loop
+        # so shutdown can't stall the main reactor.
+        await asyncio.to_thread(cleanup_dependencies)
         logger.info("✅ Cleanup complete, API shutdown successfully")
     except Exception as e:
         logger.error(f"Error during cleanup: {str(e)}", exc_info=True)
@@ -184,9 +210,9 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(
-        app,
+        "src.api_server:app",
         host="0.0.0.0",
         port=8000,
         log_level="info",
-        reload=True
+        reload=True,
     )

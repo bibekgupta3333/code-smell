@@ -56,86 +56,6 @@ class CodeValidator:
         return True, None
 
 
-class RateLimiter:
-    """Simple in-memory rate limiter."""
-
-    def __init__(self):
-        """Initialize rate limiter."""
-        # Track requests per client: {client_id: [(timestamp, method, endpoint)]}
-        self.requests: dict = defaultdict(list)
-        self.cleanup_interval = 300  # seconds
-
-    def is_allowed(self, client_id: str) -> Tuple[bool, Optional[str]]:
-        """
-        Check if client has exceeded rate limit.
-
-        Args:
-            client_id: Client identifier (IP, user_id, etc.)
-
-        Returns:
-            Tuple of (is_allowed, error_message)
-        """
-        if not config.ENABLE_RATE_LIMITING:
-            return True, None
-
-        now = datetime.utcnow()
-        window_start = now - timedelta(seconds=config.RATE_LIMIT_WINDOW)
-
-        # Clean old requests
-        if client_id in self.requests:
-            self.requests[client_id] = [
-                req_time for req_time in self.requests[client_id]
-                if req_time > window_start
-            ]
-        else:
-            self.requests[client_id] = []
-
-        # Check limit
-        if len(self.requests[client_id]) >= config.RATE_LIMIT_REQUESTS:
-            raise RateLimitExceededException(
-                config.RATE_LIMIT_REQUESTS, config.RATE_LIMIT_WINDOW
-            )
-
-        # Add current request
-        self.requests[client_id].append(now)
-        return True, None
-
-    def get_remaining(self, client_id: str) -> int:
-        """
-        Get remaining requests for client in current window.
-
-        Args:
-            client_id: Client identifier
-
-        Returns:
-            Number of remaining requests
-        """
-        if not config.ENABLE_RATE_LIMITING:
-            return config.RATE_LIMIT_REQUESTS
-
-        now = datetime.utcnow()
-        window_start = now - timedelta(seconds=config.RATE_LIMIT_WINDOW)
-
-        if client_id in self.requests:
-            recent_requests = [
-                req_time for req_time in self.requests[client_id]
-                if req_time > window_start
-            ]
-            return max(0, config.RATE_LIMIT_REQUESTS - len(recent_requests))
-
-        return config.RATE_LIMIT_REQUESTS
-
-    def reset(self, client_id: str) -> None:
-        """
-        Reset rate limit for client.
-
-        Args:
-            client_id: Client identifier
-        """
-        if client_id in self.requests:
-            del self.requests[client_id]
-
-
 class CacheValidator:
     """Validates cache operations."""
 
@@ -234,7 +154,6 @@ class RequestValidator:
     def __init__(self):
         """Initialize validators."""
         self.code_validator = CodeValidator()
-        self.rate_limiter = RateLimiter()
         self.cache_validator = CacheValidator()
         self.timeout_validator = TimeoutValidator()
 
@@ -267,13 +186,9 @@ class RequestValidator:
         # Validate timeout
         validated_timeout = self.timeout_validator.validate_timeout(timeout_seconds)
 
-        # Check rate limit
-        self.rate_limiter.is_allowed(client_id)
-
         return {
             "is_valid": True,
             "timeout_seconds": validated_timeout,
-            "remaining_requests": self.rate_limiter.get_remaining(client_id),
         }
 
 

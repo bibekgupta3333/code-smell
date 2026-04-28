@@ -1,0 +1,52 @@
+name: ChatOllama Import Fallback
+
+# L1: Ensure the langchain_community fallback in
+# src/analysis/code_smell_detector.py actually works when langchain_ollama is
+# absent. A silent regression here breaks local dev on machines that can't
+# install langchain_ollama (e.g. restricted containers).
+
+on:
+  push:
+    paths:
+      - "src/analysis/code_smell_detector.py"
+      - "requirements.txt"
+      - ".github/workflows/chat-ollama-fallback.yml"
+  pull_request:
+    paths:
+      - "src/analysis/code_smell_detector.py"
+      - "requirements.txt"
+      - ".github/workflows/chat-ollama-fallback.yml"
+  workflow_dispatch:
+
+jobs:
+  import-without-langchain-ollama:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install runtime deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Uninstall langchain_ollama to force fallback path
+        run: pip uninstall -y langchain_ollama || true
+
+      - name: Import detector and assert fallback path
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python - <<'PY'
+          import importlib, sys
+          mod = importlib.import_module("src.analysis.code_smell_detector")
+          source = getattr(mod, "_CHAT_OLLAMA_SOURCE", None)
+          print(f"ChatOllama source: {source}")
+          assert source == "langchain_community", (
+              f"Expected fallback to langchain_community, got {source!r}"
+          )
+          PY

@@ -4,7 +4,6 @@ Custom FastAPI middleware for logging, error handling, and monitoring.
 
 import time
 import logging
-import json
 from typing import Callable
 from datetime import datetime
 
@@ -18,6 +17,9 @@ from src.api.exceptions import APIException
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Middleware for logging HTTP requests and responses."""
+
+    # Paths to skip verbose logging (health checks, status, etc.)
+    QUIET_PATHS = {"/api/v1/status", "/api/v1/health", "/docs", "/redoc", "/openapi.json"}
 
     def __init__(self, app, logger: logging.Logger = None):
         """
@@ -55,24 +57,21 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
             response = await call_next(request)
             process_time = time.time() - start_time
 
-            # Log request
-            log_data = {
-                "request_id": request_id,
-                "timestamp": datetime.utcnow().isoformat(),
-                "method": method,
-                "path": path,
-                "status_code": response.status_code,
-                "client_ip": client_ip,
-                "process_time_ms": round(process_time * 1000, 2),
-            }
-
-            # Log at appropriate level
+            # Only log errors, warnings, and important operations (not health checks)
             if response.status_code >= 500:
-                self.logger.error(f"Request error: {json.dumps(log_data)}")
+                self.logger.error(
+                    f"❌ {method} {path} → {response.status_code} | {process_time*1000:.1f}ms"
+                )
             elif response.status_code >= 400:
-                self.logger.warning(f"Request warning: {json.dumps(log_data)}")
-            else:
-                self.logger.info(f"Request: {json.dumps(log_data)}")
+                self.logger.warning(
+                    f"⚠️  {method} {path} → {response.status_code} | {process_time*1000:.1f}ms"
+                )
+            elif path not in self.QUIET_PATHS:
+                # Log analysis requests but not health checks
+                if "/analyze" in path or "/results" in path:
+                    self.logger.info(
+                        f"✓ {method} {path} → {response.status_code} | {process_time*1000:.1f}ms"
+                    )
 
             # Add request ID to response headers
             response.headers["x-request-id"] = request_id
@@ -81,18 +80,7 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
 
         except Exception as e:
             process_time = time.time() - start_time
-
-            log_data = {
-                "request_id": request_id,
-                "timestamp": datetime.utcnow().isoformat(),
-                "method": method,
-                "path": path,
-                "error": str(e),
-                "client_ip": client_ip,
-                "process_time_ms": round(process_time * 1000, 2),
-            }
-
-            self.logger.error(f"Request error: {json.dumps(log_data)}")
+            self.logger.error(f"❌ {method} {path} | Error: {str(e)} | {process_time*1000:.1f}ms")
             raise
 
 
@@ -210,56 +198,6 @@ class PerformanceMonitoringMiddleware(BaseHTTPMiddleware):
         return response
 
 
-class RateLimitingMiddleware(BaseHTTPMiddleware):
-    """Middleware for rate limiting (basic implementation)."""
-
-    def __init__(self, app, rate_limiter=None):
-        """
-        Initialize rate limiting middleware.
-
-        Args:
-            app: FastAPI application
-            rate_limiter: RateLimiter instance
-        """
-        super().__init__(app)
-        self.rate_limiter = rate_limiter
-        self.logger = logging.getLogger(__name__)
-
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
-        """
-        Check rate limits for request.
-
-        Args:
-            request: HTTP request
-            call_next: Next middleware/route handler
-
-        Returns:
-            HTTP response or 429 Too Many Requests
-        """
-        if not config.ENABLE_RATE_LIMITING or not self.rate_limiter:
-            return await call_next(request)
-
-        # Get client identifier (IP for now, could use API key)
-        client_id = request.client.host if request.client else "unknown"
-
-        try:
-            self.rate_limiter.is_allowed(client_id)
-            response = await call_next(request)
-
-            # Add rate limit headers
-            remaining = self.rate_limiter.get_remaining(client_id)
-            response.headers["x-ratelimit-limit"] = str(config.RATE_LIMIT_REQUESTS)
-            response.headers["x-ratelimit-remaining"] = str(remaining)
-            response.headers["x-ratelimit-reset"] = str(config.RATE_LIMIT_WINDOW)
-
-            return response
-
-        except Exception as e:
-            self.logger.warning(f"Rate limit check failed: {str(e)}")
-            # Continue request even if rate limiting fails
-            return await call_next(request)
-
-
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Middleware for adding security headers."""
 
@@ -298,12 +236,7 @@ def setup_middleware(app):
     # Security headers go first (outermost)
     app.add_middleware(SecurityHeadersMiddleware)
 
-    # Then rate limiting
-    if config.ENABLE_RATE_LIMITING:
-        from src.api.dependencies import get_rate_limiter
 
-        rate_limiter = get_rate_limiter()
-        app.add_middleware(RateLimitingMiddleware, rate_limiter=rate_limiter)
 
     # Then performance monitoring
     if config.ENABLE_METRICS:

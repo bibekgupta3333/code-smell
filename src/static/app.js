@@ -153,6 +153,11 @@ async function handleAnalysisSubmit(e) {
 function startProgressPolling() {
     if (progressInterval) clearInterval(progressInterval);
 
+    // Reset agent graph to clean state
+    resetAgentGraph();
+    // Immediately show the first node as active
+    updateAgentGraph('queued');
+
     progressInterval = setInterval(async () => {
         if (!currentAnalysisId) {
             clearInterval(progressInterval);
@@ -178,7 +183,7 @@ function startProgressPolling() {
         } catch (error) {
             console.error('Error fetching progress:', error);
         }
-    }, 1000); // Poll every 1 second
+    }, 500); // Poll every 500ms for smoother transitions
 }
 
 // Update progress bar
@@ -191,13 +196,14 @@ function updateProgressBar(percentage, status) {
     progressPercent.textContent = percentage + '%';
 
     const steps = {
-        'queued': 'Queued...',
+        'queued': 'Queued for processing...',
+        'processing': 'Processing...',
         'parsing': 'Parsing code...',
-        'rag_retrieval': 'Retrieving context...',
-        'inference': 'Running inference...',
+        'rag_retrieval': 'Retrieving similar examples...',
+        'inference': 'Running LLM inference...',
         'validation': 'Validating results...',
-        'completed': 'Completed!',
-        'failed': 'Failed!'
+        'completed': 'Analysis complete!',
+        'failed': 'Analysis failed'
     };
 
     progressStep.textContent = steps[status] || status;
@@ -218,17 +224,17 @@ const AGENT_NODE_ORDER = [
     'gnode-end',
 ];
 
+// Maps actual API status values to active node IDs
+// These statuses are returned from /api/v1/progress/{analysis_id}
 const STATUS_TO_ACTIVE_NODE = {
     'queued':        'gnode-start',
+    'processing':    'gnode-parse',      // Initial processing state
     'parsing':       'gnode-parse',
-    'model_selection': 'gnode-model',
-    'chunking':      'gnode-chunk',
     'rag_retrieval': 'gnode-rag',
     'inference':     'gnode-detect',
     'validation':    'gnode-validate',
-    'aggregating':   'gnode-aggregate',
     'completed':     'gnode-end',
-    'failed':        null,   // keep current state, mark error
+    'failed':        null,
 };
 
 function updateAgentGraph(status) {
@@ -253,10 +259,16 @@ function updateAgentGraph(status) {
             // Unknown status – leave pending
             el.classList.add('state-pending');
         } else if (idx < activeIdx) {
+            // Completed nodes
             el.classList.add('state-done');
         } else if (idx === activeIdx) {
+            // Currently active node – shows pulsing animation
             el.classList.add('state-active');
+        } else if (idx === activeIdx + 1) {
+            // Next node – show as pending but slightly highlighted
+            el.classList.add('state-pending');
         } else {
+            // Future nodes
             el.classList.add('state-pending');
         }
     });
@@ -297,7 +309,12 @@ function displayResults(result) {
     document.getElementById('results-display').style.display = 'block';
 
     // Update metrics
-    const findings = result.findings || [];
+    // H3: Defensively coerce findings to an array and drop malformed entries
+    // so a single null/undefined field from the LLM can't crash the UI.
+    const rawFindings = Array.isArray(result.findings) ? result.findings : [];
+    const findings = rawFindings.filter(
+        (f) => f && (f.smell_type || f.type) && (f.location || f.line || f.line_number)
+    );
     document.getElementById('findings-count').textContent = findings.length;
 
     const maxSeverity = findings.length > 0
@@ -315,21 +332,71 @@ function displayResults(result) {
 
     // Display AI metrics (Model used, F1 score, etc.)
     const modelUsed = result.model_used || 'Unknown';
-    const f1Score = result.f1_score !== undefined ? parseFloat(result.f1_score).toFixed(3) : '--';
-    const precision = result.precision !== undefined ? parseFloat(result.precision).toFixed(3) : '--';
-    const recall = result.recall !== undefined ? parseFloat(result.recall).toFixed(3) : '--';
+
+    // Helper: format metric value, showing N/A for null/undefined
+    const fmtMetric = (val) => {
+        if (val === null || val === undefined) return 'N/A';
+        const num = parseFloat(val);
+        return isNaN(num) ? 'N/A' : num.toFixed(3);
+    };
+
+    const f1Score = fmtMetric(result.f1_score);
+    const precision = fmtMetric(result.precision);
+    const recall = fmtMetric(result.recall);
+    const hasGroundTruth = result.ground_truth_count && result.ground_truth_count > 0;
 
     document.getElementById('model-used').textContent = modelUsed;
-    document.getElementById('f1-score').textContent = f1Score;
-    document.getElementById('precision-recall').textContent =
-        (precision !== '--' && recall !== '--') ? `${precision} / ${recall}` : '--';
+
+    // F1/Confidence score element was removed from the HTML; skip if absent
+    const f1Element = document.getElementById('f1-score');
+    if (f1Element) {
+        f1Element.textContent = f1Score;
+        if (f1Score === 'N/A') {
+            f1Element.title = 'No ground truth available for this snippet. F1 requires benchmark data.';
+            f1Element.style.opacity = '0.6';
+        } else {
+            f1Element.title = '';
+            f1Element.style.opacity = '1';
+        }
+    }
+
+    // Precision / Recall element was removed from the HTML; skip if absent
+    const prElement = document.getElementById('precision-recall');
+    if (prElement) {
+        if (precision !== 'N/A' && recall !== 'N/A') {
+            prElement.textContent = `${precision} / ${recall}`;
+            prElement.title = 'Precision / Recall against ground truth';
+            prElement.style.opacity = '1';
+        } else if (precision !== 'N/A') {
+            prElement.textContent = `${precision} (conf)`;
+            prElement.title = 'Average confidence score (no ground truth available)';
+            prElement.style.opacity = '0.85';
+        } else {
+            prElement.textContent = 'N/A';
+            prElement.title = 'No findings detected or no ground truth available';
+            prElement.style.opacity = '0.6';
+        }
+    }
 
     // Display model reasoning if available
-    if (result.model_reasoning) {
-        document.getElementById('model-reasoning-row').style.display = 'block';
-        document.getElementById('model-reasoning-content').textContent = result.model_reasoning;
+    // L4: Always show reasoning when the backend returns any non-empty string,
+    // whether the model was auto-picked by the agent OR user-specified. The
+    // backend populates "User-specified model: <name>" for manual picks, so
+    // hiding that row made the UI silently inconsistent across the two paths.
+    const reasoning = typeof result.model_reasoning === 'string' ? result.model_reasoning.trim() : '';
+    const reasoningRow = document.getElementById('model-reasoning-row');
+    const reasoningContent = document.getElementById('model-reasoning-content');
+    if (reasoning) {
+        reasoningRow.style.display = 'block';
+        reasoningContent.textContent = reasoning;
+        // Adjust the tag so it's accurate for both auto and manual selection.
+        const tagEl = reasoningRow.querySelector('.section-tag');
+        if (tagEl) {
+            const isUserPicked = /^user[- ]specified/i.test(reasoning);
+            tagEl.textContent = isUserPicked ? 'User Selection' : 'Agentic Decision';
+        }
     } else {
-        document.getElementById('model-reasoning-row').style.display = 'none';
+        reasoningRow.style.display = 'none';
     }
 
     // Display findings

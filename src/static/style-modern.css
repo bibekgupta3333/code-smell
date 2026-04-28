@@ -1297,6 +1297,7 @@ body {
     background: rgba(103, 232, 249, 0.08);
     box-shadow: 0 0 18px rgba(103, 232, 249, 0.22), inset 0 0 8px rgba(103, 232, 249, 0.06);
     transform: translateY(-2px);
+    animation: agent-pulse 1.6s ease-in-out infinite;
 }
 
 .agent-node.state-active .agent-node-icon,
@@ -1330,10 +1331,6 @@ body {
 @keyframes agent-pulse {
     0%, 100% { box-shadow: 0 0 18px rgba(103, 232, 249, 0.22), inset 0 0 8px rgba(103, 232, 249, 0.06); }
     50%       { box-shadow: 0 0 32px rgba(103, 232, 249, 0.45), inset 0 0 12px rgba(103, 232, 249, 0.12); }
-}
-
-.agent-node.state-active {
-    animation: agent-pulse 1.6s ease-in-out infinite;
 }
 
 @media (max-width: 767px) {
