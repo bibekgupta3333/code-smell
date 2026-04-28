@@ -11,7 +11,7 @@ langchain-ollama>=1.1.0,<2.0.0     # Ollama integration (replaces deprecated lan
 langchain-community==0.4.1         # Community integrations
 langchain-core>=1.2.17,<2.0.0      # Core LangChain abstractions
 langgraph==1.0.10                  # Workflow state machine (Architecture Section 6)
-langsmith==0.7.11                  # LangChain debugging/tracing (optional)
+langsmith==0.7.31                  # LangChain debugging/tracing (optional)
 
 # ============================================================================
 # VECTOR STORE & EMBEDDINGS (RAG Pipeline)
