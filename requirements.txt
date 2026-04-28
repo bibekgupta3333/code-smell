@@ -36,7 +36,7 @@ scipy==1.17.1                      # Scientific computing
 tree-sitter==0.25.2                # Syntax tree parsing
 # tree-sitter-languages removed: incompatible with Python 3.14 (all versions cap at <3.13)
 # Use individual language packages if needed: tree-sitter-python, tree-sitter-java, etc.
-pygments==2.19.2                   # Code syntax highlighting
+pygments==2.20.0                   # Code syntax highlighting
 radon==6.0.1                       # Code metrics (complexity, LOC)
 lizard==1.21.2                     # Cyclomatic complexity analyzer
 
