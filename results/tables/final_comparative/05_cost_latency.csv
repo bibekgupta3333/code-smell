@@ -1,0 +1,19 @@
+model,prompt,elapsed_sec,tokens_in,tokens_out,f1,macro_f1
+DeepSeek v3.2,p1_zero_shot,607.4,0,0,0.7725,0.7774
+DeepSeek v3.2,p2_few_shot,582.6,0,0,0.8539,0.848
+DeepSeek v3.2,p3_taxonomy_tree,609.3,0,0,0.7269,0.6991
+DeepSeek v3.2,p4_self_verify,5400.6,0,0,0.2237,0.2076
+DeepSeek v3.2,p5_rag_dense,582.8,0,0,0.82,0.7844
+DeepSeek v3.2,p5_rag_random,564.0,0,0,0.8373,0.8018
+Gemma 3 27B-IT,p1_zero_shot,641.7,0,0,0.7273,0.7266
+Gemma 3 27B-IT,p2_few_shot,576.6,0,0,0.8721,0.8848
+Gemma 3 27B-IT,p3_taxonomy_tree,637.9,0,0,0.7138,0.7148
+Gemma 3 27B-IT,p4_self_verify,1437.6,0,0,0.5514,0.5693
+Gemma 3 27B-IT,p5_rag_dense,505.2,0,0,0.7775,0.7736
+Gemma 3 27B-IT,p5_rag_random,495.3,0,0,0.7619,0.7457
+Mistral Devstral 2 123B,p1_zero_shot,525.3,0,0,0.6917,0.7703
+Mistral Devstral 2 123B,p2_few_shot,533.9,0,0,0.9474,0.927
+Mistral Devstral 2 123B,p3_taxonomy_tree,604.2,0,0,0.5967,0.6522
+Mistral Devstral 2 123B,p4_self_verify,1239.4,0,0,0.6028,0.6706
+Mistral Devstral 2 123B,p5_rag_dense,583.9,0,0,0.9638,0.9432
+Mistral Devstral 2 123B,p5_rag_random,534.5,0,0,0.9333,0.8756

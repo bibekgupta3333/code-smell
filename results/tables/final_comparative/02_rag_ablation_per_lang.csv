@@ -1,0 +1,13 @@
+model,language,dense (k=3),random (k=2),Δ (dense − random)
+DeepSeek v3.2,java,0.7782,0.783,-0.005
+DeepSeek v3.2,python,0.8536,0.9176,-0.064
+DeepSeek v3.2,javascript,0.875,0.9016,-0.027
+DeepSeek v3.2,cpp,0.75,0.6879,0.062
+Gemma 3 27B-IT,java,0.601,0.7032,-0.102
+Gemma 3 27B-IT,python,0.887,0.8692,0.018
+Gemma 3 27B-IT,javascript,0.7389,0.7282,0.011
+Gemma 3 27B-IT,cpp,0.8903,0.7206,0.17
+Mistral Devstral 2 123B,java,0.9635,0.9673,-0.004
+Mistral Devstral 2 123B,python,0.9847,0.9769,0.008
+Mistral Devstral 2 123B,javascript,0.9802,0.9802,0.0
+Mistral Devstral 2 123B,cpp,0.8993,0.7042,0.195

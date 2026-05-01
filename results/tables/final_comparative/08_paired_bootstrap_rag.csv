@@ -1,0 +1,4 @@
+model,ΔF1 (dense−random),CI 2.5%,CI 97.5%,sig
+DeepSeek v3.2,-0.017,-0.067,0.029,ns
+Gemma 3 27B-IT,0.016,-0.046,0.098,ns
+Mistral Devstral 2 123B,0.03,0.002,0.069,✅

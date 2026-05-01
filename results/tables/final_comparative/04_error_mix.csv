@@ -1,0 +1,19 @@
+model,prompt,tp,fp,fn,parse_errors,invalid,total_findings,FP/FN,err_rate
+DeepSeek v3.2,p1_zero_shot,360,104,108,0,0,468,0.96,0.0
+DeepSeek v3.2,p2_few_shot,380,42,88,0,0,424,0.48,0.0
+DeepSeek v3.2,p3_taxonomy_tree,334,117,134,0,0,455,0.87,0.0
+DeepSeek v3.2,p4_self_verify,69,80,399,14,0,150,0.2,0.093
+DeepSeek v3.2,p5_rag_dense,360,50,108,0,0,410,0.46,0.0
+DeepSeek v3.2,p5_rag_random,373,50,95,0,0,423,0.53,0.0
+Gemma 3 27B-IT,p1_zero_shot,348,141,120,0,0,499,1.18,0.0
+Gemma 3 27B-IT,p2_few_shot,382,26,86,0,0,410,0.3,0.0
+Gemma 3 27B-IT,p3_taxonomy_tree,323,114,145,0,0,453,0.79,0.0
+Gemma 3 27B-IT,p4_self_verify,228,131,240,1,0,364,0.55,0.003
+Gemma 3 27B-IT,p5_rag_dense,311,21,157,0,0,335,0.13,0.0
+Gemma 3 27B-IT,p5_rag_random,304,26,164,1,0,332,0.16,0.003
+Mistral Devstral 2 123B,p1_zero_shot,322,141,146,0,0,468,0.97,0.0
+Mistral Devstral 2 123B,p2_few_shot,441,22,27,0,0,466,0.81,0.0
+Mistral Devstral 2 123B,p3_taxonomy_tree,307,254,161,0,0,568,1.58,0.0
+Mistral Devstral 2 123B,p4_self_verify,258,130,210,2,0,392,0.62,0.005
+Mistral Devstral 2 123B,p5_rag_dense,452,18,16,0,0,470,1.12,0.0
+Mistral Devstral 2 123B,p5_rag_random,434,28,34,0,0,462,0.82,0.0
