@@ -21,7 +21,13 @@ Walk the following ordered checks. Each check has a **trigger** (an
 observable property of the code) and an **action** (emit / skip).
 Trigger thresholds are *heuristic anchors*, not hard rules — adjust upward
 if the surrounding code uses a comparable style, downward for very small
-files. When in doubt, **skip**.
+files.
+
+**Default action is SKIP.** Most checks should not fire on most files.
+Only emit when the trigger is concretely satisfied by lines you can cite.
+`"→ emit"` is conditional on the trigger — never enumerate the list as
+a todo of items to produce. False positives are penalised equally to
+false negatives.
 
 The thresholds below summarise the operationalisations used by Sharma &
 Spinellis (2018) and DesigniteJava; they are starting points, not verdicts.
@@ -107,5 +113,9 @@ only.
 ```javascript
 {SOURCE_CODE}
 ```
+
+Before returning, **deduplicate**: keep at most one finding per
+`(method, smell_type)` pair, and ensure each `smell_type` is a leaf name
+from the taxonomy (never a category like `Bloaters`).
 
 Respond with the JSON object only.
