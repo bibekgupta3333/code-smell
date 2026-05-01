@@ -32,11 +32,13 @@ def chat(
     seed: int = 42,
     num_ctx: Optional[int] = 8192,
     num_predict: Optional[int] = 4096,
-) -> str:
-    """Send a single chat turn and return the assistant text.
+) -> tuple[str, dict]:
+    """Send a single chat turn.
 
-    Deterministic by default (temperature=0, fixed seed) — required for
-    reproducible research runs.
+    Returns:
+        (assistant_text, usage_dict) where usage_dict has keys
+        ``input_tokens``, ``output_tokens``, ``total_tokens`` (ints; may be
+        0 if the backend did not report counts).
     """
     options = {"temperature": temperature, "seed": seed}
     if num_ctx is not None:
@@ -52,7 +54,19 @@ def chat(
         ],
         options=options,
     )
-    return resp["message"]["content"]
+    text = resp["message"]["content"]
+
+    # Ollama returns prompt_eval_count / eval_count on the response object.
+    in_tok  = int(getattr(resp, "prompt_eval_count", 0) or resp.get("prompt_eval_count", 0) or 0) \
+        if hasattr(resp, "get") else int(getattr(resp, "prompt_eval_count", 0) or 0)
+    out_tok = int(getattr(resp, "eval_count", 0) or resp.get("eval_count", 0) or 0) \
+        if hasattr(resp, "get") else int(getattr(resp, "eval_count", 0) or 0)
+    usage = {
+        "input_tokens":  in_tok,
+        "output_tokens": out_tok,
+        "total_tokens":  in_tok + out_tok,
+    }
+    return text, usage
 
 
 def health_check() -> str:

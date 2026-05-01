@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from . import config, dataset, evaluator, ollama_client, prompt_loader
+from . import config, dataset, evaluator, llm_client, prompt_loader
 
 
 def _print_summary(metrics: dict, verbose: bool = False) -> None:
@@ -21,6 +21,13 @@ def _print_summary(metrics: dict, verbose: bool = False) -> None:
     print(f"\n{'=' * 72}")
     print(f"Records: {o['n_records']}   Parse errors: {o['parse_errors']}")
     print(f"Pooled keys: TP={o['tp']}  FP={o['fp']}  FN={o['fn']}")
+
+    tu = metrics.get("token_usage")
+    if tu:
+        print(f"Tokens   : in={tu['total_input_tokens']}  out={tu['total_output_tokens']}  "
+              f"total={tu['total_tokens']}   "
+              f"avg in/out={tu['avg_input_tokens']:.0f}/{tu['avg_output_tokens']:.0f}   "
+              f"max in/out={tu['max_input_tokens']}/{tu['max_output_tokens']}")
     print(f"\n{'Metric':22s} {'Precision':>10s} {'Recall':>10s} {'F1':>10s}")
     print(f"{'-' * 56}")
     print(f"{'Micro (pooled keys)':22s} {o['micro_precision']:>10.4f} {o['micro_recall']:>10.4f} {o['micro_f1']:>10.4f}")
@@ -98,14 +105,18 @@ def run(prompt_name: str) -> int:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     parser = argparse.ArgumentParser(description=f"Run {prompt_name}")
-    parser.add_argument("--provider", choices=["auto", "local", "cloud"],
+    parser.add_argument("--provider", choices=["auto", "local", "cloud", "bedrock"],
                         default="auto",
-                        help="Which Ollama backend to use. "
+                        help="Which LLM backend to use. "
                              "'auto' = detect from OLLAMA_HOST env var (default). "
-                             "'local' = http://localhost:11434. "
-                             "'cloud' = https://ollama.com (requires OLLAMA_API_KEY).")
+                             "'local' = Ollama at http://localhost:11434. "
+                             "'cloud' = Ollama Cloud at https://ollama.com (needs OLLAMA_API_KEY). "
+                             "'bedrock' = AWS Bedrock via boto3 converse API "
+                             "(needs AWS credentials + region; see config.AWS_REGION).")
     parser.add_argument("--model", default=None,
-                        help="Ollama model tag (e.g. qwen2.5-coder:7b, gpt-oss:120b). "
+                        help="Model id. For Ollama: tag like qwen2.5-coder:7b. "
+                             "For Bedrock: full model id like "
+                             "anthropic.claude-3-5-sonnet-20240620-v1:0. "
                              "Default depends on --provider.")
     parser.add_argument("--language", choices=["java", "python", "javascript", "cpp"],
                         default=None, help="Filter to one language")
@@ -124,9 +135,12 @@ def run(prompt_name: str) -> int:
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num-ctx", type=int, default=None,
-                        help="Context window in tokens. Default: 8192 for p1/p3/p4, 16384 for p2/p5.")
+                        help="Input context window in tokens (Ollama only). "
+                             "Default: 8192 for p1/p3/p4, 16384 for p2/p5. "
+                             "Ignored on Bedrock (context is fixed per model).")
     parser.add_argument("--num-predict", type=int, default=4096,
-                        help="Max output tokens (default 4096)")
+                        help="Max output tokens (default 4096). "
+                             "Maps to Ollama num_predict / Bedrock maxTokens.")
     parser.add_argument("--bootstrap", type=int, default=1000,
                         help="Bootstrap resamples for micro P/R/F1 95%% CIs. "
                              "Set 0 to disable. Default 1000.")
@@ -146,11 +160,17 @@ def run(prompt_name: str) -> int:
 
     # Apply --provider override BEFORE the health check / default-model lookup.
     if args.provider == "local":
+        config.PROVIDER = "local"
         config.OLLAMA_HOST = "http://localhost:11434"
     elif args.provider == "cloud":
+        config.PROVIDER = "cloud"
         config.OLLAMA_HOST = "https://ollama.com"
         if not config.OLLAMA_API_KEY:
             print("WARNING: --provider=cloud but OLLAMA_API_KEY is not set.")
+    elif args.provider == "bedrock":
+        config.PROVIDER = "bedrock"
+    else:  # auto
+        config.PROVIDER = "cloud" if "ollama.com" in config.OLLAMA_HOST else "local"
 
     if args.model is None:
         args.model = config.default_model()
@@ -159,9 +179,10 @@ def run(prompt_name: str) -> int:
         # Long-prompt strategies need more context to avoid output truncation.
         args.num_ctx = 16384 if prompt_name in ("p2_few_shot", "p5_rag") else 8192
 
-    mode = "cloud" if config.is_cloud() else "local"
-    print(f"Provider: {mode}  (host={config.OLLAMA_HOST})")
-    print(ollama_client.health_check())
+    mode = config.PROVIDER
+    host = (f"AWS Bedrock {config.AWS_REGION or 'cli-default'}") if config.is_bedrock() else config.OLLAMA_HOST
+    print(f"Provider: {mode}  (host={host})")
+    print(llm_client.health_check())
     print(f"Model: {args.model}")
     print(f"Prompt: {prompt_name}  num_ctx={args.num_ctx}  num_predict={args.num_predict}")
     print(f"Dataset: {args.dataset}/{args.split}.json")
@@ -187,7 +208,7 @@ def run(prompt_name: str) -> int:
         if args.verbose:
             logging.info(f"SYSTEM PROMPT:\n{sys_text}\n\nUSER PROMPT:\n{user_text}")
         try:
-            response = ollama_client.chat(
+            response, usage = llm_client.chat(
                 args.model, sys_text, user_text,
                 temperature=args.temperature, seed=args.seed,
                 num_ctx=args.num_ctx, num_predict=args.num_predict,
@@ -195,6 +216,7 @@ def run(prompt_name: str) -> int:
         except Exception as e:  # noqa: BLE001
             print(f"  [{i}/{len(records)}] {rec['sample_id']}: REQUEST FAILED: {e}")
             response = ""
+            usage = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0}
 
         parsed = evaluator.extract_json(response)
         gold = dataset.ground_truth_keys(rec)
@@ -225,6 +247,9 @@ def run(prompt_name: str) -> int:
             "truncated":   truncated,
             "invalid_findings": invalid_findings,
             "total_findings":   total_findings,
+            "input_tokens":  usage["input_tokens"],
+            "output_tokens": usage["output_tokens"],
+            "total_tokens":  usage["total_tokens"],
         }
         per_record_results.append(item)
         raw_responses.append({
@@ -238,6 +263,9 @@ def run(prompt_name: str) -> int:
             "truncated":   truncated,
             "invalid_findings": invalid_findings,
             "total_findings":   total_findings,
+            "input_tokens":  usage["input_tokens"],
+            "output_tokens": usage["output_tokens"],
+            "total_tokens":  usage["total_tokens"],
             "raw":         response,
         })
 
@@ -250,7 +278,8 @@ def run(prompt_name: str) -> int:
                 flag += f" inv={invalid_findings}"
             if truncated:
                 flag += " TRUNC"
-        print(f"  [{i}/{len(records)}] {rec['sample_id']:35s} {flag}")
+        tok_str = f" tok={usage['input_tokens']}→{usage['output_tokens']}"
+        print(f"  [{i}/{len(records)}] {rec['sample_id']:35s} {flag}{tok_str}")
 
     elapsed = time.time() - t0
     metrics = evaluator.evaluate(per_record_results)
@@ -264,9 +293,10 @@ def run(prompt_name: str) -> int:
     metrics["meta"] = {
         "prompt":       prompt_name,
         "model":        args.model,
-        "provider":     "cloud" if config.is_cloud() else "local",
-        "host":         config.OLLAMA_HOST,
+        "provider":     config.PROVIDER,
+        "host":         host,
         "is_cloud":     config.is_cloud(),
+        "is_bedrock":   config.is_bedrock(),
         "dataset":      args.dataset,
         "split":        args.split,
         "language":     args.language or "all",
@@ -280,6 +310,20 @@ def run(prompt_name: str) -> int:
         "rag_k":        args.rag_k    if prompt_name == "p5_rag" else None,
         "elapsed_sec":  round(elapsed, 1),
         "timestamp":    datetime.now().isoformat(timespec="seconds"),
+    }
+
+    # Aggregate token usage
+    tok_in  = sum(r["input_tokens"]  for r in per_record_results)
+    tok_out = sum(r["output_tokens"] for r in per_record_results)
+    n = max(len(per_record_results), 1)
+    metrics["token_usage"] = {
+        "total_input_tokens":  tok_in,
+        "total_output_tokens": tok_out,
+        "total_tokens":        tok_in + tok_out,
+        "avg_input_tokens":    round(tok_in  / n, 1),
+        "avg_output_tokens":   round(tok_out / n, 1),
+        "max_input_tokens":    max((r["input_tokens"]  for r in per_record_results), default=0),
+        "max_output_tokens":   max((r["output_tokens"] for r in per_record_results), default=0),
     }
 
     _print_summary(metrics, verbose=args.verbose)
@@ -309,6 +353,7 @@ def run(prompt_name: str) -> int:
                 "precision", "recall", "f1",
                 "parse_error", "truncated",
                 "invalid_findings", "total_findings",
+                "input_tokens", "output_tokens", "total_tokens",
             ])
             for raw, item in zip(raw_responses, per_record_results):
                 gold = item["gold"]; pred = item["pred"]
@@ -324,6 +369,7 @@ def run(prompt_name: str) -> int:
                     f"{p_i:.4f}", f"{r_i:.4f}", f"{f_i:.4f}",
                     int(item["parse_error"]), int(item["truncated"]),
                     item["invalid_findings"], item["total_findings"],
+                    item["input_tokens"], item["output_tokens"], item["total_tokens"],
                 ])
         print(f"Saved → {csv_path}")
 
