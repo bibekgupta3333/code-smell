@@ -333,7 +333,10 @@ def run(prompt_name: str) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     safe_model = args.model.replace("/", "_").replace(":", "_")
-    base = f"{prompt_name}__{safe_model}__{args.dataset}__{args.split}__{args.language or 'all'}__{stamp}"
+    rag_tag = ""
+    if prompt_name == "p5_rag":
+        rag_tag = f"__{args.rag_mode}_k{args.rag_k}"
+    base = f"{prompt_name}__{safe_model}__{args.dataset}__{args.split}__{args.language or 'all'}{rag_tag}__{stamp}"
 
     (out_dir / f"{base}.metrics.json").write_text(
         json.dumps(metrics, indent=2), encoding="utf-8"

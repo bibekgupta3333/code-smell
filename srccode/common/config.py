@@ -68,7 +68,7 @@ if BEDROCK_API_KEY and not os.environ.get("AWS_BEARER_TOKEN_BEDROCK"):
 # Override with --model on the CLI.
 DEFAULT_MODEL_BEDROCK = os.environ.get(
     "BEDROCK_MODEL_ID",
-    "deepseek.v3.2",
+    "google.gemma-3-27b-it",
 )
 
 # --- Active provider ---------------------------------------------------------
