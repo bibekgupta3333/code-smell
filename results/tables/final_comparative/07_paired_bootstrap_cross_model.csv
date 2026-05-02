@@ -1,0 +1,4 @@
+A,B,ΔF1 (B−A),CI 2.5%,CI 97.5%,sig
+DeepSeek v3.2 (P2 few-shot),Gemma 3 27B-IT (P2 few-shot),0.018,-0.043,0.077,ns
+DeepSeek v3.2 (P2 few-shot),Mistral Devstral 2 123B (P5 RAG dense (k=3)),0.11,0.055,0.171,✅
+Gemma 3 27B-IT (P2 few-shot),Mistral Devstral 2 123B (P5 RAG dense (k=3)),0.092,0.044,0.142,✅

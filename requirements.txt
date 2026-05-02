@@ -6,6 +6,8 @@
 # LLM & ORCHESTRATION (Architecture Section 11.3)
 # ============================================================================
 ollama==0.6.1                      # Local LLM client for Ollama
+boto3>=1.35.0                      # AWS SDK — Bedrock runtime (converse API)
+botocore>=1.35.0
 langchain==1.2.10                  # LLM orchestration framework
 langchain-ollama>=1.1.0,<2.0.0     # Ollama integration (replaces deprecated langchain-community ChatOllama)
 langchain-community==0.4.1         # Community integrations
