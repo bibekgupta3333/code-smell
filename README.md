@@ -1,426 +1,290 @@
-# LLM-Based Code Smell Detection System
-## Empirical Evaluation of Multi-Agent LLM Code Analysis
 
-**Status:** Core System Implemented ✅ — Evaluation Phase In Progress 🔬  
-**Project Start:** February 9, 2026  
-**Submission Deadline:** May 26, 2026  
-**Current Branch:** `Feat/orm`
+# LLM Code-Smell Detection: An Empirical Evaluation of Prompting Strategies
 
----
+Empirical study of three instruction-tuned LLMs (DeepSeek v3.2 671B, Gemma 3 27B-IT,
+Mistral Devstral 2 123B) under five prompting strategies (zero-shot, few-shot,
+taxonomy-tree CoT, self-verify, RAG) on a Fowler-aligned, expert-annotated
+code-smell benchmark spanning Java, Python, JavaScript, and C++.
 
-## 📋 Project Overview
-
-An empirical research project evaluating Large Language Models (LLMs) for detecting and explaining code smells. The system uses a multi-agent architecture with a LangGraph state machine, RAG-augmented analysis, and a SQLAlchemy ORM backend for experiment tracking.
-
-- **Core Engine:** LangGraph state machine + LangChain ReAct agents
-- **LLM Runtime:** Local Ollama (privacy-preserving, no API costs)
-- **RAG Pipeline:** ChromaDB vector store + sentence-transformers embeddings
-- **Database:** SQLite + SQLAlchemy 2.0 ORM (9 tables, Alembic migrations)
-- **Code Analysis:** tree-sitter parsing, radon/lizard metrics
-- **Optional API:** FastAPI (deployment) / Streamlit (UI)
-- **Focus:** Privacy-preserving, reproducible, cost-effective code analysis
+- **Best configuration:** Mistral Devstral 2 123B + P5 dense RAG → **micro F1 0.964**
+  on the SmellyCode test split (paired-bootstrap 95% CI on Δ vs. P1: [0.191, 0.365]).
+- **Headline empirical findings:**
+  - Few-shot is the single largest universal lever (+0.16 mean F1 across models).
+  - Taxonomy-tree CoT and self-verify *degrade* accuracy on this task.
+  - Dense retrieval beats random retrieval significantly only for the strongest model.
+- **Repository:** <https://github.com/bibekgupta3333/code-smell/>
+- **Paper:** [paper/main.tex](paper/main.tex)
 
 ---
 
-## 🎯 Research Goals
+## Headline Results (see [paper §VI](paper/main.tex))
 
-### Primary Research Questions
+![Pooled micro F1 across all (model, prompt) cells](paper/figures/02_headline_f1.png)
 
-1. **RQ1:** How accurately can local LLMs detect code smells vs. traditional tools?
-2. **RQ2:** Does RAG improve LLM detection accuracy?
-3. **RQ3:** Which smell types are LLMs most/least effective at detecting?
-4. **RQ4:** How do LLM explanations compare to traditional tool outputs?
-
-### Expected Contributions
-
-- **Empirical:** First rigorous evaluation of local LLMs on MaRV dataset
-- **Tool:** Open-source, privacy-preserving code review system
-- **Dataset:** Enhanced with LLM predictions and explanations
-- **Practical:** Reproducible alternative to commercial APIs
+*Figure: Pooled micro F1 across all (model, prompt) cells. Mistral Devstral 2 123B with P5 dense RAG dominates; few-shot is the strongest universal lever; self-verify is catastrophic for DeepSeek and harmful for Gemma. See [paper §VI](paper/main.tex) for discussion.*
 
 ---
 
-## 📁 Project Structure
+## Repository layout
 
 ```
 code-smell/
-├── src/                               # Core source code (implemented ✅)
-│   ├── workflow_graph.py              # LangGraph state machine (main entry)
-│   ├── analysis_coordinator.py        # Multi-agent coordination + chunking
-│   ├── code_analysis_workflow.py      # Workflow execution + file I/O
-│   ├── code_smell_detector.py         # LangChain ReAct agent (detector)
-│   ├── rag_pipeline.py                # RAG pipeline orchestration
-│   ├── rag_retriever.py               # RAG retriever agent
-│   ├── embedding_service.py           # sentence-transformers embeddings
-│   ├── vector_store.py                # ChromaDB vector store interface
-│   ├── code_parser.py                 # Language detection, AST, metrics
-│   ├── code_chunker.py                # Code chunking strategies
-│   ├── llm_client.py                  # Ollama LLM client wrapper
-│   ├── prompt_templates.py            # LLM prompt templates
-│   ├── response_parser.py             # LLM response parser
-│   ├── quality_validator.py           # Finding validation + confidence scoring
-│   ├── database_manager.py            # SQLAlchemy ORM (9 tables)
-│   ├── logger.py                      # Structured JSON logging
-│   └── common.py                      # Shared utilities, dataclasses
-│
-├── alembic/                           # Database migrations
-│   └── versions/001_initial_schema.py # Initial ORM schema
-│
-├── data/                              # Datasets (populate before running)
-│   ├── datasets/
-│   │   ├── marv/                      # MaRV dataset (download required)
-│   │   ├── qualitas_corpus/           # Qualitas corpus (optional)
-│   │   └── smelly_code/               # Additional smelly code samples
-│   └── ground_truth/                  # Ground truth labels
-│
-├── results/                           # Experiment outputs
-│   ├── exports/                       # CSV/JSON exports (exp_001 complete)
-│   ├── predictions/                   # Predictions by strategy
-│   │   ├── baseline/
-│   │   ├── llm_rag/
-│   │   └── llm_vanilla/
-│   ├── logs/                          # Run logs (JSON)
-│   ├── confusion_matrices/
-│   ├── figures/
-│   ├── metrics/
-│   └── tables/
-│
-├── exp/                               # Experiment configurations
-│   ├── baseline/
-│   ├── rag_experiments/
-│   └── ablation_studies/
-│
-├── cache/                             # Embedding cache (auto-populated)
-│   └── embeddings/
-│
-├── chromadb_store/                    # ChromaDB vector data (auto-populated)
-│
-├── docs/                              # Documentation
-│   ├── architecture/                  # System, LLM, Backend, Database docs
-│   ├── database/                      # ORM migration guide + cheat sheets
-│   ├── planning/                      # WBS, project plan
-│   ├── research/                      # Research proposal, literature review
-│   ├── deployment/                    # Docker deployment guide
-│   └── design/                        # UI/UX specifications
-│
-├── scripts/                           # Utility scripts
-│   └── validate_config.py
-│
-├── visualization/                     # Visualization utilities
-├── paper/                             # Paper drafts
-│
-├── alembic.ini                        # Alembic configuration
-├── config.py                          # Central system configuration
-├── docker-compose.yml                 # Docker orchestration
-├── Dockerfile                         # Container configuration
-├── Makefile                           # Build automation
-└── requirements.txt                   # Python dependencies
+├── paper/                  # Final IEEE paper (main.tex, references.bib, figures/)
+├── srccode/                # Experiment runners
+│   ├── run_p1_zero_shot.py
+│   ├── run_p2_few_shot.py
+│   ├── run_p3_taxonomy_tree.py
+│   ├── run_p4_self_verify.py
+│   ├── run_p5_rag.py
+│   ├── build_rag_index.py
+│   └── common/             # Shared runner, prompt loader, evaluator, RAG context
+├── prompts/                # Per-language prompt templates (p1–p5) + shared schema
+├── prepared_data/          # Harmonised benchmark (annotated / unannotated)
+│   └── datasets/
+├── data/datasets/SmellyCodeDataset/   # Source dataset (Sadik, HRI-EU)
+├── results/                # Per-record CSVs, metrics, predictions, figures
+│   ├── llm_runs/<model>/<prompt>/...
+│   ├── tables/final_comparative/      # CSVs feeding paper tables
+│   └── figures/                       # Figures consumed by the paper
+├── notebooks/              # EDA + final comparative analysis
+├── chromadb_store/         # Persisted retrieval index (built by build_rag_index)
+├── cache/embeddings/       # Sentence-transformer embeddings per language
+├── config.py               # Paths and global config
+├── package.json            # `npm run …` shortcuts for every (prompt × language)
+└── requirements.txt
 ```
 
 ---
 
-##  Quick Start
+## Benchmark
 
-### Prerequisites
-- Python 3.14+
-- [Ollama](https://ollama.ai/) installed and running locally
-- 16 GB RAM recommended (8 GB minimum for 8B models)
+- **Dataset:** SmellyCodeDataset (Sadik, HRI-EU) — 34 files, 473 line-level smell
+  labels, 21 distinct Fowler smell types in 5 categories.
+- **Languages:** Java (7), Python (7), JavaScript (7), C++ (13 — `.cpp` / `.h` pairs).
+- **Split:** language-stratified 60 / 20 / 20 train/val/test, seed = 42.
+- **Output schema:** `findings = [{line, smell, category, evidence, confidence}]`,
+  enforced by [prompts/_output_schema.md](prompts/_output_schema.md) and parsed
+  by [srccode/common/evaluator.py](srccode/common/evaluator.py).
 
-### Setup
+---
+
+## Models and decoding
+
+All three models are served via AWS Bedrock with deterministic decoding
+(`temperature=0`, `top_p=1`, fixed seed = 42).
+
+| Model | Family | Architecture | Context |
+|---|---|---|---|
+| DeepSeek v3.2 671B | DeepSeek | Sparse MoE (~37B active) | ~128K |
+| Gemma 3 27B-IT | Google | Dense | 8K–32K |
+| Mistral Devstral 2 123B | Mistral | Dense | 256K |
+
+---
+
+## Prompting strategies
+
+| ID  | Name              | Description                                                       |
+|-----|-------------------|-------------------------------------------------------------------|
+| P1  | Zero-shot         | Schema-only instruction, no examples                              |
+| P2  | Few-shot          | In-context examples per language                                  |
+| P3  | Taxonomy-tree CoT | Walk the 5 Fowler categories before emitting findings             |
+| P4  | Self-verify       | Two-pass propose-then-critique on the same file                   |
+| P5  | RAG (dense, k=3)  | Retrieve k=3 train exemplars via SBERT cosine similarity          |
+| P5* | RAG (random, k=2) | Null-retriever ablation: random exemplars from the train split    |
+
+Prompt templates live under [prompts/](prompts/) (one folder per language).
+
+---
+
+## Setup
 
 ```bash
-# Clone repository
-git clone https://github.com/bibekgupta3333/code-smell.git
-cd code-smell
-
-# Create and activate virtual environment
+# Python 3.12 recommended
 python -m venv .venv
-source .venv/bin/activate  # macOS/Linux
-
-# Install dependencies
+source .venv/bin/activate
 pip install -r requirements.txt
-
-# Pull default LLM model (llama3:8b)
-ollama pull llama3:8b
-
-# Initialize the database (creates SQLite + runs Alembic migrations)
-alembic upgrade head
 ```
 
-### Run Analysis
+The runner supports three providers selected via `--provider`:
 
-```python
-from src.workflow.code_analysis_workflow import CodeAnalysisWorkflow
+| `--provider` | Backend                                  | Default model                |
+|--------------|------------------------------------------|------------------------------|
+| `local`      | Ollama desktop at `http://localhost:11434` | `qwen3:0.6b`               |
+| `cloud`      | Ollama Cloud at `https://ollama.com`       | `deepseek-v4-flash:cloud`  |
+| `bedrock`    | AWS Bedrock (`bedrock-runtime` `converse`) | `mistral.devstral-2-123b`  |
 
-workflow = CodeAnalysisWorkflow()
-results = workflow.analyze_file("path/to/your/code.py")
-print(results)
-```
+The paper results were produced with `--provider bedrock` against three
+specific Bedrock model IDs (DeepSeek v3.2, Gemma 3 27B-IT, Mistral Devstral 2 123B)
+using deterministic decoding (`temperature=0`, `top_p=1`, seed=42).
 
-### Docker (Optional)
+### Option A: Local Ollama (free, on your machine)
+
+1. Install Ollama from <https://ollama.com/download>.
+2. Pull a coding-capable model:
+   ```bash
+   ollama pull qwen2.5-coder:7b
+   # or, for the runner's default:
+   ollama pull qwen3:0.6b
+   ```
+3. Run an experiment:
+   ```bash
+   python -m srccode.run_p1_zero_shot \
+     --provider local \
+     --model qwen2.5-coder:7b \
+     --dataset annotated --split python --verbose
+   ```
+
+No environment variables are required — `OLLAMA_HOST` defaults to
+`http://localhost:11434`.
+
+### Option B: Ollama Cloud (managed, larger models)
 
 ```bash
-docker compose up -d
+export OLLAMA_HOST=https://ollama.com
+export OLLAMA_API_KEY=<your-ollama-cloud-key>
+
+python -m srccode.run_p2_few_shot \
+  --provider cloud \
+  --model gpt-oss:120b \
+  --dataset annotated --split java --verbose
 ```
 
----
+### Option C: AWS Bedrock (used for the paper)
 
-## 🏗️ Tech Stack
+1. Get access to the model IDs you want to use in the AWS Bedrock console
+   (the paper uses DeepSeek v3.2, Gemma 3 27B-IT, Mistral Devstral 2 123B).
+2. Authenticate with **one** of:
+   - **Standard AWS credentials** — `aws configure`, SSO, IAM role, or
+     environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`,
+     `AWS_SESSION_TOKEN`).
+   - **Short-term Bedrock API key (bearer token)** — set
+     `BEDROCK_API_KEY` (or `AWS_BEARER_TOKEN_BEDROCK`).
+3. Set the region (default `ap-southeast-2`, Sydney):
+   ```bash
+   export AWS_REGION=ap-southeast-2
+   ```
+4. Optionally override the default model:
+   ```bash
+   export BEDROCK_MODEL_ID=mistral.devstral-2-123b
+   # or pass --model on the CLI
+   ```
+5. Run an experiment:
+   ```bash
+   python -m srccode.run_p5_rag \
+     --provider bedrock \
+     --model mistral.devstral-2-123b \
+     --dataset annotated --split python --rag-mode dense --rag-k 3 --verbose
+   ```
 
-### Core (Implemented)
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| Python | 3.14+ | Programming language |
-| Ollama | 0.6.1 | Local LLM runtime (llama3:8b default) |
-| LangChain | 1.2.10 | LLM orchestration |
-| LangGraph | 1.0.10 | Workflow state machine |
-| ChromaDB | 1.0.0 | Vector store for RAG |
-| sentence-transformers | 5.2.3 | Code embeddings |
-| SQLAlchemy | 2.0.48 | ORM (9 tables) |
-| Alembic | 1.18.4 | Database migrations |
-| SQLite | — | Experiment tracking database |
-| tree-sitter | 0.25.2 | AST-based code parsing |
-| radon / lizard | 6.0.1 / 1.21.2 | Cyclomatic complexity, LOC metrics |
-| Pydantic | 2.12.5 | Data validation |
-| structlog | 25.5.0 | Structured JSON logging |
-
-### Optional (Deployment / UI)
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| FastAPI | 0.115.9 | REST API (when needed) |
-| Streamlit | 1.54.0 | Web UI |
-| Flask | 3.1.3 | Lightweight API alternative |
-| Docker | — | Containerization |
-
-### LLM Models (via Ollama)
-| Model | Parameters | Use Case |
-|-------|-----------|----------|
-| llama3:8b | 8B | Default — fast, efficient on M4 Pro |
-| llama3:13b | 13B | Higher accuracy (slower) |
-| codellama:7b | 7B | Code-specialized tasks |
-| mistral:7b | 7B | Fast inference alternative |
-
----
-
-## 📊 Current Status (March 8, 2026)
-
-### ✅ Implemented & Merged to `main`
-
-**Multi-Agent System (`Feat/multi-agent` → merged)**
-- LangGraph state machine workflow (`src/workflow_graph.py`)
-- LangChain ReAct detector agent (`src/code_smell_detector.py`)
-- Multi-agent coordination with chunking (`src/analysis_coordinator.py`)
-- RAG pipeline with ChromaDB (`src/rag_pipeline.py`, `src/rag_retriever.py`)
-- Code parsing: language detection, AST, metrics (`src/code_parser.py`)
-- Quality validation + confidence scoring (`src/quality_validator.py`)
-- Structured JSON logging (`src/logger.py`)
-
-**RAG Pipeline (`Feat/rag-llm-client` → merged)**
-- Ollama LLM client wrapper (`src/llm_client.py`)
-- Embedding service with caching (`src/embedding_service.py`)
-- ChromaDB vector store interface (`src/vector_store.py`)
-- Response parser for LLM output (`src/response_parser.py`)
-- Prompt templates for code smell detection (`src/prompt_templates.py`)
-
-**ORM & Database (`Feat/orm` — current branch)**
-- SQLAlchemy 2.0 ORM with 9 tables (`src/database_manager.py`)
-- Alembic migrations (`alembic/versions/001_initial_schema.py`)
-- Experiment tracking: agents, requests, responses, findings, ground truth
-- All 261 type errors resolved ✅
-- ORM documentation with cheat sheets (`docs/database/ORM_MIGRATION_GUIDE.md`)
-
-### 🔬 In Progress
-- [ ] Download and index MaRV dataset (`data/datasets/marv/`)
-- [ ] Run baseline experiments (no RAG)
-- [ ] Run RAG-augmented experiments
-- [ ] Evaluate detection accuracy vs. SonarQube/PMD
-- [ ] Ablation studies
-
-### 📋 Pending
-- [ ] FastAPI deployment layer
-- [ ] Streamlit evaluation dashboard
-- [ ] Paper writing
-
----
-
-## 🗄️ Database Schema (ORM)
-
-9 tables tracking the full experiment lifecycle:
-
-| Table | Purpose |
-|-------|---------|
-| `agents` | Registered LLM agents (role, model) |
-| `agent_requests` | LLM prompt requests per agent |
-| `agent_responses` | LLM responses with token counts |
-| `agent_actions` | Tool invocations by agents |
-| `processes` | File analysis processes |
-| `experiments` | Experiment runs with configuration |
-| `analysis_runs` | Per-snippet analysis results |
-| `code_smell_findings` | Detected smells with confidence + severity |
-| `ground_truth` | Known labels for evaluation |
-
-See [ORM Migration Guide](docs/database/ORM_MIGRATION_GUIDE.md) for schema details, cheat sheets, and transaction patterns.
-
----
-
-## 📚 Documentation
-
-### Research
-- [Research Proposal](docs/research/RESEARCH_PROPOSAL.md) — Problem statement, RQs, methodology
-- [Similar Papers & Gaps](docs/research/SIMILAR_PAPERS_AND_GAPS.md) — Literature review
-
-### Architecture
-- [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md) — High-level design
-- [LLM Architecture](docs/architecture/LLM_ARCHITECTURE.md) — RAG, prompts, LangGraph
-- [Backend Architecture](docs/architecture/BACKEND_ARCHITECTURE.md) — API, services
-- [Database Architecture](docs/architecture/DATABASE_ARCHITECTURE.md) — Data storage
-
-### Baseline & Benchmarking
-- [Baseline Tools Guide](docs/baseline/BASELINE_GUIDE.md) — Installation, running, tools reference, troubleshooting
-
-### Development
-- [ORM Migration Guide](docs/database/ORM_MIGRATION_GUIDE.md) — SQLAlchemy patterns, cheat sheets, transactions
-- [Deployment Guide](docs/deployment/DEPLOYMENT_GUIDE.md) — Docker setup
-- [WBS](docs/planning/WBS.md) — Project timeline and task tracking
-
-### Design
-- [Figma Design Prompt](docs/design/FIGMA_DESIGN_PROMPT.md) — UI/UX specifications
-
----
-
-## 🔬 Dataset
-
-**MaRV - Manually Validated Refactoring Dataset** (primary)
-- **Source:** https://github.com/HRI-EU/SmellyCodeDataset
-- **Language:** Java
-- **Content:** Manually validated code smell examples
-- **Smell Types:** Long Method, Large Class, Feature Envy, Data Clumps, etc.
-- **Use:** Ground truth for empirical evaluation
-
-**Additional Datasets**
-- `data/datasets/qualitas_corpus/` — Large-scale Java software corpus
-- `data/datasets/smelly_code/` — Additional smelly code samples
-
----
-
-## 📈 Success Metrics
-
-| Metric | Target |
-|--------|--------|
-| F1-Score (overall) | ≥ 75% |
-| RAG vs. Vanilla improvement | +10–15% |
-| Precision per smell type | tracked |
-| Recall per smell type | tracked |
-| Response time | < 30s per snippet |
-| Code coverage | ≥ 80% |
-
----
-
-## 🛠️ Development Workflow
-
-### Git Branches
-| Branch | Purpose |
-|--------|---------|
-| `main` | Stable, merged features |
-| `Feat/orm` | ORM + DB tracking (current) |
-| `Feat/multi-agent` | Multi-agent system (merged) |
-| `Feat/rag-llm-client` | RAG + LLM client (merged) |
-
-### Conventional Commits
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation
-- `refactor:` Code restructuring
-- `test:` Tests
-- `chore:` Maintenance
-
-### Code Style
-- Python 3.14+ with full type hints
-- `black` for formatting, `isort` for imports
-- Lazy logging: `logger.info("msg: %s", var)` — not f-strings
-- Specific exceptions: `SQLAlchemyError`, `ValueError` — not bare `Exception`
-- All public APIs documented
-
----
-
-## 🧪 Testing
+### Build the dense retrieval index (once, before P5 dense)
 
 ```bash
-# Run all tests
-pytest
-
-# With coverage
-pytest --cov=src --cov-report=html
-
-# Validate configuration
-python scripts/validate_config.py
+python -m srccode.build_rag_index
 ```
 
-**Target Coverage:** 80%+
+This persists embeddings under `cache/embeddings/` and a ChromaDB collection
+under `chromadb_store/`.
 
 ---
 
-## 🚧 Known Limitations
+## Running experiments
 
-- Java-only dataset (MaRV); Python support for local testing only
-- Single-file analysis (no cross-file smell detection yet)
-- Local LLM accuracy below commercial APIs for nuanced smells
-- SQLite not suitable for large-scale parallel experiments (use Postgres for scale)
+Every prompt × language × provider combination is exposed as an `npm run`
+shortcut in [package.json](package.json). Underlying CLI:
 
----
+```bash
+python -m srccode.run_p<N>_<name> \
+  --provider bedrock \
+  --dataset annotated \
+  --split {python|java|javascript|cpp} \
+  [--rag-mode {dense|random}] [--rag-k 3] \
+  --verbose
+```
 
-## 🤝 Contributing
+Convenience scripts:
 
-### Pull Request Process
-1. Branch from `main`: `git checkout -b feat/your-feature`
-2. Make changes with type hints + tests
-3. Run `black . && isort . && pytest`
-4. Submit PR with description
-5. Merge after review approval
+```bash
+# Single cell
+npm run p2:bedrock:py        # Few-shot, Python, Bedrock
 
----
+# All five prompts for one language
+npm run all:cloud:java       # (cloud == bedrock)
 
-## 📮 Contact
+# Full grid (4 languages × 5 prompts) for the active provider
+npm run all:cloud
+```
 
-**Repository:** https://github.com/bibekgupta3333/code-smell  
-**Project:** Code Smell Detection with LLMs  
-**Branch:** `Feat/orm`
+Each run writes three artifacts under
+`results/llm_runs/<model>/<prompt>/`:
 
----
+- `*.metrics.json` — micro/macro P/R/F1, per-smell breakdown, paired-bootstrap CIs
+- `*.per_record.csv` — one row per file/record with predicted vs. gold findings
+- `*.predictions.json` — raw model outputs (parsed JSON + tags)
 
-## 🙏 Acknowledgments
-
-- **MaRV Dataset:** HRI-EU for the manually validated dataset
-- **Ollama:** Local LLM deployment runtime
-- **LangChain / LangGraph:** Workflow orchestration framework
-- **ChromaDB:** Vector store for RAG
-- **SQLAlchemy:** Python ORM framework
-
----
-
-## 📅 Progress Summary
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| Phase 1 | Planning & Documentation | ✅ Complete |
-| Phase 2 | Core System Implementation | ✅ Complete |
-| Phase 3 | ORM & Experiment Tracking | 🔄 In Progress |
-| Phase 4 | Dataset Indexing & Experiments | ⏳ Pending |
-| Phase 5 | Evaluation & Analysis | ⏳ Pending |
-| Phase 6 | Paper Writing & Finalization | ⏳ Pending |
+The `_k{2,3}` and `random_k{2,3}` suffixes in filenames encode the retrieval
+ablation tag.
 
 ---
 
-## 🔗 Important Links
+## Reproducing the paper
 
-- **MaRV Dataset:** https://github.com/HRI-EU/SmellyCodeDataset
-- **Ollama:** https://ollama.ai/
-- **LangGraph Docs:** https://langchain-ai.github.io/langgraph/
-- **SQLAlchemy Docs:** https://docs.sqlalchemy.org/
-- **ChromaDB Docs:** https://docs.trychroma.com/
+All figures and tables in [paper/main.tex](paper/main.tex) are regenerated from
+the artifacts in `results/` by the analysis notebook in `notebooks/`.
+
+Key result tables live under
+`results/tables/final_comparative/` (`01_headline_micro_macro.csv`,
+`04_error_mix.csv`, `05_cost_latency.csv`, etc.) and the figures under
+`results/figures/` and `paper/figures/`.
 
 ---
 
-**Last Updated:** March 8, 2026  
-**Version:** 2.0  
-**Status:** Core System Implemented ✅ | Evaluation Phase Starting 🔬
+## Threats and limitations (honest)
+
+The paper's §VII-D explicitly enumerates what was **not** done:
+
+- **Single-seed runs.** One pass per (model, prompt, language) at T=0; no
+  multi-seed / multi-paraphrase variance estimate.
+- **No contamination probe.** Files are publicly hosted on GitHub; we did not
+  measure n-gram overlap between test files and pretraining corpora or the
+  retrieval pool.
+- **No retrieval-leakage check.** Per-record cosine similarity to the top-1
+  train neighbour was not measured.
+- **Deployment equivalence.** Numbers characterize the Bedrock-served deployment;
+  self-hosted inference may differ.
+- **No fine-tuned encoder baseline** (CodeBERT / CodeT5 / UniXcoder) on the same
+  split.
+- **No qualitative error analysis** of held-out false positives / false negatives.
+- **Sample size.** n = 34 files / 473 labels — the headline 0.964 should be
+  read as a benchmark-specific upper bound, not a population-level estimate.
+
+---
+
+## Citation
+
+```bibtex
+@misc{gupta2026smellllm,
+  title        = {An Empirical Evaluation of Large Language Models and
+                  Retrieval-Augmented Prompting Strategies for Multi-Language
+                  Code Smell Detection},
+  author       = {Gupta, Bibek},
+  year         = {2026},
+  howpublished = {\url{https://github.com/bibekgupta3333/code-smell/}}
+}
+```
+
+Dataset:
+
+```bibtex
+@misc{sadik2025smellycode,
+  title        = {SmellyCodeDataset},
+  author       = {Sadik, Ahmed R.},
+  year         = {2025},
+  howpublished = {Honda Research Institute Europe GmbH}
+}
+```
+
+---
+
+## License
+
+Code: MIT. Dataset: see upstream `data/datasets/SmellyCodeDataset/` license.
