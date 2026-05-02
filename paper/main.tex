@@ -55,8 +55,8 @@ degrade software maintainability, has not been systematically benchmarked under
 controlled prompting conditions across multiple languages. This paper presents an
 empirical evaluation of three instruction-tuned LLMs
 (\textit{DeepSeek~v3.2~671B}, \textit{Gemma~3~27B-IT}, and \textit{Mistral~Devstral~2~123B})
-served through a managed inference endpoint (AWS Bedrock,
-\texttt{ap-southeast-2}) on a Fowler-aligned, expert-validated benchmark of
+served through a managed inference endpoint (AWS Bedrock)
+on a Fowler-aligned, expert-validated benchmark of
 34 annotated files spanning Java, Python, JavaScript, and C++. We design and
 compare five prompting strategies, zero-shot, few-shot, taxonomy-tree
 chain-of-thought, self-verification, and retrieval-augmented generation
@@ -357,7 +357,7 @@ languages and additionally break out per-language and per-smell behavior.
 
 \subsection{Models Under Test}
 All three models are instruction-tuned LLMs whose weights are publicly
-published, and are served via AWS Bedrock in \texttt{ap-southeast-2} with
+published, and are served via AWS Bedrock with
 $\text{temperature}{=}0$, $\text{top\_p}{=}1$, and a fixed seed (\texttt{42}).
 We therefore characterize the Bedrock-served deployment of these weights;
 results on self-hosted inference (different precision, system prompts, or
@@ -445,13 +445,14 @@ Table~\ref{tab:headline} reports pooled micro/macro precision, recall, and F1 fo
 each of the 18 (model, prompt) cells. The corresponding heatmap and grouped-bar
 view appear in Fig.~\ref{fig:headline}.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Headline results: pooled micro precision (P), recall (R), F1, and macro
 F1 across all four languages. Best per model is \textbf{bold}; overall best is
 \underline{underlined}.}
 \label{tab:headline}
-\renewcommand{\arraystretch}{1.05}
+\renewcommand{\arraystretch}{1.15}
+\setlength{\tabcolsep}{10pt}
 \begin{tabular}{llcccc}
 \toprule
 \textbf{Model} & \textbf{Prompt} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{Macro F1} \\
@@ -481,7 +482,7 @@ F1 across all four languages. Best per model is \textbf{bold}; overall best is
  & P5 RAG random & 0.939 & 0.927 & 0.933 & 0.876 \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \begin{figure}[t]
 \centering
